@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+namespace Dashboard.Web.Infrastructure;
 public static class HealthCheckResponseWriter
 {
     public static async Task WriteAsync(HttpContext context, HealthReport report)

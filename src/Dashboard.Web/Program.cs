@@ -1,6 +1,7 @@
 using Dashboard.Web.Components;
 using Dashboard.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Dashboard.Web.Infrastructure;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
