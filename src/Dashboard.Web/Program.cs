@@ -37,8 +37,8 @@ try
             name: "postgres",
             tags: ["db", "ready"]);
 
-    // QuoteSeeder
-    builder.Services.AddScoped<QuoteSeeder>();
+    // DbSeeder
+    builder.Services.AddDashboardSeeding(builder.Configuration);
 
     var app = builder.Build();
 
@@ -71,6 +71,8 @@ try
     app.MapStaticAssets();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
+
+    await app.SeedDatabaseAsync();
 
     app.Run();
 
