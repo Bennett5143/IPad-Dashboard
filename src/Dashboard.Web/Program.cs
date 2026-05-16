@@ -37,6 +37,9 @@ try
             name: "postgres",
             tags: ["db", "ready"]);
 
+    // QuoteSeeder
+    builder.Services.AddScoped<QuoteSeeder>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
