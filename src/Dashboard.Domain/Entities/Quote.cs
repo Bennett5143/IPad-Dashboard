@@ -1,4 +1,4 @@
-namespace Dashboard.Domain.Quote;
+namespace Dashboard.Domain.Entities;
 public class Quote
 {
     public int Id { get; set; }
