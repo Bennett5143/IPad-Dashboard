@@ -1,4 +1,5 @@
 using Dashboard.Web.Components;
+using Dashboard.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,3 +1,7 @@
+using Dashboard.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Dashboard.Infrastructure.Persistence.Configurations;
 
 public class QuoteConfiguration : IEntityTypeConfiguration<Quote>
