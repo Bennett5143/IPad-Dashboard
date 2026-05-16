@@ -1,5 +1,6 @@
 using Dashboard.Web.Components;
 using Dashboard.Infrastructure;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -24,7 +25,32 @@ try
     // DB
     builder.Services.AddInfrastructure(builder.Configuration);
 
+    // Health-Check
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' fehlt.");
+
+    builder.Services
+        .AddHealthChecks()
+        .AddNpgSql(
+            connectionString: connectionString,
+            name: "postgres",
+            tags: ["db", "ready"]);
+
     var app = builder.Build();
+
+    app.MapHealthChecks("/health/live", new HealthCheckOptions
+    {
+        // Keine Checks ausführen, nur prüfen ob die App antwortet
+        Predicate = _ => false,
+        ResponseWriter = HealthCheckResponseWriter.WriteAsync
+    });
+
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions
+    {
+        // Nur Checks ausführen, die mit "ready" getaggt sind
+        Predicate = check => check.Tags.Contains("ready"),
+        ResponseWriter = HealthCheckResponseWriter.WriteAsync
+    });
 
     // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
