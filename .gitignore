@@ -10,6 +10,10 @@
 *.userosscache
 *.sln.docstates
 *.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -427,3 +431,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# MacOS
+.DS_Store
