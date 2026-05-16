@@ -1,10 +1,14 @@
 using Dashboard.Web.Components;
+using Dashboard.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// DB
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

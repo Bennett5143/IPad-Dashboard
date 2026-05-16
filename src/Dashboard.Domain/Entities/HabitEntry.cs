@@ -1,5 +1,8 @@
-namespace Dashboard.Domain.Habitentry;
-public class Habitentry
+using Dashboard.Domain.Enums;
+using Dashboard.Domain.ValueObjects;
+
+namespace Dashboard.Domain.Entities;
+public class HabitEntry
 {
     public int Id { get; set; }
     public HabitKind Kind { get; set; } 
