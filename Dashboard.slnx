@@ -1,2 +1,10 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dashboard.Domain/Dashboard.Domain.csproj" />
+    <Project Path="src/Dashboard.Infrastructure/Dashboard.Infrastructure.csproj" />
+    <Project Path="src/Dashboard.Web/Dashboard.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Dashboard.Tests/Dashboard.Tests.csproj" />
+  </Folder>
 </Solution>
