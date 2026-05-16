@@ -18,4 +18,10 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Dashboard.Domain\Dashboard.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Dashboard.Infrastructure\Dashboard.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Dashboard.Web\Dashboard.Web.csproj" />
+  </ItemGroup>
+
 </Project>
