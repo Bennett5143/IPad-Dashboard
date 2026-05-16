@@ -18,5 +18,8 @@ _Folgt in Phase 1._
 
 ## Branching
 - `main` ist immer in einem deploybaren Zustand.
-- Features laufen in Branches `feature/<kurzbeschreibung>`.
+- Features laufen in Branches `<type>/phase-<X.Y>-<kurz-beschreibung>`.
+- Commits laufen mit FA-Referenz 
+    `<type>(<scope>): <kurze Beschreibung> [<FA-Referenz>]
+    <optionaler Body mit mehr Details, max 72 Zeichen pro Zeile>`.
 - Merges in `main` nur via Pull Request.
