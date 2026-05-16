@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <EmbeddedResource Include="Seeding\Data\quotes.json" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\Dashboard.Domain\Dashboard.Domain.csproj" />
   </ItemGroup>
 
