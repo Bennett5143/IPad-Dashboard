@@ -37,6 +37,9 @@ try
             name: "postgres",
             tags: ["db", "ready"]);
 
+    // DbSeeder
+    builder.Services.AddDashboardSeeding(builder.Configuration);
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -68,6 +71,8 @@ try
     app.MapStaticAssets();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode();
+
+    await app.SeedDatabaseAsync();
 
     app.Run();
 
