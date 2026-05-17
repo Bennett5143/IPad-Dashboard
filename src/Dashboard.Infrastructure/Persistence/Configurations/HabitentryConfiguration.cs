@@ -24,7 +24,7 @@ public class HabitEntryConfiguration : IEntityTypeConfiguration<HabitEntry>
                 .HasColumnName("DurationMinutes");
             details.Property(d => d.PaceMinPerKm)
                 .HasColumnName("PaceMinPerKm")
-                .HasPrecision(5, 2);   
+                .HasPrecision(5, 2);
         });
 
         builder.HasIndex(h => new { h.Date, h.Kind })
