@@ -1,8 +1,8 @@
 using Dashboard.Web.Components;
-using Dashboard.Infrastructure;
-using Dashboard.Infrastructure.Seeding;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Dashboard.Web.Infrastructure;
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()

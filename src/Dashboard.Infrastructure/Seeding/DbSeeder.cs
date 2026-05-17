@@ -1,9 +1,11 @@
 using System.Text.Json;
+
 using Dashboard.Domain.Entities;
+using Dashboard.Infrastructure.Persistence;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Dashboard.Infrastructure.Persistence;
 
 namespace Dashboard.Infrastructure.Seeding;
 
