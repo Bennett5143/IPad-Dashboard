@@ -72,7 +72,7 @@ jobs:
       # (HTML-Variante zum lokalen Öffnen, XML für Tools wie VS Code-Extensions).
       - name: Upload coverage artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: |
