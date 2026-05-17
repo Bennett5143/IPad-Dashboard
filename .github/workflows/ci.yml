@@ -32,7 +32,7 @@ jobs:
       # NuGet-Cache. Key bindet sich an einen Hash aller .csproj –
       # solange keine Abhängigkeit geändert wird, kommt der Cache zum Einsatz.
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
