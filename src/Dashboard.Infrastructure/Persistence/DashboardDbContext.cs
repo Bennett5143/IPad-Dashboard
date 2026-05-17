@@ -1,4 +1,5 @@
 using Dashboard.Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Dashboard.Infrastructure.Persistence;
