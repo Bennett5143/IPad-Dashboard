@@ -1,4 +1,5 @@
 namespace Dashboard.Domain.Enums;
+
 public enum HabitKind
 {
     Strength,

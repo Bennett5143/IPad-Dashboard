@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+# Alte Pipelines auf demselben Branch abbrechen, wenn ein neuer Push kommt.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least Privilege: Workflow braucht nur Lesezugriff aufs Repo.
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # NuGet-Cache. Key bindet sich an einen Hash aller .csproj –
+      # solange keine Abhängigkeit geändert wird, kommt der Cache zum Einsatz.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      # --collect "XPlat Code Coverage" aktiviert coverlet.collector
+      # und erzeugt pro Test-Projekt eine coverage.cobertura.xml.
+      - name: Test
+        run: |
+          dotnet test --configuration Release --no-build \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage \
+            --verbosity normal
+
+      # ReportGenerator macht aus den Cobertura-XMLs eine Markdown-Summary,
+      # die via $GITHUB_STEP_SUMMARY in der Workflow-Übersicht erscheint
+      # (und damit auch via `gh run view` in der Konsole).
+      # if: always() sorgt dafür, dass die Summary auch bei roten Tests entsteht.
+      - name: Coverage summary
+        if: always()
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:"coverage/**/coverage.cobertura.xml" \
+            -targetdir:"coverage-report" \
+            -reporttypes:"MarkdownSummaryGithub;HtmlInline"
+          cat coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+      # Optional: Coverage-Reports als Artifact zum Download bereitstellen
+      # (HTML-Variante zum lokalen Öffnen, XML für Tools wie VS Code-Extensions).
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage/**/coverage.cobertura.xml
+            coverage-report/
+          retention-days: 14
+
+      # Format-Check am Ende: schnell und unabhängig vom Build-Erfolg.
+      # --verify-no-changes ist der Lint-Modus.
+      - name: Format check
+        run: dotnet format --verify-no-changes --no-restore

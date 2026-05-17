@@ -1,5 +1,6 @@
 using Dashboard.Web.Components;
 using Dashboard.Infrastructure;
+using Dashboard.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Dashboard.Web.Infrastructure;
 using Serilog;
@@ -76,7 +77,7 @@ try
 
     app.Run();
 
-    
+
 }
 catch (Exception ex) when (ex is not HostAbortedException)
 {
