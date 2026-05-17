@@ -5,7 +5,6 @@
 
 version: 2
 updates:
-  # NuGet-Pakete (.NET-Dependencies)
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
@@ -14,8 +13,20 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
+    groups:
+      ef-core:
+        patterns:
+          - "Microsoft.EntityFrameworkCore*"
+          - "Npgsql.EntityFrameworkCore*"
+      test-stack:
+        patterns:
+          - "xunit*"
+          - "Microsoft.NET.Test.Sdk"
+          - "coverlet*"
+      serilog:
+        patterns:
+          - "Serilog*"
 
-  # GitHub Actions selbst aktualisieren
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -23,3 +34,7 @@ updates:
       day: "monday"
     commit-message:
       prefix: "ci(deps)"
+    groups:
+      actions-all:
+        patterns:
+          - "*"
