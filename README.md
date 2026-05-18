@@ -1,5 +1,7 @@
 # iPad-Dashboard
 
+[![CI](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml)
+
 Selbstgehostetes Dashboard für ein iPad 6th Gen, das auf einem
 Raspberry Pi 4 läuft. Anzeigt: Uhrzeit, Wetter, Habit-Tracker,
 Fußball-Ergebnisse, HVV-Abfahrten, Zitat des Tages.
@@ -19,16 +21,21 @@ Fußball-Ergebnisse, HVV-Abfahrten, Zitat des Tages.
 src/
 ├── Dashboard.Web              # Blazor Server, Entrypoint, UI
 ├── Dashboard.Domain           # Entities, Value Objects, Enums
-├── Dashboard.Infrastructure   # DbContext, Seeder, externe API-Clients
+└── Dashboard.Infrastructure   # DbContext, Seeder, externe API-Clients
+tests/
 └── Dashboard.Tests            # xUnit
 ```
 
-NuGet-Versionen werden zentral über `Directory.Packages.props` im
-Repo-Root verwaltet (Central Package Management).
+Cross-cutting MSBuild-Properties werden zentral via `Directory.Build.props`
+verwaltet, NuGet-Versionen via `Directory.Packages.props` (Central Package
+Management). Beide liegen im Repo-Root.
 
 ## Status
 
-🚧 In Entwicklung – Phase 1 (Lokale Dev-Umgebung) abgeschlossen.
+🚧 In Entwicklung
+- ✅ Phase 1: Lokale Dev-Umgebung (DB, EF Core, Docker, Seeding)
+- ✅ Phase 2: CI-Pipeline, Code-Coverage, Branch Protection, Dependabot
+- 🚧 Phase 3: Dashboard-Skelett
 
 ## Setup
 
@@ -103,14 +110,50 @@ in `appsettings.json` und damit nicht ins Repo:
 - **Container:** `.env`-Datei (in `.gitignore`)
 - **CI/CD:** GitHub Secrets
 
-## Branching
+## CI / Quality Gates
 
-- `main` ist immer in einem deploybaren Zustand.
-- Features laufen in Branches `<type>/phase-<X.Y>-<kurz-beschreibung>`.
-- Commits laufen mit FA-Referenz:
+Jeder Push und jeder Pull Request gegen `main` durchläuft:
+
+- `dotnet restore` / `build` / `test` (xUnit)
+- Code Coverage via `coverlet.collector`
+- Coverage-Report via ReportGenerator (Markdown-Summary in der
+  Workflow-Übersicht, HTML-Report als Artifact)
+- `dotnet format --verify-no-changes` (EditorConfig-Compliance)
+- CodeQL Static Analysis
+
+**Branch Protection** auf `main`:
+
+- Direkte Pushes nicht möglich
+- Merges nur via Pull Request mit grüner CI
+- Squash-Merge als einzige Merge-Strategie
+- Branch muss vor Merge auf dem aktuellen `main`-Stand sein
+
+## Dependencies
+
+[Dependabot](.github/dependabot.yml) prüft wöchentlich (montags) auf
+Updates für:
+
+- NuGet-Pakete (gruppiert nach EF Core, Test-Stack, Serilog)
+- GitHub Actions
+
+Patch- und Minor-Updates werden via
+[`dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml)
+automatisch gemergt, sobald die CI grün ist. Major-Bumps bleiben offen
+und brauchen manuelle Sichtung der Release Notes.
+
+## Branching & Commits
+
+- `main` ist immer in einem deploybaren Zustand
+- Feature-Branches: `<type>/phase-<X.Y>-<kurz-beschreibung>`
+- Commits folgen [Conventional Commits](https://www.conventionalcommits.org/)
+  mit optionaler FA-Referenz:
 ```
   <type>(<scope>): <kurze Beschreibung> [<FA-Referenz>]
 
   <optionaler Body mit mehr Details, max 72 Zeichen pro Zeile>
 ```
-- Merges in `main` nur via Pull Request.
+- Merges in `main` nur via Squash-PR
+
+## Lizenz
+
+[MIT](LICENSE)
