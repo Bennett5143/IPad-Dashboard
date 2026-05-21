@@ -1,0 +1,28 @@
+.habits-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    height: 100%;
+}
+
+.habits-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.habits-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-fg-primary);
+}
+
+.habit-emoji {
+    font-size: var(--font-size-lg);
+    width: 2rem;
+    text-align: center;
+}
