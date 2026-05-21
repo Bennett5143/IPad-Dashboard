@@ -5,7 +5,7 @@
     grid-template-areas:
         "header   header     header     header      quote       quote"
         "hvv1     hvv1       hvv2       hvv2        hvv3        hvv3"
-        "habits   habits     habits     football    football    football"   
+        "habits   habits     habits     football    football    football"
         "weather  weather    hourly     hourly      tomorrow    tomorrow";
 
     min-height: 100dvh;
@@ -13,8 +13,6 @@
     padding: var(--space-4);
 }
 
-/* ::deep durchbricht die Scope-Grenze der CSS Isolation und
-   lässt diese Klassen auch in Kind-Komponenten greifen. */
 .dashboard ::deep .area-header   { grid-area: header; }
 .dashboard ::deep .area-quote    { grid-area: quote; }
 .dashboard ::deep .area-hvv1     { grid-area: hvv1; }
@@ -25,17 +23,3 @@
 .dashboard ::deep .area-weather  { grid-area: weather; }
 .dashboard ::deep .area-hourly   { grid-area: hourly; }
 .dashboard ::deep .area-tomorrow { grid-area: tomorrow; }
-
-/* Platzhalter-Optik für die noch nicht ersetzten Divs */
-.area {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-    box-shadow: var(--shadow-sm);
-    color: var(--color-fg-secondary);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}

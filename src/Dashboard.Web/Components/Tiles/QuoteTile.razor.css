@@ -1,0 +1,20 @@
+.quote-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    gap: var(--space-2);
+}
+
+.quote-text {
+    font-style: italic;
+    font-size: var(--font-size-lg);
+    color: var(--color-fg-primary);
+    line-height: var(--line-height-base);
+}
+
+.quote-author {
+    text-align: right;
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-base);
+}
