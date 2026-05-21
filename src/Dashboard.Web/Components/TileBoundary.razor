@@ -1,0 +1,21 @@
+<ErrorBoundary @ref="_errorBoundary">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent>
+        <Tile CssClass="@CssClass">
+            <div class="tile-error" role="alert">
+                <span>Daten gerade nicht verfügbar.</span>
+            </div>
+        </Tile>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private ErrorBoundary? _errorBoundary;
+
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnParametersSet() => _errorBoundary?.Recover();
+}

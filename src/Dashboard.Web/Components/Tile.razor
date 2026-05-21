@@ -1,0 +1,26 @@
+@* Dashboard.Web/Components/Tile.razor *@
+<div class="tile @CssClass">
+    @if (!string.IsNullOrWhiteSpace(Title) || Icon is not null)
+    {
+        <header class="tile-header">
+            @if (Icon is not null)
+            {
+                <span class="tile-icon">@Icon</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <h2 class="tile-title">@Title</h2>
+            }
+        </header>
+    }
+    <div class="tile-body">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+}

@@ -1,0 +1,53 @@
+.tile {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-4);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+
+    /* Verhindert, dass Tile-Inhalt aus dem Grid-Cell-Bereich ausbricht */
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tile-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-fg-secondary);
+    flex-shrink: 0;
+}
+
+.tile-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+}
+
+.tile-body {
+    flex: 1 1 auto;     /* Body nimmt verbleibenden vertikalen Raum */
+    min-height: 0;      /* Erzwingt Shrinking statt Overflow */
+    display: flex;
+    flex-direction: column;
+}
+
+.tile-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-sm);
+}
