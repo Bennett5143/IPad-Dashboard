@@ -104,3 +104,13 @@ button {
     background: none;
     color: inherit;
 }
+
+/* ============================================================
+   Utility Classes
+   ============================================================ */
+
+.placeholder-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    font-style: italic;
+}

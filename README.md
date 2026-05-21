@@ -20,6 +20,13 @@ Fußball-Ergebnisse, HVV-Abfahrten, Zitat des Tages.
 ```
 src/
 ├── Dashboard.Web              # Blazor Server, Entrypoint, UI
+│   ├── Components/
+│   │   ├── Layout/            # KioskLayout (Dashboard), MainLayout (Admin)
+│   │   ├── Pages/             # Home.razor (/), Admin/Quotes.razor
+│   │   ├── Tile.razor         # Container-Komponente mit Header/Body-Slot
+│   │   ├── TileBoundary.razor # ErrorBoundary-Wrapper pro Tile
+│   │   └── Tiles/             # Konkrete Tile-Implementierungen
+│   └── wwwroot/app.css        # Design-Tokens (CSS Custom Properties)
 ├── Dashboard.Domain           # Entities, Value Objects, Enums
 └── Dashboard.Infrastructure   # DbContext, Seeder, externe API-Clients
 tests/
@@ -30,12 +37,30 @@ Cross-cutting MSBuild-Properties werden zentral via `Directory.Build.props`
 verwaltet, NuGet-Versionen via `Directory.Packages.props` (Central Package
 Management). Beide liegen im Repo-Root.
 
+## UI-Architektur
+
+Das Dashboard nutzt zwei Layouts: `KioskLayout` für die Dashboard-Page (`/`)
+– Vollbild ohne Navigation, optimiert für den Kiosk-Modus – und `MainLayout`
+für den Admin-Bereich (`/admin/*`) mit Sidebar und Top-Row.
+
+Jede Kachel auf dem Dashboard ist mit einer `TileBoundary` umschlossen. Eine
+crashende Tile (z.B. weil eine externe API nicht erreichbar ist) zeigt damit
+nur lokal eine „Daten nicht verfügbar"-Meldung, ohne den Rest des Dashboards
+in Mitleidenschaft zu ziehen. Die optische Hülle (Card mit Rahmen, Schatten,
+Header) stellt die `Tile`-Komponente bereit; der konkrete Inhalt steckt in
+Tiles unter `Components/Tiles/`. Komposition statt Vererbung.
+
+Globale Design-Tokens (Farben, Spacing-Scale, Typografie) liegen als CSS
+Custom Properties in `wwwroot/app.css`. Komponenten-spezifisches Styling
+nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
+
 ## Status
 
 🚧 In Entwicklung
 - ✅ Phase 1: Lokale Dev-Umgebung (DB, EF Core, Docker, Seeding)
 - ✅ Phase 2: CI-Pipeline, Code-Coverage, Branch Protection, Dependabot
-- 🚧 Phase 3: Dashboard-Skelett
+- ✅ Phase 3: Dashboard-Skelett (Layouts, Tile-Komposition, Error-Isolation, Routing)
+- 🚧 Phase 4: Features (Uhrzeit, Zitate, Habits, Wetter, Fußball, HVV)
 
 ## Setup
 

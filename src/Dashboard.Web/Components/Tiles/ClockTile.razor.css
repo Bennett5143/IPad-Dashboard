@@ -25,9 +25,3 @@
 .clock-separator {
     color: var(--color-fg-muted);
 }
-
-.clock-placeholder-hint {
-    font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
-    font-style: italic;
-}

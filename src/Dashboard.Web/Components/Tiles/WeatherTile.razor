@@ -1,0 +1,43 @@
+<Tile CssClass="@CssClass" Title="@TitleText">
+    <Icon>
+        <span class="weather-emoji" aria-hidden="true">⛅</span>
+    </Icon>
+    <ChildContent>
+        <div class="weather-tile">
+            @if (Variant == WeatherVariant.Hourly)
+            {
+                <ul class="weather-hourly">
+                    <li><span class="hour-label">Jetzt</span><span class="hour-temp">14°</span></li>
+                    <li><span class="hour-label">+1h</span><span class="hour-temp">14°</span></li>
+                    <li><span class="hour-label">+2h</span><span class="hour-temp">15°</span></li>
+                    <li><span class="hour-label">+3h</span><span class="hour-temp">15°</span></li>
+                </ul>
+            }
+            else
+            {
+                <div class="weather-current">
+                    <div class="weather-temps">14 / 18 °C</div>
+                    <div class="weather-precip">65 % Niederschlag</div>
+                </div>
+            }
+            <small class="placeholder-hint">Platzhalter — echte API in Phase 4.4</small>
+        </div>
+    </ChildContent>
+</Tile>
+
+@code {
+    public enum WeatherVariant { Today, Hourly, Tomorrow }
+
+    [Parameter] public string? CssClass { get; set; }
+
+    [Parameter, EditorRequired]
+    public WeatherVariant Variant { get; set; }
+
+    private string TitleText => Variant switch
+    {
+        WeatherVariant.Today    => "Heute",
+        WeatherVariant.Hourly   => "Stündlich",
+        WeatherVariant.Tomorrow => "Morgen",
+        _ => string.Empty
+    };
+}

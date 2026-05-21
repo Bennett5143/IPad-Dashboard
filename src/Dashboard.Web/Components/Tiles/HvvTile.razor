@@ -1,0 +1,22 @@
+<Tile CssClass="@CssClass" Title="@Title">
+    <Icon>
+        <span class="hvv-emoji" aria-hidden="true">🚌</span>
+    </Icon>
+    <ChildContent>
+        <div class="hvv-tile">
+            <ul class="hvv-departures">
+                <li><time>14:25</time></li>
+                <li><time>14:35</time></li>
+                <li><time>14:45</time></li>
+            </ul>
+            <small class="placeholder-hint">Platzhalter — echte API in Phase 4.6</small>
+        </div>
+    </ChildContent>
+</Tile>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+}
