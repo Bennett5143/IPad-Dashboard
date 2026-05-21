@@ -1,0 +1,23 @@
+<Tile CssClass="@CssClass" Title="Fußball">
+    <div class="football-tile">
+        <section class="football-team">
+            <header>
+                <h3>Real Madrid</h3>
+                <span class="football-position">🏆 1</span>
+            </header>
+            <p class="football-next">Nächstes Spiel: Sa, 24.05. · FC Barcelona</p>
+        </section>
+        <section class="football-team">
+            <header>
+                <h3>HSV</h3>
+                <span class="football-position">🏆 9</span>
+            </header>
+            <p class="football-next">Nächstes Spiel: So, 25.05. · 1. FC Köln</p>
+        </section>
+        <small class="placeholder-hint">Platzhalter — echte API in Phase 4.5</small>
+    </div>
+</Tile>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+}
