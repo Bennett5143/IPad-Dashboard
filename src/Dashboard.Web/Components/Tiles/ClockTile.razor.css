@@ -1,0 +1,33 @@
+.clock-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    gap: var(--space-2);
+}
+
+.clock-tile time {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-size: var(--font-size-xl);
+}
+
+.clock-date {
+    color: var(--color-fg-secondary);
+}
+
+.clock-time {
+    font-weight: var(--font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.clock-separator {
+    color: var(--color-fg-muted);
+}
+
+.clock-placeholder-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    font-style: italic;
+}
