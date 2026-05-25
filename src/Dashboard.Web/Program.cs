@@ -41,6 +41,9 @@ try
     // DbSeeder
     builder.Services.AddDashboardSeeding(builder.Configuration);
 
+    // Time
+    builder.Services.AddSingleton<IClock, SystemClock>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions

@@ -1,14 +1,52 @@
+@implements IAsyncDisposable
+@inject IClock Clock
+
 <Tile CssClass="@CssClass">
     <div class="clock-tile">
-        <time datetime="2026-05-19T14:23">
-            <span class="clock-date">Di, 19.05.2026</span>
+        <time datetime="@_display.Iso">
+            <span class="clock-date">@_display.Date</span>
             <span class="clock-separator">·</span>
-            <span class="clock-time">14:23</span>
+            <span class="clock-time">@_display.Time</span>
         </time>
-        <small class="placeholder-hint">Platzhalter — echte Uhr kommt in Phase 4.1</small>
     </div>
 </Tile>
 
 @code {
     [Parameter] public string? CssClass { get; set; }
+
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private ClockDisplay _display;
+    private PeriodicTimer? _timer;
+    private Task? _tickerTask;
+    private readonly CancellationTokenSource _cts = new();
+
+    protected override void OnInitialized()
+    {
+        _display = ClockFormatter.Format(Clock.UtcNow, BerlinTz);
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        _tickerTask = RunTickerAsync(_cts.Token);
+    }
+
+    private async Task RunTickerAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(ct))
+            {
+                _display = ClockFormatter.Format(Clock.UtcNow, BerlinTz);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts.Cancel();
+        _timer?.Dispose();
+        if (_tickerTask is not null) await _tickerTask;
+        _cts.Dispose();
+    }
 }
