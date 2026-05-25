@@ -13,7 +13,7 @@ public static class ClockFormatter
         var local = TimeZoneInfo.ConvertTime(utcNow, timeZone);
 
         return new ClockDisplay(
-            Iso:  local.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
+            Iso: local.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
             Date: local.ToString("ddd, dd.MM.yyyy", German),
             Time: local.ToString("HH:mm:ss", CultureInfo.InvariantCulture)
         );
