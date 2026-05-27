@@ -1,6 +1,7 @@
-using Dashboard.Domain.Quotes;
 using Dashboard.Domain.Entities;
+using Dashboard.Domain.Quotes;
 using Dashboard.Infrastructure.Persistence;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Dashboard.Infrastructure.Quotes;

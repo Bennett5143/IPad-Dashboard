@@ -7,7 +7,7 @@ public static class QuoteSelector
         if (quoteCount <= 0)
             throw new ArgumentOutOfRangeException(nameof(quoteCount),
                 "Quote pool must contain at least one entry.");
-        
+
         return (date.DayOfYear - 1) % quoteCount;
     }
 }

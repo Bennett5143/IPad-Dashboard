@@ -1,5 +1,5 @@
-using Dashboard.Domain.Time;
 using Dashboard.Domain.Entities;
+using Dashboard.Domain.Time;
 
 namespace Dashboard.Domain.Quotes;
 
