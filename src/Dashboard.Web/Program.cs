@@ -44,6 +44,10 @@ try
     // Time
     builder.Services.AddSingleton<IClock, SystemClock>();
 
+    // Quotes
+    builder.Services.AddScoped<IQuoteRepository, QuoteRepository>();
+    builder.Services.AddScoped<DailyQuoteService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
