@@ -1,11 +1,68 @@
+@implements IAsyncDisposable
+@inject DailyQuoteService QuoteService
+
 <Tile CssClass="@CssClass">
-    <blockquote class="quote-tile">
-        <p class="quote-text">„Das beste Verhalten ist das, das niemand bemerkt."</p>
-        <footer class="quote-author">— Konfuzius</footer>
-        <small class="placeholder-hint">Platzhalter — echte Zitate in Phase 4.2</small>
-    </blockquote>
+    <div class="quote-tile">
+        @if (_quote is null)
+        {
+            <p class="quote-empty">Noch kein Zitat verfügbar.</p>
+        }
+        else
+        {
+            <blockquote>
+                <p class="quote-text">@_quote.Text</p>
+                @if (!string.IsNullOrWhiteSpace(_quote.Author))
+                {
+                    <footer class="quote-author">— @_quote.Author</footer>
+                }
+            </blockquote>
+        }
+    </div>
 </Tile>
 
 @code {
     [Parameter] public string? CssClass { get; set; }
+
+    private Quote? _quote;
+    private DateOnly _loadedFor;
+    private PeriodicTimer? _timer;
+    private Task? _watcherTask;
+    private readonly CancellationTokenSource _cts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync(_cts.Token);
+        _timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        _watcherTask = RunDayChangeWatcherAsync(_cts.Token);
+    }
+
+    private async Task LoadAsync(CancellationToken ct)
+    {
+        _loadedFor = QuoteService.GetCurrentLocalDate();
+        _quote = await QuoteService.GetTodaysQuoteAsync(ct);
+    }
+
+    private async Task RunDayChangeWatcherAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(ct))
+            {
+                if (QuoteService.GetCurrentLocalDate() != _loadedFor)
+                {
+                    await LoadAsync(ct);
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts.Cancel();
+        _timer?.Dispose();
+        if (_watcherTask is not null) await _watcherTask;
+        _cts.Dispose();
+    }
 }
