@@ -1,0 +1,43 @@
+.gym-segment-editor > p { margin: 0 0 0.5rem; font-weight: 600; }
+
+.gym-segment-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.gym-segment-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.gym-segment-row input {
+    width: 3.5rem;
+    padding: 0.35rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.gym-segment-row > button {
+    margin-left: auto;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    cursor: pointer;
+}
+
+.gym-add-segment {
+    margin-top: 0.25rem;
+    border: 1px dashed #aaa;
+    background: transparent;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font: inherit;
+}

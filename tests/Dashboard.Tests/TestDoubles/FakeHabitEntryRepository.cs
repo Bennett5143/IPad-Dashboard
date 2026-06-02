@@ -48,4 +48,21 @@ internal sealed class FakeHabitEntryRepository : IHabitEntryRepository
             _entries.Add(new HabitEntry { Id = _nextId++, Date = date, Kind = HabitKind.Strength });
         return Task.CompletedTask;
     }
+
+    private readonly Dictionary<(DateOnly, HabitKind), RunningDetails> _running = new();
+
+    public Task<IReadOnlyDictionary<HabitKind, RunningDetails>> GetRunningForDateAsync(
+        DateOnly date, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyDictionary<HabitKind, RunningDetails>>(
+            _running.Where(kv => kv.Key.Item1 == date)
+                    .ToDictionary(kv => kv.Key.Item2, kv => kv.Value));
+
+    public Task UpsertRunningAsync(
+        DateOnly date, HabitKind kind, RunningDetails details, CancellationToken ct = default)
+    {
+        _running[(date, kind)] = details;
+        if (!_entries.Any(e => e.Date == date && e.Kind == kind))
+            _entries.Add(new HabitEntry { Id = _nextId++, Date = date, Kind = kind });
+        return Task.CompletedTask;
+    }
 }

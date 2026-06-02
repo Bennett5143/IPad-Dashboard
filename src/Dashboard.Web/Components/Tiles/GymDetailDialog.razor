@@ -1,15 +1,15 @@
 @inject HabitTrackingService HabitService
 
-<div class="modal-backdrop" @onclick="OnClose">
-    <div class="modal" @onclick:stopPropagation="true">
-        <h3>Gym — @Date.ToString("dd.MM.yyyy")</h3>
+<div class="dialog-backdrop" @onclick="OnClose">
+    <div class="dialog" @onclick:stopPropagation="true">
+        <h3 class="dialog-title">Gym — @Date.ToString("dd.MM.yyyy")</h3>
 
-        <div class="segment-editor">
+        <div class="gym-segment-editor">
             <p>EMOM-Segmente (Reps pro Minute):</p>
             @for (var i = 0; i < _segments.Count; i++)
             {
                 var seg = _segments[i];
-                <div class="segment-row">
+                <div class="gym-segment-row">
                     <label>Min <input type="number" min="1" @bind="seg.FromMinute" /></label>
                     <label>– <input type="number" min="1" @bind="seg.ToMinute" /></label>
                     <label>Push <input type="number" min="0" @bind="seg.PushupsPerMinute" /></label>
@@ -17,15 +17,15 @@
                     <button type="button" @onclick="() => RemoveSegment(seg)">✕</button>
                 </div>
             }
-            <button type="button" @onclick="AddSegment">+ Segment</button>
+            <button type="button" class="gym-add-segment" @onclick="AddSegment">+ Segment</button>
         </div>
 
         @if (_error is not null)
         {
-            <p class="modal-error">@_error</p>
+            <p class="dialog-error">@_error</p>
         }
 
-        <div class="modal-actions">
+        <div class="dialog-actions">
             <button type="button" @onclick="SaveEmomAsync" disabled="@_busy">EMOM speichern</button>
             <button type="button" @onclick="ToggleNormalAsync" disabled="@_busy">
                 @(Summary.IsDoneToday ? "Zurücknehmen" : "Als Normal markieren")

@@ -97,4 +97,29 @@ public class HabitTrackingServiceTests
         Assert.NotNull(gym.TodaysEmom);
         Assert.Equal(80, gym.TodaysEmom!.TotalPullups);
     }
+
+    [Fact]
+    public async Task SaveRunning_RejectsNonRunningKind()
+    {
+        var service = BuildService(new FakeHabitEntryRepository(),
+            new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => service.SaveRunningAsync(new DateOnly(2026, 5, 20), HabitKind.Strength, 30, 5.5m));
+    }
+
+    [Fact]
+    public async Task SaveRunning_MarksDoneAndStoresDetails()
+    {
+        var repo = new FakeHabitEntryRepository();
+        var service = BuildService(repo, new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
+        var today = new DateOnly(2026, 5, 20);
+
+        await service.SaveRunningAsync(today, HabitKind.Zone2Run, 45, 5.30m);
+
+        var z2 = (await service.GetSummaryForAsync(today)).Single(s => s.Kind == HabitKind.Zone2Run);
+        Assert.True(z2.IsDoneToday);
+        Assert.Equal(1, z2.WeekCount);
+        Assert.NotNull(z2.TodaysRunning);
+        Assert.Equal(45, z2.TodaysRunning!.DurationMinutes);
+    }
 }

@@ -1,5 +1,6 @@
 using Dashboard.Domain.Entities;   
 using Dashboard.Domain.Enums;
+using Dashboard.Domain.ValueObjects;
 using Dashboard.Domain.Time;       
 
 namespace Dashboard.Domain.Habits;
@@ -36,6 +37,7 @@ public sealed class HabitTrackingService
         var yearCounts = await _repository.CountByKindAsync(yearStart, yearEnd, ct);
 
         var todaysEmom = await _repository.GetEmomAsync(date, ct);
+        var running     = await _repository.GetRunningForDateAsync(date, ct);
 
         return Enum.GetValues<HabitKind>()
             .Select(kind => new HabitSummary(
@@ -43,7 +45,8 @@ public sealed class HabitTrackingService
                 IsDoneToday: completedToday.Contains(kind),
                 WeekCount: weekCounts.GetValueOrDefault(kind, 0),
                 YearCount: yearCounts.GetValueOrDefault(kind, 0),
-                TodaysEmom: kind == HabitKind.Strength ? todaysEmom : null))
+                TodaysEmom: kind == HabitKind.Strength ? todaysEmom : null,
+                TodaysRunning: running.GetValueOrDefault(kind)))
             .ToList();
     }
 
@@ -68,5 +71,19 @@ public sealed class HabitTrackingService
             throw new ArgumentException(error, nameof(segments));
 
         await _repository.UpsertEmomAsync(date, segments, ct);
+    }
+
+    public async Task SaveRunningAsync(
+        DateOnly date, HabitKind kind, int durationMinutes, decimal paceMinPerKm,
+        CancellationToken ct = default)
+    {
+        if (kind is not (HabitKind.Zone2Run or HabitKind.Vo2MaxIntervals))
+            throw new ArgumentException("Lauf-Details gibt es nur für Lauf-Habits.", nameof(kind));
+
+        var error = RunningDetailsRules.Validate(durationMinutes, paceMinPerKm);
+        if (error is not null) throw new ArgumentException(error);
+
+        await _repository.UpsertRunningAsync(
+            date, kind, new RunningDetails(durationMinutes, paceMinPerKm), ct);
     }
 }

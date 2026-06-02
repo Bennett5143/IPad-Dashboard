@@ -1,0 +1,10 @@
+.backfill-date { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; margin-bottom: 1rem; }
+.backfill-date input { padding: 0.45rem; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
+.backfill-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.backfill-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.7rem 0.9rem; border: 1px solid #d0d0d0; border-radius: 10px;
+    background: #fff; font: inherit; cursor: pointer;
+}
+.backfill-row.is-done { background: #e8f5e9; border-color: #66bb6a; }
+.backfill-row:disabled { opacity: 0.6; cursor: default; }

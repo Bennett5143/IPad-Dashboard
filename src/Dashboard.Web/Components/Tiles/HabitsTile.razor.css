@@ -27,11 +27,55 @@
     text-align: center;
 }
 
-/* Einstieg in die Lauf-Heatmap aus dem Habit-Bereich (FA-8.04) */
-.habits-heatmap {
-    margin-top: auto;
-    color: var(--color-accent);
-    text-decoration: none;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+.habits-title {
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.habit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.habit-card {
+    /* Button-Reset: ein <button> bringt Default-Optik mit, die wollen wir nicht */
+    appearance: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    display: flex;            /* Kern-Fix: Kinder stapeln statt inline */
+    flex-direction: column;
+    gap: 0.35rem;
+
+    min-height: 110px;        /* Touch-Target groß genug fürs iPad */
+    padding: 1rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 12px;
+    background: #fff;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.habit-card:active { transform: scale(0.98); }
+
+.habit-card.is-done {
+    background: #e8f5e9;
+    border-color: #66bb6a;
+}
+
+.habit-card:disabled { opacity: 0.6; cursor: default; }
+
+.habit-name   { font-weight: 600; font-size: 1.1rem; }
+.habit-status { font-size: 0.95rem; }
+.habit-week,
+.habit-year   { font-size: 0.85rem; color: #555; }
+
+.habits-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.habits-header .habits-title { margin: 0; }
+.backfill-open {
+    border: 1px solid #1976d2; color: #1976d2; background: transparent;
+    border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; font: inherit; font-weight: 600;
 }
