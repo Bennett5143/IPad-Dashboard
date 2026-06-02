@@ -1,0 +1,118 @@
+@inject HabitTrackingService HabitService
+
+<div class="modal-backdrop" @onclick="OnClose">
+    <div class="modal" @onclick:stopPropagation="true">
+        <h3>Gym — @Date.ToString("dd.MM.yyyy")</h3>
+
+        <div class="segment-editor">
+            <p>EMOM-Segmente (Reps pro Minute):</p>
+            @for (var i = 0; i < _segments.Count; i++)
+            {
+                var seg = _segments[i];
+                <div class="segment-row">
+                    <label>Min <input type="number" min="1" @bind="seg.FromMinute" /></label>
+                    <label>– <input type="number" min="1" @bind="seg.ToMinute" /></label>
+                    <label>Push <input type="number" min="0" @bind="seg.PushupsPerMinute" /></label>
+                    <label>Pull <input type="number" min="0" @bind="seg.PullupsPerMinute" /></label>
+                    <button type="button" @onclick="() => RemoveSegment(seg)">✕</button>
+                </div>
+            }
+            <button type="button" @onclick="AddSegment">+ Segment</button>
+        </div>
+
+        @if (_error is not null)
+        {
+            <p class="modal-error">@_error</p>
+        }
+
+        <div class="modal-actions">
+            <button type="button" @onclick="SaveEmomAsync" disabled="@_busy">EMOM speichern</button>
+            <button type="button" @onclick="ToggleNormalAsync" disabled="@_busy">
+                @(Summary.IsDoneToday ? "Zurücknehmen" : "Als Normal markieren")
+            </button>
+            <button type="button" @onclick="OnClose">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public DateOnly Date { get; set; }
+    [Parameter, EditorRequired] public HabitSummary Summary { get; set; } = default!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private readonly List<SegmentInput> _segments = new();
+    private string? _error;
+    private bool _busy;
+
+    protected override void OnInitialized()
+    {
+        // bestehende EMOM-Segmente vorbefüllen, falls vorhanden
+        if (Summary.TodaysEmom is { } emom)
+        {
+            foreach (var s in emom.Segments.OrderBy(s => s.FromMinute))
+            {
+                _segments.Add(new SegmentInput
+                {
+                    FromMinute = s.FromMinute,
+                    ToMinute = s.ToMinute,
+                    PushupsPerMinute = s.PushupsPerMinute,
+                    PullupsPerMinute = s.PullupsPerMinute
+                });
+            }
+        }
+        if (_segments.Count == 0) AddSegment();
+    }
+
+    private void AddSegment()
+    {
+        // lückenlos vorbelegen: neues Segment beginnt nach dem letzten
+        var nextStart = _segments.Count == 0 ? 1 : _segments.Max(s => s.ToMinute) + 1;
+        _segments.Add(new SegmentInput { FromMinute = nextStart, ToMinute = nextStart });
+    }
+
+    private void RemoveSegment(SegmentInput seg) => _segments.Remove(seg);
+
+    private async Task SaveEmomAsync()
+    {
+        var domainSegments = _segments
+            .Select(s => new EmomSegment
+            {
+                FromMinute = s.FromMinute,
+                ToMinute = s.ToMinute,
+                PushupsPerMinute = s.PushupsPerMinute,
+                PullupsPerMinute = s.PullupsPerMinute
+            })
+            .ToList();
+
+        _error = EmomWorkoutRules.ValidateSegments(domainSegments);
+        if (_error is not null) return;
+
+        _busy = true;
+        try
+        {
+            await HabitService.SaveEmomAsync(Date, domainSegments);
+            await OnChanged.InvokeAsync();
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task ToggleNormalAsync()
+    {
+        _busy = true;
+        try
+        {
+            await HabitService.ToggleAsync(Date, HabitKind.Strength);
+            await OnChanged.InvokeAsync();
+        }
+        finally { _busy = false; }
+    }
+
+    private sealed class SegmentInput
+    {
+        public int FromMinute { get; set; }
+        public int ToMinute { get; set; }
+        public int PushupsPerMinute { get; set; }
+        public int PullupsPerMinute { get; set; }
+    }
+}

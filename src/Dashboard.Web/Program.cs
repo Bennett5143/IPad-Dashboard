@@ -127,6 +127,10 @@ try
     });
     builder.Services.AddHostedService<StravaSyncService>();
 
+    // Habits
+    builder.Services.AddScoped<IHabitEntryRepository, HabitEntryRepository>();
+    builder.Services.AddScoped<HabitTrackingService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions

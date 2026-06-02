@@ -8,5 +8,6 @@ public class HabitEntry
     public int Id { get; set; }
     public HabitKind Kind { get; set; }
     public DateOnly Date { get; set; }
-    public RunningDetails? Details { get; set; }
+    public RunningDetails? Running { get; set; }
+    public EmomWorkout? Emom { get; set; }
 }

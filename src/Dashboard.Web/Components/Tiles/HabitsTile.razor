@@ -1,17 +1,136 @@
-<Tile CssClass="@CssClass" Title="Sport Habits">
+@implements IAsyncDisposable
+@inject HabitTrackingService HabitService
+
+<Tile CssClass="@CssClass">
     <div class="habits-tile">
-        <ul class="habits-list">
-            <li><span class="habit-emoji">🏋️</span><span>Gym</span></li>
-            <li><span class="habit-emoji">🏃</span><span>Zone-2-Lauf</span></li>
-            <li><span class="habit-emoji">💨</span><span>VO2-Max-Intervalle</span></li>
-            <li><span class="habit-emoji">🪢</span><span>Seilspringen</span></li>
-            <li><span class="habit-emoji">🧘</span><span>Stretching</span></li>
-        </ul>
-        <a class="habits-heatmap" href="/heatmap">🗺️ Lauf-Heatmap ansehen</a>
-        <small class="placeholder-hint">Platzhalter — echte Habits in Phase 4.3</small>
+        <h2 class="habits-title">Sport Habits</h2>
+        @if (_summaries is null)
+        {
+            <p class="habits-loading">Laden…</p>
+        }
+        else
+        {
+            <div class="habit-grid">
+                @foreach (var summary in _summaries)
+                {
+                    @if (summary.Kind == HabitKind.Strength)
+                    {
+                        <button type="button"
+                                class="habit-card @(summary.IsDoneToday ? "is-done" : "")"
+                                @onclick="OpenGymDialog">
+                            <span class="habit-name">Gym</span>
+                            <span class="habit-status">
+                                @(summary.TodaysEmom is not null ? "EMOM ✓"
+                                : summary.IsDoneToday ? "Done ✓" : "·")
+                            </span>
+                            <span class="habit-week">Week-Count: @summary.WeekCount</span>
+                            <span class="habit-year">Year-Count: @summary.YearCount</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="habit-card @(summary.IsDoneToday ? "is-done" : "")"
+                                @onclick="() => ToggleAsync(summary.Kind)"
+                                disabled="@_isToggling">
+                            <span class="habit-name">@DisplayName(summary.Kind)</span>
+                            <span class="habit-status">Done Today: @(summary.IsDoneToday ? "✓" : "·")</span>
+                            <span class="habit-week">Week-Count: @summary.WeekCount</span>
+                            <span class="habit-year">Year-Count: @summary.YearCount</span>
+                        </button>
+                    }
+                }
+
+                @if (_gymDialogOpen && _summaries is not null)
+                {
+                    <GymDetailDialog Date="_loadedFor"
+                                    Summary="@_summaries.Single(s => s.Kind == HabitKind.Strength)"
+                                    OnChanged="OnGymChangedAsync"
+                                    OnClose="() => _gymDialogOpen = false" />
+                }
+            </div>
+        }
     </div>
 </Tile>
 
 @code {
     [Parameter] public string? CssClass { get; set; }
+
+    private bool _gymDialogOpen;
+    private void OpenGymDialog() => _gymDialogOpen = true;
+
+    private IReadOnlyList<HabitSummary>? _summaries;
+    private DateOnly _loadedFor;
+    private bool _isToggling;
+    private PeriodicTimer? _timer;
+    private Task? _watcherTask;
+    private readonly CancellationTokenSource _cts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync(_cts.Token);
+        _timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        _watcherTask = RunDayChangeWatcherAsync(_cts.Token);
+    }
+
+    private async Task LoadAsync(CancellationToken ct)
+    {
+        _loadedFor = HabitService.GetCurrentLocalDate();
+        _summaries = await HabitService.GetSummaryForAsync(_loadedFor, ct);
+    }
+
+    private async Task ToggleAsync(HabitKind kind)
+    {
+        if (_isToggling) return;          // schützt vor Doppelklick
+        _isToggling = true;
+        try
+        {
+            await HabitService.ToggleAsync(_loadedFor, kind, _cts.Token);
+            await LoadAsync(_cts.Token);
+        }
+        finally
+        {
+            _isToggling = false;
+        }
+    }
+
+    private async Task RunDayChangeWatcherAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(ct))
+            {
+                if (HabitService.GetCurrentLocalDate() != _loadedFor)
+                {
+                    await LoadAsync(ct);
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts.Cancel();
+        _timer?.Dispose();
+        if (_watcherTask is not null) await _watcherTask;
+        _cts.Dispose();
+    }
+
+    private static string DisplayName(HabitKind kind) => kind switch
+    {
+        HabitKind.Strength        => "Gym",
+        HabitKind.Zone2Run        => "Z2-Lauf",
+        HabitKind.Vo2MaxIntervals => "VO2 Max",
+        HabitKind.JumpRope        => "Jumping Rope",
+        HabitKind.Stretching      => "Stretching",
+        _                         => kind.ToString()
+    };
+
+    private async Task OnGymChangedAsync()
+    {
+        _gymDialogOpen = false;
+        await LoadAsync(_cts.Token);   // Tile neu laden
+    }
 }

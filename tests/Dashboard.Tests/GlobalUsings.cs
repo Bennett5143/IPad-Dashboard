@@ -1,5 +1,7 @@
 global using Dashboard.Domain.Entities;
+global using Dashboard.Domain.Enums;
 global using Dashboard.Domain.Football;
+global using Dashboard.Domain.Habits;
 global using Dashboard.Domain.Hvv;
 global using Dashboard.Domain.Quotes;
 global using Dashboard.Domain.Running;

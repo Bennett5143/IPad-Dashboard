@@ -1,7 +1,6 @@
-using Dashboard.Domain.Entities;
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Dashboard.Domain.Entities;                       
+using Microsoft.EntityFrameworkCore;                    
+using Microsoft.EntityFrameworkCore.Metadata.Builders;  
 
 namespace Dashboard.Infrastructure.Persistence.Configurations;
 
@@ -18,17 +17,23 @@ public class HabitEntryConfiguration : IEntityTypeConfiguration<HabitEntry>
         builder.Property(h => h.Date)
             .IsRequired();
 
-        // RunningDetails als Owned Entity → gleiche Tabelle, keine eigene
-        builder.OwnsOne(h => h.Details, details =>
+        // Lauf-Details als Owned Entity → gleiche Tabelle, keine eigene
+        builder.OwnsOne(h => h.Running, running =>
         {
-            details.Property(d => d.DurationMinutes)
+            running.Property(d => d.DurationMinutes)
                 .HasColumnName("DurationMinutes");
-            details.Property(d => d.PaceMinPerKm)
+            running.Property(d => d.PaceMinPerKm)
                 .HasColumnName("PaceMinPerKm")
                 .HasPrecision(5, 2);
         });
 
+        // EMOM-Workout: eigene Tabelle, 1:0..1, Cascade beim Löschen des Eintrags
+        builder.HasOne(h => h.Emom)
+            .WithOne()
+            .HasForeignKey<EmomWorkout>(w => w.HabitEntryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(h => new { h.Date, h.Kind })
-            .IsUnique();   // pro Tag und Habit-Typ max. ein Eintrag
+            .IsUnique();
     }
 }
