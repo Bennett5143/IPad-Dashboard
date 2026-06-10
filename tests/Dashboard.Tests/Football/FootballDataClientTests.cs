@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Dashboard.Tests.Football;
@@ -63,7 +64,8 @@ public class FootballDataClientTests
             Teams = [new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" }]
         });
 
-        return new FootballDataClient(http, new FakeClock { UtcNow = NowUtc }, options);
+        return new FootballDataClient(
+            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance);
     }
 
     [Fact]

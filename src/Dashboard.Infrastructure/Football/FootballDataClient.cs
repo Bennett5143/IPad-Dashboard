@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Dashboard.Domain.Football;
 using Dashboard.Domain.Time;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Dashboard.Infrastructure.Football;
@@ -19,12 +20,15 @@ public sealed class FootballDataClient : IFootballProvider
     private readonly HttpClient _http;
     private readonly IClock _clock;
     private readonly FootballOptions _options;
+    private readonly ILogger<FootballDataClient> _logger;
 
-    public FootballDataClient(HttpClient http, IClock clock, IOptions<FootballOptions> options)
+    public FootballDataClient(
+        HttpClient http, IClock clock, IOptions<FootballOptions> options, ILogger<FootballDataClient> logger)
     {
         _http = http;
         _clock = clock;
         _options = options.Value;
+        _logger = logger;
     }
 
     public async Task<FootballSnapshot> GetFootballAsync(CancellationToken ct = default)
@@ -32,9 +36,22 @@ public sealed class FootballDataClient : IFootballProvider
         var teams = new List<FootballTeamSnapshot>(_options.Teams.Count);
 
         // Bewusst sequenziell – schont das Rate-Limit des Free-Tiers (10 Requests/min).
+        // Ein einzelner fehlschlagender Verein (z. B. falsche Id, 403) darf die anderen nicht mitreißen.
         foreach (var team in _options.Teams)
         {
-            teams.Add(await GetTeamAsync(team, ct));
+            try
+            {
+                teams.Add(await GetTeamAsync(team, ct));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Fußball: Verein {Team} (Id {Id}) konnte nicht geladen werden – übersprungen.",
+                    team.Name, team.TeamId);
+            }
         }
 
         return new FootballSnapshot(teams, _clock.UtcNow);
@@ -44,13 +61,11 @@ public sealed class FootballDataClient : IFootballProvider
     {
         // Auf die Liga einschränken: ohne competitions-Filter zieht der Endpoint alle
         // Wettbewerbe (auch Pokal/CL) – im Free-Tier nicht freigeschaltete liefern 403.
-        var matches = await _http.GetFromJsonAsync<FdMatchesResponse>(
-            $"v4/teams/{team.TeamId}/matches?competitions={team.CompetitionCode}", ct)
-            ?? throw new InvalidOperationException($"Leere Antwort (matches) für Team {team.TeamId}.");
+        var matches = await GetAsync<FdMatchesResponse>(
+            $"v4/teams/{team.TeamId}/matches?competitions={team.CompetitionCode}", ct);
 
-        var standings = await _http.GetFromJsonAsync<FdStandingsResponse>(
-            $"v4/competitions/{team.CompetitionCode}/standings", ct)
-            ?? throw new InvalidOperationException($"Leere Antwort (standings) für {team.CompetitionCode}.");
+        var standings = await GetAsync<FdStandingsResponse>(
+            $"v4/competitions/{team.CompetitionCode}/standings", ct);
 
         var recent = matches.Matches
             .Where(m => m.Status == "FINISHED")
@@ -67,6 +82,22 @@ public sealed class FootballDataClient : IFootballProvider
             .ToList();
 
         return new FootballTeamSnapshot(team.Name, recent, upcoming, ExtractStanding(standings, team.TeamId));
+    }
+
+    // Liest die Antwort und macht den echten football-data.org-Fehler (Status + Body) sichtbar –
+    // z. B. 403 "check your subscription", 404 (Team/Wettbewerb), 429 (Rate-Limit).
+    private async Task<T> GetAsync<T>(string url, CancellationToken ct)
+    {
+        using var response = await _http.GetAsync(url, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            throw new HttpRequestException(
+                $"football-data.org {(int)response.StatusCode} bei '{url}': {body}");
+        }
+
+        return await response.Content.ReadFromJsonAsync<T>(ct)
+            ?? throw new InvalidOperationException($"Leere Antwort von '{url}'.");
     }
 
     private static Match MapMatch(FdMatch match, int teamId)
