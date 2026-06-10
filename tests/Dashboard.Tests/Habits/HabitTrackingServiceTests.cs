@@ -122,4 +122,42 @@ public class HabitTrackingServiceTests
         Assert.NotNull(z2.TodaysRunning);
         Assert.Equal(45, z2.TodaysRunning!.DurationMinutes);
     }
+
+    [Fact]
+    public async Task SaveRunning_BackdatedDate_StoresDetailsForThatDateOnly()
+    {
+        // Nachtragen eines Laufs mit Details für ein vergangenes Datum.
+        var repo = new FakeHabitEntryRepository();
+        var service = BuildService(repo, new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
+        var pastDate = new DateOnly(2026, 5, 10);
+
+        await service.SaveRunningAsync(pastDate, HabitKind.Vo2MaxIntervals, 28, 4.15m);
+
+        var past = (await service.GetSummaryForAsync(pastDate)).Single(s => s.Kind == HabitKind.Vo2MaxIntervals);
+        Assert.True(past.IsDoneToday);
+        Assert.NotNull(past.TodaysRunning);
+        Assert.Equal(28, past.TodaysRunning!.DurationMinutes);
+
+        // Der heutige Tag bleibt davon unberührt.
+        var today = (await service.GetSummaryForAsync(new DateOnly(2026, 5, 20))).Single(s => s.Kind == HabitKind.Vo2MaxIntervals);
+        Assert.False(today.IsDoneToday);
+    }
+
+    [Fact]
+    public async Task SaveEmom_BackdatedDate_StoresDetailsForThatDate()
+    {
+        // Nachtragen eines Gym-/EMOM-Workouts mit Details für ein vergangenes Datum.
+        var repo = new FakeHabitEntryRepository();
+        var service = BuildService(repo, new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
+        var pastDate = new DateOnly(2026, 5, 8);
+
+        await service.SaveEmomAsync(pastDate, new[]
+        {
+            new EmomSegment { FromMinute = 1, ToMinute = 12, PullupsPerMinute = 6, PushupsPerMinute = 6 }
+        });
+
+        var gym = (await service.GetSummaryForAsync(pastDate)).Single(s => s.Kind == HabitKind.Strength);
+        Assert.True(gym.IsDoneToday);
+        Assert.NotNull(gym.TodaysEmom);
+    }
 }
