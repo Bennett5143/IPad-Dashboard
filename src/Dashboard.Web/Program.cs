@@ -18,6 +18,11 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // Lokale, nicht versionierte Overrides (z. B. private HVV-Haltestellen / Standort).
+    // Umgebungsunabhängig (lädt auch in Production/auf dem Pi), daher hier explizit registriert.
+    // Die Datei ist gitignored; als Vorlage dient appsettings.Local.json.example.
+    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
