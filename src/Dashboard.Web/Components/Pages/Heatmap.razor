@@ -1,0 +1,151 @@
+@page "/heatmap"
+@layout MainLayout
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@inject IRunRepository RunRepository
+@inject IStravaTokenStore TokenStore
+@inject ISyncStateStore SyncStateStore
+@inject IClock Clock
+@inject IJSRuntime JS
+
+<PageTitle>Lauf-Heatmap</PageTitle>
+
+<div class="heatmap-page">
+    <header class="heatmap-header">
+        <h1>Lauf-Heatmap</h1>
+        <a class="heatmap-back" href="/">← Dashboard</a>
+    </header>
+
+    @if (!_connected)
+    {
+        <div class="heatmap-connect">
+            <p>Noch nicht mit Strava verbunden. Verbinde dein Konto, um deine Läufe zu synchronisieren.</p>
+            <a class="btn-connect" href="/strava/connect">Mit Strava verbinden</a>
+        </div>
+    }
+    else
+    {
+        <div class="heatmap-controls">
+            <div class="range-buttons" role="group" aria-label="Zeitraum">
+                <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
+                <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
+                <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
+            </div>
+
+            <div class="heatmap-stats">
+                <div class="stat"><span class="stat-value">@_stats.RunCount</span><span class="stat-label">Läufe</span></div>
+                <div class="stat"><span class="stat-value">@_stats.TotalDistanceKm.ToString("0.0", De) km</span><span class="stat-label">Distanz</span></div>
+                <div class="stat"><span class="stat-value">@FormatPace(_stats.AveragePaceMinPerKm)</span><span class="stat-label">Ø Pace</span></div>
+            </div>
+        </div>
+
+        <div id="heatmap-map" class="heatmap-map"></div>
+
+        <p class="sync-info">@SyncInfo</p>
+    }
+</div>
+
+@code {
+    private static readonly System.Globalization.CultureInfo De =
+        System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private const string MapElementId = "heatmap-map";
+
+    private bool _connected;
+    private RunTimeRange _range = RunTimeRange.TwelveMonths;
+    private IReadOnlyList<Run> _runs = [];
+    private RunStats _stats = new(0, 0, TimeSpan.Zero, null);
+    private SyncSnapshot _sync = new(null, null, null);
+    private IJSObjectReference? _module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _connected = await TokenStore.HasTokensAsync();
+        _sync = await SyncStateStore.GetAsync();
+        if (_connected)
+        {
+            await LoadRunsAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _connected)
+        {
+            await RenderMapAsync();
+        }
+    }
+
+    private async Task LoadRunsAsync()
+    {
+        var cutoff = _range.CutoffUtc(Clock.UtcNow);
+        _runs = await RunRepository.GetRunsAsync(cutoff);
+        _stats = RunStatsCalculator.Calculate(_runs);
+    }
+
+    private async Task SetRangeAsync(RunTimeRange range)
+    {
+        if (range == _range)
+        {
+            return;
+        }
+
+        _range = range;
+        await LoadRunsAsync();
+        await RenderMapAsync();
+    }
+
+    private async Task RenderMapAsync()
+    {
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js");
+        var points = _runs
+            .SelectMany(run => run.Track)
+            .Select(point => new[] { point.Latitude, point.Longitude })
+            .ToArray();
+        await _module.InvokeVoidAsync("render", MapElementId, points);
+    }
+
+    private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
+
+    private static string FormatPace(double? minPerKm)
+    {
+        if (minPerKm is not { } pace)
+        {
+            return "–";
+        }
+
+        var minutes = (int)pace;
+        var seconds = (int)Math.Round((pace - minutes) * 60, MidpointRounding.AwayFromZero);
+        if (seconds == 60)
+        {
+            minutes++;
+            seconds = 0;
+        }
+
+        return $"{minutes}:{seconds:00} /km";
+    }
+
+    private string SyncInfo => _sync.LastSuccessfulSyncUtc is { } last
+        ? $"Letzter Sync: {TimeZoneInfo.ConvertTime(last, BerlinTz):dd.MM.yyyy HH:mm}"
+            + (_sync.LastError is null ? string.Empty : " · letzter Versuch fehlgeschlagen")
+        : "Noch kein erfolgreicher Sync.";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("dispose", MapElementId);
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit bereits getrennt – nichts zu tun.
+            }
+        }
+    }
+}
