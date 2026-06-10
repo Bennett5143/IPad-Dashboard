@@ -155,8 +155,10 @@ public sealed class FootballDataClient : IFootballProvider
             match.UtcDate, match.Competition.Code ?? match.Competition.Name, opponent, isHome, ownGoals, opponentGoals);
     }
 
+    // Voller Vereinsname statt shortName: letzterer ist teils zu knapp/mehrdeutig
+    // (z. B. "Athletic" für Athletic Club Bilbao). shortName nur als Fallback.
     private static string OpponentName(FdTeam team) =>
-        !string.IsNullOrWhiteSpace(team.ShortName) ? team.ShortName : team.Name;
+        !string.IsNullOrWhiteSpace(team.Name) ? team.Name : team.ShortName;
 
     private static TablePosition? ExtractStanding(FdStandingsResponse standings, int teamId)
     {

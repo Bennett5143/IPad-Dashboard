@@ -85,17 +85,17 @@ public class FootballDataClientTests
 
         Assert.Equal(2, team.RecentResults.Count);
 
-        // Neuestes zuerst: Auswärts bei Betis 1:3 (aus Real-Sicht) → Niederlage
+        // Neuestes zuerst: Auswärts bei Real Betis 1:3 (aus Real-Sicht) → Niederlage
         var latest = team.RecentResults[0];
-        Assert.Equal("Betis", latest.Opponent);
+        Assert.Equal("Real Betis", latest.Opponent);
         Assert.False(latest.IsHome);
         Assert.Equal(1, latest.OwnGoals);
         Assert.Equal(3, latest.OpponentGoals);
         Assert.Equal(MatchOutcome.Loss, latest.Outcome);
 
-        // Davor: Heim gegen Barça 2:1 → Sieg
+        // Davor: Heim gegen FC Barcelona 2:1 → Sieg
         var earlier = team.RecentResults[1];
-        Assert.Equal("Barça", earlier.Opponent);
+        Assert.Equal("FC Barcelona", earlier.Opponent);
         Assert.True(earlier.IsHome);
         Assert.Equal(MatchOutcome.Win, earlier.Outcome);
     }
@@ -108,12 +108,12 @@ public class FootballDataClientTests
         Assert.Equal(2, team.Upcoming.Count);
 
         var next = team.Upcoming[0];
-        Assert.Equal("Valencia", next.Opponent);
+        Assert.Equal("Valencia CF", next.Opponent);
         Assert.True(next.IsHome);
         Assert.False(next.IsFinished);
         Assert.Null(next.Outcome);
 
-        Assert.Equal("Sevilla", team.Upcoming[1].Opponent);
+        Assert.Equal("Sevilla FC", team.Upcoming[1].Opponent);
         Assert.False(team.Upcoming[1].IsHome);
     }
 
