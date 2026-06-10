@@ -3,7 +3,7 @@ namespace Dashboard.Tests.Weather;
 public class WeatherStateTests
 {
     private static WeatherSnapshot Snapshot(DateTimeOffset retrievedAt) => new(
-        new CurrentWeather(15, 14, WeatherCondition.Clear, "Klar"),
+        new CurrentWeather(15, 14, 60, 3.0, WeatherCondition.Clear, "Klar"),
         new DailyForecast(new DateOnly(2026, 6, 10), 12, 18, WeatherCondition.Clear, "Klar", 0.1),
         Tomorrow: null,
         Hourly: Array.Empty<HourlyForecast>(),

@@ -7,7 +7,7 @@ namespace Dashboard.Domain.Football;
 /// </summary>
 public sealed record Match(
     DateTimeOffset KickoffUtc,
-    string Competition,
+    string CompetitionCode,
     string Opponent,
     bool IsHome,
     int? OwnGoals,

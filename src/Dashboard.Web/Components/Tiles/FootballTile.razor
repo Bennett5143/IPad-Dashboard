@@ -23,34 +23,33 @@
 
                         @if (team.RecentResults.Count > 0)
                         {
-                            <div class="football-row">
-                                <span class="football-label">Zuletzt</span>
-                                <div class="football-results">
-                                    @foreach (var match in team.RecentResults)
-                                    {
-                                        <span class="result-chip @FootballFormatter.OutcomeCss(match.Outcome)"
-                                              title="@($"{(match.IsHome ? "gegen" : "bei")} {match.Opponent} ({match.Competition})")">
-                                            @FootballFormatter.Score(match)
-                                        </span>
-                                    }
-                                </div>
-                            </div>
+                            <span class="football-label">Letzte</span>
+                            <ul class="match-list">
+                                @foreach (var match in team.RecentResults)
+                                {
+                                    <li class="match">
+                                        <span class="match-date">@FootballFormatter.ShortDate(match.KickoffUtc)</span>
+                                        <span class="match-opp">@match.Opponent <span class="match-venue">(@FootballFormatter.Venue(match))</span></span>
+                                        <span class="match-comp">@FootballFormatter.Competition(match.CompetitionCode)</span>
+                                        <span class="match-score @FootballFormatter.OutcomeCss(match.Outcome)">@FootballFormatter.Score(match)</span>
+                                    </li>
+                                }
+                            </ul>
                         }
 
                         @if (team.Upcoming.Count > 0)
                         {
-                            <div class="football-row">
-                                <span class="football-label">Nächste</span>
-                                <div class="football-fixtures">
-                                    @foreach (var match in team.Upcoming)
-                                    {
-                                        <span class="fixture">
-                                            <span class="fixture-date">@FootballFormatter.ShortDate(match.KickoffUtc)</span>
-                                            <span class="fixture-opp">@(match.IsHome ? "" : "@ ")@match.Opponent</span>
-                                        </span>
-                                    }
-                                </div>
-                            </div>
+                            <span class="football-label">Nächste</span>
+                            <ul class="match-list">
+                                @foreach (var match in team.Upcoming)
+                                {
+                                    <li class="match">
+                                        <span class="match-date">@FootballFormatter.DateTimeLabel(match.KickoffUtc)</span>
+                                        <span class="match-opp">@match.Opponent <span class="match-venue">(@FootballFormatter.Venue(match))</span></span>
+                                        <span class="match-comp">@FootballFormatter.Competition(match.CompetitionCode)</span>
+                                    </li>
+                                }
+                            </ul>
                         }
                     </section>
                 }

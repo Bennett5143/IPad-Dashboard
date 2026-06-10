@@ -4,5 +4,7 @@ namespace Dashboard.Domain.Weather;
 public sealed record CurrentWeather(
     double Temperature,
     double FeelsLike,
+    int Humidity,
+    double WindSpeedMs,
     WeatherCondition Condition,
     string Description);
