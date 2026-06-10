@@ -1,0 +1,8 @@
+namespace Dashboard.Domain.Football;
+
+/// <summary>Aggregierte Sicht auf einen Verein: jüngste Ergebnisse, nächste Spiele, Tabellenplatz.</summary>
+public sealed record FootballTeamSnapshot(
+    string TeamName,
+    IReadOnlyList<Match> RecentResults,
+    IReadOnlyList<Match> Upcoming,
+    TablePosition? Standing);

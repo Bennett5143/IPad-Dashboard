@@ -1,23 +1,92 @@
+@implements IDisposable
+@inject FootballState FootballState
+
 <Tile CssClass="@CssClass" Title="Fußball">
-    <div class="football-tile">
-        <section class="football-team">
-            <header>
-                <h3>Real Madrid</h3>
-                <span class="football-position">🏆 1</span>
-            </header>
-            <p class="football-next">Nächstes Spiel: Sa, 24.05. · FC Barcelona</p>
-        </section>
-        <section class="football-team">
-            <header>
-                <h3>HSV</h3>
-                <span class="football-position">🏆 9</span>
-            </header>
-            <p class="football-next">Nächstes Spiel: So, 25.05. · 1. FC Köln</p>
-        </section>
-        <small class="placeholder-hint">Platzhalter — echte API in Phase 4.5</small>
-    </div>
+    <Icon>
+        <span class="football-emoji" aria-hidden="true">⚽</span>
+    </Icon>
+    <ChildContent>
+        <div class="football-tile">
+            @if (_snapshot is null || _snapshot.Teams.Count == 0)
+            {
+                <p class="football-unavailable">Fußballdaten gerade nicht verfügbar.</p>
+            }
+            else
+            {
+                @foreach (var team in _snapshot.Teams)
+                {
+                    <section class="football-team">
+                        <header>
+                            <h3>@team.TeamName</h3>
+                            <span class="football-position" title="Tabellenplatz">🏆 @FootballFormatter.Position(team.Standing)</span>
+                        </header>
+
+                        @if (team.RecentResults.Count > 0)
+                        {
+                            <div class="football-row">
+                                <span class="football-label">Zuletzt</span>
+                                <div class="football-results">
+                                    @foreach (var match in team.RecentResults)
+                                    {
+                                        <span class="result-chip @FootballFormatter.OutcomeCss(match.Outcome)"
+                                              title="@($"{(match.IsHome ? "gegen" : "bei")} {match.Opponent} ({match.Competition})")">
+                                            @FootballFormatter.Score(match)
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (team.Upcoming.Count > 0)
+                        {
+                            <div class="football-row">
+                                <span class="football-label">Nächste</span>
+                                <div class="football-fixtures">
+                                    @foreach (var match in team.Upcoming)
+                                    {
+                                        <span class="fixture">
+                                            <span class="fixture-date">@FootballFormatter.ShortDate(match.KickoffUtc)</span>
+                                            <span class="fixture-opp">@(match.IsHome ? "" : "@ ")@match.Opponent</span>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </section>
+                }
+
+                @if (_isStale && _snapshot is not null)
+                {
+                    <small class="football-stale">Stand @FootballFormatter.UpdatedAt(_snapshot.RetrievedAtUtc) — Aktualisierung fehlgeschlagen</small>
+                }
+            }
+        </div>
+    </ChildContent>
 </Tile>
 
 @code {
     [Parameter] public string? CssClass { get; set; }
+
+    private FootballSnapshot? _snapshot;
+    private bool _isStale;
+
+    protected override void OnInitialized()
+    {
+        FootballState.Changed += OnFootballChanged;
+        ReadState();
+    }
+
+    private void OnFootballChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        _snapshot = FootballState.Current;
+        _isStale = FootballState.IsStale;
+    }
+
+    public void Dispose() => FootballState.Changed -= OnFootballChanged;
 }

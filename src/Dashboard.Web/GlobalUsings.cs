@@ -1,8 +1,10 @@
 global using Dashboard.Domain.Entities;
+global using Dashboard.Domain.Football;
 global using Dashboard.Domain.Quotes;
 global using Dashboard.Domain.Time;
 global using Dashboard.Domain.Weather;
 global using Dashboard.Infrastructure;
+global using Dashboard.Infrastructure.Football;
 global using Dashboard.Infrastructure.Quotes;
 global using Dashboard.Infrastructure.Seeding;
 global using Dashboard.Infrastructure.Time;
