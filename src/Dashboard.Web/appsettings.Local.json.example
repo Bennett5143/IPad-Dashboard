@@ -1,0 +1,30 @@
+// Vorlage für lokale, NICHT versionierte Overrides.
+//
+// Kopieren nach  appsettings.Local.json  (gitignored) und mit den eigenen Werten füllen.
+// Wird umgebungsunabhängig geladen (auch in Production / auf dem Raspberry Pi) und über-
+// schreibt die Werte aus appsettings.json. So bleiben private Daten (z. B. die konkreten
+// HVV-Haltestellen in deiner Nähe oder dein Wetter-Standort) aus dem öffentlichen Repo.
+//
+// MasterId einer Haltestelle ermittelt man über den HVV-checkName-Endpoint bzw. den
+// Stations-Generator; Lines filtert nach Linie (+ optional Richtung als Teilstring).
+// Leeres "Lines" = alle Abfahrten der Haltestelle. Leeres "Stations" = HVV-Kachel bleibt leer.
+{
+  "Hvv": {
+    "Stations": [
+      {
+        "Name": "Beispielhaltestelle",
+        "MasterId": "Master:00000",
+        "City": "Hamburg",
+        "Lines": [
+          { "Line": "42", "Direction": "Zielrichtung" }
+        ]
+      }
+    ]
+  },
+
+  // Optional: eigenen Wetter-Standort hier überschreiben statt in appsettings.json.
+  // "Weather": {
+  //   "Latitude": 53.4600,
+  //   "Longitude": 9.9830
+  // }
+}
