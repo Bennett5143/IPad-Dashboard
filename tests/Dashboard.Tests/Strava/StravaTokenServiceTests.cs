@@ -70,14 +70,15 @@ public class StravaTokenServiceTests
     }
 
     [Fact]
-    public void BuildAuthorizeUrl_ContainsClientRedirectAndScope()
+    public void BuildAuthorizeUrl_ContainsClientRedirectScopeAndState()
     {
         var service = Service(new FakeStravaTokenStore(), new StubHttpMessageHandler(_ => StubHttpMessageHandler.Json("{}")));
 
-        var url = service.BuildAuthorizeUrl().ToString();
+        var url = service.BuildAuthorizeUrl("abc123").ToString();
 
         Assert.Contains("client_id=cid", url, StringComparison.Ordinal);
         Assert.Contains("redirect_uri=", url, StringComparison.Ordinal);
         Assert.Contains("activity%3Aread_all", url, StringComparison.Ordinal); // Scope url-codiert
+        Assert.Contains("state=abc123", url, StringComparison.Ordinal);        // Anti-CSRF
     }
 }

@@ -27,12 +27,14 @@ public sealed class StravaTokenService : IStravaAccessTokenProvider
         _options = options.Value;
     }
 
-    public Uri BuildAuthorizeUrl() => new(
+    /// <param name="state">Anti-CSRF-Token; muss im Callback gegen den vom Server gesetzten Wert geprüft werden.</param>
+    public Uri BuildAuthorizeUrl(string state) => new(
         $"{_options.BaseUrl}oauth/authorize" +
         $"?client_id={Uri.EscapeDataString(_options.ClientId)}" +
         $"&redirect_uri={Uri.EscapeDataString(_options.RedirectUri)}" +
         "&response_type=code&approval_prompt=auto" +
-        $"&scope={Uri.EscapeDataString(_options.Scope)}");
+        $"&scope={Uri.EscapeDataString(_options.Scope)}" +
+        $"&state={Uri.EscapeDataString(state)}");
 
     public async Task ExchangeCodeAsync(string code, CancellationToken ct = default)
     {

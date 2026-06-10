@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 using Dashboard.Web.Components;
 using Dashboard.Web.Infrastructure;
 
@@ -141,15 +144,38 @@ try
     });
 
     // Strava-OAuth (Phase 7): Login-Redirect und Callback zum Token-Tausch.
-    app.MapGet("/strava/connect", (StravaTokenService tokenService) =>
-        Results.Redirect(tokenService.BuildAuthorizeUrl().ToString()));
+    // Der state-Parameter (zufällig, in einem kurzlebigen Cookie gespiegelt) schützt
+    // den Callback gegen CSRF/Token-Injection.
+    const string stravaStateCookie = "strava_oauth_state";
+
+    app.MapGet("/strava/connect", (HttpContext httpContext, StravaTokenService tokenService) =>
+    {
+        var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+        httpContext.Response.Cookies.Append(stravaStateCookie, state, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = httpContext.Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            MaxAge = TimeSpan.FromMinutes(10),
+            IsEssential = true
+        });
+        return Results.Redirect(tokenService.BuildAuthorizeUrl(state).ToString());
+    });
 
     app.MapGet("/strava/callback", async (
         HttpContext httpContext, StravaTokenService tokenService, CancellationToken ct) =>
     {
         var code = httpContext.Request.Query["code"].ToString();
         var error = httpContext.Request.Query["error"].ToString();
-        if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
+        var state = httpContext.Request.Query["state"].ToString();
+        var expectedState = httpContext.Request.Cookies[stravaStateCookie];
+        httpContext.Response.Cookies.Delete(stravaStateCookie);
+
+        var stateValid = !string.IsNullOrEmpty(expectedState)
+            && CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(state), Encoding.UTF8.GetBytes(expectedState));
+
+        if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code) || !stateValid)
         {
             return Results.Redirect("/heatmap");
         }
