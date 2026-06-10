@@ -48,6 +48,21 @@ try
     builder.Services.AddScoped<IQuoteRepository, QuoteRepository>();
     builder.Services.AddScoped<DailyQuoteService>();
 
+    // Weather
+    var weatherOptions = builder.Configuration
+        .GetSection(WeatherOptions.SectionName)
+        .Get<WeatherOptions>() ?? new WeatherOptions();
+
+    builder.Services.Configure<WeatherOptions>(
+        builder.Configuration.GetSection(WeatherOptions.SectionName));
+    builder.Services.AddSingleton<WeatherState>();
+    builder.Services.AddHttpClient<IWeatherProvider, OpenWeatherMapClient>(http =>
+    {
+        http.BaseAddress = new Uri(weatherOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(10);
+    });
+    builder.Services.AddHostedService<WeatherRefreshService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions

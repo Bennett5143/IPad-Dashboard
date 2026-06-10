@@ -60,7 +60,9 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 - ✅ Phase 1: Lokale Dev-Umgebung (DB, EF Core, Docker, Seeding)
 - ✅ Phase 2: CI-Pipeline, Code-Coverage, Branch Protection, Dependabot
 - ✅ Phase 3: Dashboard-Skelett (Layouts, Tile-Komposition, Error-Isolation, Routing)
-- 🚧 Phase 4: Features (Uhrzeit, Zitate, Habits, Wetter, Fußball, HVV)
+- 🚧 Phase 4: Features
+  - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap)
+  - ⬜ Habit-Tracker, Fußball, HVV-Abfahrtsmonitor
 
 ## Setup
 
@@ -125,6 +127,25 @@ In `appsettings.json` steuerbar:
   "Enabled": true
 }
 ```
+
+### Wetter (OpenWeatherMap)
+
+Standort, Sprache und Aktualisierungsintervall stehen in `appsettings.json`
+(Sektion `Weather`). Der API-Key ist ein Geheimnis und gehört **nicht** ins
+Repo – lokal via User Secrets:
+
+```bash
+cd src/Dashboard.Web
+dotnet user-secrets set "Weather:ApiKey" "<dein-openweathermap-key>"
+```
+
+Ohne Key startet die App normal; die Wetter-Kacheln bleiben im freundlichen
+„Daten gerade nicht verfügbar"-Zustand (Graceful Degradation). Ein
+`WeatherRefreshService` (`BackgroundService`) pollt im konfigurierten Intervall
+(Standard 15 min) die Endpunkte `data/2.5/weather` und `data/2.5/forecast`,
+legt das Ergebnis prozessweit in `WeatherState` ab und pusht Aktualisierungen
+ohne Reload an die Kacheln. Die stündliche Vorschau nutzt das 3-Stunden-Raster
+des kostenlosen Forecast-Endpoints.
 
 ### Secrets-Management
 
