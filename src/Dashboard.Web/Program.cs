@@ -82,6 +82,24 @@ try
     });
     builder.Services.AddHostedService<FootballRefreshService>();
 
+    // HVV
+    var hvvOptions = builder.Configuration
+        .GetSection(HvvOptions.SectionName)
+        .Get<HvvOptions>() ?? new HvvOptions();
+
+    builder.Services.Configure<HvvOptions>(
+        builder.Configuration.GetSection(HvvOptions.SectionName));
+    builder.Services.AddSingleton<HvvState>();
+    builder.Services.AddHttpClient<IHvvProvider, HvvDepartureClient>(http =>
+    {
+        http.Timeout = TimeSpan.FromSeconds(10);
+        if (!string.IsNullOrWhiteSpace(hvvOptions.UserAgent))
+        {
+            http.DefaultRequestHeaders.UserAgent.TryParseAdd(hvvOptions.UserAgent);
+        }
+    });
+    builder.Services.AddHostedService<HvvRefreshService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
