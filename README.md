@@ -193,8 +193,10 @@ DB synchronisiert und als PostGIS-`geometry(LineString,4326)` gespeichert; die
 Heatmap unter `/heatmap` rendert sie clientseitig mit Leaflet.
 
 **Voraussetzung DB:** PostGIS — `docker-compose.yml` nutzt dafür das
-`postgis/postgis`-Image (statt `postgres:alpine`). Die Migration legt die
-Extension an.
+`imresamu/postgis`-Image (Multi-Arch-Fork mit amd64 **und** arm64) statt
+`postgres:alpine`. Das offizielle `postgis/postgis`-Image hat kein
+arm64-Manifest und läuft daher weder auf Apple Silicon noch auf dem
+Raspberry Pi 4. Die Migration legt die Extension an.
 
 Eine eigene Strava-API-App anlegen (<https://www.strava.com/settings/api>),
 als „Authorization Callback Domain" `localhost` eintragen und Client-ID/Secret
