@@ -67,15 +67,30 @@ public sealed class FootballDataClient : IFootballProvider
         var from = now.AddDays(-90).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var to = now.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-        var matches = await GetAsync<FdMatchesResponse>(
-            $"v4/competitions/{team.CompetitionCode}/matches?dateFrom={from}&dateTo={to}", ct);
+        IReadOnlyList<string> competitions =
+            team.Competitions.Count > 0 ? team.Competitions : [team.CompetitionCode];
 
-        var standings = await GetAsync<FdStandingsResponse>(
-            $"v4/competitions/{team.CompetitionCode}/standings", ct);
-
-        var teamMatches = matches.Matches
-            .Where(m => m.HomeTeam.Id == team.TeamId || m.AwayTeam.Id == team.TeamId)
-            .ToList();
+        // Spiele aus allen konfigurierten Wettbewerben (Liga + z. B. CL) sammeln. Ein einzelner
+        // nicht erreichbarer Wettbewerb darf den Rest nicht blockieren.
+        var teamMatches = new List<FdMatch>();
+        foreach (var comp in competitions)
+        {
+            try
+            {
+                var response = await GetAsync<FdMatchesResponse>(
+                    $"v4/competitions/{comp}/matches?dateFrom={from}&dateTo={to}", ct);
+                teamMatches.AddRange(response.Matches
+                    .Where(m => m.HomeTeam.Id == team.TeamId || m.AwayTeam.Id == team.TeamId));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Fußball: Wettbewerb {Comp} für {Team} übersprungen.", comp, team.Name);
+            }
+        }
 
         var recent = teamMatches
             .Where(m => m.Status == "FINISHED")
@@ -91,7 +106,26 @@ public sealed class FootballDataClient : IFootballProvider
             .Select(m => MapMatch(m, team.TeamId))
             .ToList();
 
-        return new FootballTeamSnapshot(team.Name, recent, upcoming, ExtractStanding(standings, team.TeamId));
+        return new FootballTeamSnapshot(team.Name, recent, upcoming, await GetStandingAsync(team, ct));
+    }
+
+    private async Task<TablePosition?> GetStandingAsync(FootballTeamConfig team, CancellationToken ct)
+    {
+        try
+        {
+            var standings = await GetAsync<FdStandingsResponse>(
+                $"v4/competitions/{team.CompetitionCode}/standings", ct);
+            return ExtractStanding(standings, team.TeamId);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Fußball: Tabelle {Comp} für {Team} übersprungen.", team.CompetitionCode, team.Name);
+            return null;
+        }
     }
 
     // Liest die Antwort und macht den echten football-data.org-Fehler (Status + Body) sichtbar –
@@ -117,7 +151,8 @@ public sealed class FootballDataClient : IFootballProvider
         var ownGoals = isHome ? match.Score.FullTime.Home : match.Score.FullTime.Away;
         var opponentGoals = isHome ? match.Score.FullTime.Away : match.Score.FullTime.Home;
 
-        return new Match(match.UtcDate, match.Competition.Name, opponent, isHome, ownGoals, opponentGoals);
+        return new Match(
+            match.UtcDate, match.Competition.Code ?? match.Competition.Name, opponent, isHome, ownGoals, opponentGoals);
     }
 
     private static string OpponentName(FdTeam team) =>
