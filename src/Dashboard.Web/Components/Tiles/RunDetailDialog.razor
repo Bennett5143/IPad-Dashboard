@@ -1,0 +1,88 @@
+@inject HabitTrackingService HabitService
+
+<div class="dialog-backdrop" @onclick="OnClose">
+    <div class="dialog" @onclick:stopPropagation="true">
+        <h3 class="dialog-title">@DisplayName — @Date.ToString("dd.MM.yyyy")</h3>
+
+        <div class="run-detail-fields">
+            <label>Dauer (Minuten)
+                <input type="number" min="1" @bind="_input.DurationMinutes" />
+            </label>
+            <label>Pace (min/km)
+                <input type="number" min="0" step="0.01" @bind="_input.PaceMinPerKm" />
+            </label>
+        </div>
+
+        @if (_error is not null)
+        {
+            <p class="dialog-error">@_error</p>
+        }
+
+        <div class="dialog-actions">
+            <button type="button" @onclick="SaveRunningAsync" disabled="@_busy">Mit Details speichern</button>
+            <button type="button" @onclick="ToggleNormalAsync" disabled="@_busy">
+                @(Summary.IsDoneToday ? "Zurücknehmen" : "Nur als erledigt markieren")
+            </button>
+            <button type="button" @onclick="OnClose">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public DateOnly Date { get; set; }
+    [Parameter, EditorRequired] public HabitSummary Summary { get; set; } = default!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private readonly RunInput _input = new();
+    private string? _error;
+    private bool _busy;
+
+    private string DisplayName => Summary.Kind switch
+    {
+        HabitKind.Zone2Run        => "Z2-Lauf",
+        HabitKind.Vo2MaxIntervals => "VO2 Max",
+        _                         => Summary.Kind.ToString()
+    };
+
+    protected override void OnInitialized()
+    {
+        if (Summary.TodaysRunning is { } r)
+        {
+            _input.DurationMinutes = r.DurationMinutes;
+            _input.PaceMinPerKm    = r.PaceMinPerKm;
+        }
+    }
+
+    private async Task SaveRunningAsync()
+    {
+        _error = RunningDetailsRules.Validate(_input.DurationMinutes, _input.PaceMinPerKm);
+        if (_error is not null) return;
+
+        _busy = true;
+        try
+        {
+            await HabitService.SaveRunningAsync(
+                Date, Summary.Kind, _input.DurationMinutes, _input.PaceMinPerKm);
+            await OnChanged.InvokeAsync();
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task ToggleNormalAsync()
+    {
+        _busy = true;
+        try
+        {
+            await HabitService.ToggleAsync(Date, Summary.Kind);
+            await OnChanged.InvokeAsync();
+        }
+        finally { _busy = false; }
+    }
+
+    private sealed class RunInput
+    {
+        public int DurationMinutes { get; set; }
+        public decimal PaceMinPerKm { get; set; }
+    }
+}

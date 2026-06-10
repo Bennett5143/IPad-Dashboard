@@ -1,0 +1,154 @@
+@inject HabitTrackingService HabitService
+@using Dashboard.Domain.Habits
+
+<div class="dialog-backdrop" @onclick="OnClose">
+    <div class="dialog" @onclick:stopPropagation="true">
+        <h3 class="dialog-title">Nachtragen</h3>
+
+        <label class="backfill-date">Datum
+            <input type="date"
+                   max="@_maxDate.ToString("yyyy-MM-dd")"
+                   value="@_selectedDate.ToString("yyyy-MM-dd")"
+                   @onchange="OnDateChanged" />
+        </label>
+
+        @if (_summaries is null)
+        {
+            <p>Laden…</p>
+        }
+        else
+        {
+            <p class="backfill-hint">Gym &amp; Läufe öffnen die Detail-Eingabe für das gewählte Datum.</p>
+            <div class="backfill-list">
+                @foreach (var s in _summaries)
+                {
+                    <button type="button"
+                            class="backfill-row @(s.IsDoneToday ? "is-done" : "")"
+                            @onclick="() => OnRowClickAsync(s)"
+                            disabled="@_busy">
+                        <span>@DisplayName(s.Kind)</span>
+                        <span class="backfill-status">
+                            @StatusLabel(s)@if (OpensDialog(s.Kind))
+                            {
+                                <span class="backfill-chevron" aria-hidden="true">›</span>
+                            }
+                        </span>
+                    </button>
+                }
+            </div>
+        }
+
+        <div class="dialog-actions">
+            <button type="button" @onclick="OnClose">Fertig</button>
+        </div>
+    </div>
+</div>
+
+@if (_gymDialogOpen && _detailSummary is not null)
+{
+    <GymDetailDialog Date="_selectedDate" Summary="_detailSummary"
+                     OnChanged="OnDetailChangedAsync" OnClose="() => _gymDialogOpen = false" />
+}
+@if (_runDialogOpen && _detailSummary is not null)
+{
+    <RunDetailDialog Date="_selectedDate" Summary="_detailSummary"
+                     OnChanged="OnDetailChangedAsync" OnClose="() => _runDialogOpen = false" />
+}
+
+@code {
+    [Parameter] public EventCallback OnChanged { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private DateOnly _selectedDate;
+    private DateOnly _maxDate;
+    private IReadOnlyList<HabitSummary>? _summaries;
+    private bool _busy;
+
+    private HabitSummary? _detailSummary;
+    private bool _gymDialogOpen;
+    private bool _runDialogOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _maxDate = HabitService.GetCurrentLocalDate();
+        _selectedDate = _maxDate;
+        await LoadAsync();
+    }
+
+    private async Task OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateOnly.TryParse(e.Value?.ToString(), out var d))
+        {
+            _selectedDate = d;
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+        => _summaries = await HabitService.GetSummaryForAsync(_selectedDate);
+
+    // Gym/Lauf öffnen die Detail-Eingabe (mit dem gewählten Datum), der Rest togglt direkt.
+    private async Task OnRowClickAsync(HabitSummary summary)
+    {
+        switch (summary.Kind)
+        {
+            case HabitKind.Strength:
+                _detailSummary = summary;
+                _gymDialogOpen = true;
+                break;
+            case HabitKind.Zone2Run:
+            case HabitKind.Vo2MaxIntervals:
+                _detailSummary = summary;
+                _runDialogOpen = true;
+                break;
+            default:
+                await ToggleAsync(summary.Kind);
+                break;
+        }
+    }
+
+    private async Task ToggleAsync(HabitKind kind)
+    {
+        _busy = true;
+        try
+        {
+            await HabitService.ToggleAsync(_selectedDate, kind);
+            await LoadAsync();
+            await OnChanged.InvokeAsync();   // Haupt-Kachel neu laden: Counts ändern sich!
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task OnDetailChangedAsync()
+    {
+        _gymDialogOpen = _runDialogOpen = false;
+        await LoadAsync();
+        await OnChanged.InvokeAsync();
+    }
+
+    private static bool OpensDialog(HabitKind kind)
+        => kind is HabitKind.Strength or HabitKind.Zone2Run or HabitKind.Vo2MaxIntervals;
+
+    private static string StatusLabel(HabitSummary s)
+    {
+        if (s.Kind == HabitKind.Strength)
+        {
+            return s.TodaysEmom is not null ? "EMOM ✓" : s.IsDoneToday ? "✓" : "·";
+        }
+        if (s.Kind is HabitKind.Zone2Run or HabitKind.Vo2MaxIntervals)
+        {
+            return s.TodaysRunning is { } r ? $"{r.DurationMinutes} min ✓" : s.IsDoneToday ? "✓" : "·";
+        }
+        return s.IsDoneToday ? "✓" : "·";
+    }
+
+    private static string DisplayName(HabitKind kind) => kind switch
+    {
+        HabitKind.Strength        => "Gym",
+        HabitKind.Zone2Run        => "Z2-Lauf",
+        HabitKind.Vo2MaxIntervals => "VO2 Max",
+        HabitKind.JumpRope        => "Jumping Rope",
+        HabitKind.Stretching      => "Stretching",
+        _                         => kind.ToString()
+    };
+}

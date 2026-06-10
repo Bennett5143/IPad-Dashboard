@@ -1,0 +1,6 @@
+.run-detail-fields { display: flex; flex-direction: column; gap: 0.75rem; }
+.run-detail-fields label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
+.run-detail-fields input {
+    padding: 0.45rem; border: 1px solid #ccc; border-radius: 6px;
+    font: inherit; width: 100%; box-sizing: border-box;
+}
