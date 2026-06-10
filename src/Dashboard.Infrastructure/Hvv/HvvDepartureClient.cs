@@ -49,10 +49,12 @@ public sealed class HvvDepartureClient : IHvvProvider
     private async Task<StationBoard> GetStationAsync(
         HvvStationConfig station, HvvTimeDto requestTime, CancellationToken ct)
     {
+        // Kein serverseitiger Linien-Filter (der bräuchte fragile next-stop-IDs); wir holen alle
+        // Abfahrten und filtern client-seitig nach Linie + Richtungstext.
         var request = new HvvRequest(
             _options.Version,
             [new HvvReqStation(station.Name, station.MasterId, station.City, "STATION")],
-            station.Filters.Select(f => new HvvReqFilter(f.ServiceId, [f.TargetStationId])).ToList(),
+            [],
             requestTime,
             station.MaxList,
             station.MaxTimeOffsetMinutes,
@@ -77,11 +79,27 @@ public sealed class HvvDepartureClient : IHvvProvider
 
         var departures = dto.Departures
             .OrderBy(d => d.TimeOffset)
-            .Take(_options.MaxDepartures)
             .Select(d => MapDeparture(d, serverTime))
+            .Where(d => Matches(d, station.Lines))
+            .Take(_options.MaxDepartures)
             .ToList();
 
         return new StationBoard(station.Name, Available: true, departures);
+    }
+
+    // Leere Filterliste → alle Abfahrten; sonst muss Linie übereinstimmen und (falls gesetzt)
+    // der Richtungstext den konfigurierten Teilstring enthalten.
+    private static bool Matches(Departure departure, IReadOnlyList<HvvLineFilter> lines)
+    {
+        if (lines.Count == 0)
+        {
+            return true;
+        }
+
+        return lines.Any(f =>
+            string.Equals(departure.LineName, f.Line, StringComparison.OrdinalIgnoreCase)
+            && (string.IsNullOrWhiteSpace(f.Direction)
+                || departure.Direction.Contains(f.Direction, StringComparison.OrdinalIgnoreCase)));
     }
 
     private static Departure MapDeparture(HvvDepartureDto dto, DateTimeOffset serverTime)
