@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Json;
 
 using Dashboard.Domain.Football;
@@ -59,22 +60,31 @@ public sealed class FootballDataClient : IFootballProvider
 
     private async Task<FootballTeamSnapshot> GetTeamAsync(FootballTeamConfig team, CancellationToken ct)
     {
-        // Auf die Liga einschränken: ohne competitions-Filter zieht der Endpoint alle
-        // Wettbewerbe (auch Pokal/CL) – im Free-Tier nicht freigeschaltete liefern 403.
+        // Wettbewerbs-Endpoint statt teams/{id}/matches: letzterer 403t im Free-Tier, wenn der
+        // Verein auch in nicht-freien Wettbewerben (Pokal etc.) spielt – die Liga selbst ist frei.
+        // Datumsfenster, damit auch über die Saisongrenze hinweg jüngste Ergebnisse erscheinen.
+        var now = _clock.UtcNow;
+        var from = now.AddDays(-90).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var to = now.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
         var matches = await GetAsync<FdMatchesResponse>(
-            $"v4/teams/{team.TeamId}/matches?competitions={team.CompetitionCode}", ct);
+            $"v4/competitions/{team.CompetitionCode}/matches?dateFrom={from}&dateTo={to}", ct);
 
         var standings = await GetAsync<FdStandingsResponse>(
             $"v4/competitions/{team.CompetitionCode}/standings", ct);
 
-        var recent = matches.Matches
+        var teamMatches = matches.Matches
+            .Where(m => m.HomeTeam.Id == team.TeamId || m.AwayTeam.Id == team.TeamId)
+            .ToList();
+
+        var recent = teamMatches
             .Where(m => m.Status == "FINISHED")
             .OrderByDescending(m => m.UtcDate)
             .Take(_options.RecentCount)
             .Select(m => MapMatch(m, team.TeamId))
             .ToList();
 
-        var upcoming = matches.Matches
+        var upcoming = teamMatches
             .Where(m => UpcomingStatuses.Contains(m.Status))
             .OrderBy(m => m.UtcDate)
             .Take(_options.UpcomingCount)
