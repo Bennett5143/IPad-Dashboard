@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 using Dashboard.Web.Components;
 using Dashboard.Web.Infrastructure;
 
@@ -100,6 +103,30 @@ try
     });
     builder.Services.AddHostedService<HvvRefreshService>();
 
+    // Strava / Lauf-Heatmap (Phase 7)
+    var stravaOptions = builder.Configuration
+        .GetSection(StravaOptions.SectionName)
+        .Get<StravaOptions>() ?? new StravaOptions();
+
+    builder.Services.Configure<StravaOptions>(
+        builder.Configuration.GetSection(StravaOptions.SectionName));
+    builder.Services.AddScoped<IRunRepository, RunRepository>();
+    builder.Services.AddScoped<IStravaTokenStore, StravaTokenStore>();
+    builder.Services.AddScoped<ISyncStateStore, SyncStateStore>();
+    builder.Services.AddHttpClient<StravaTokenService>(http =>
+    {
+        http.BaseAddress = new Uri(stravaOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(20);
+    });
+    builder.Services.AddScoped<IStravaAccessTokenProvider>(
+        sp => sp.GetRequiredService<StravaTokenService>());
+    builder.Services.AddHttpClient<IStravaActivityProvider, StravaClient>(http =>
+    {
+        http.BaseAddress = new Uri(stravaOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(20);
+    });
+    builder.Services.AddHostedService<StravaSyncService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -114,6 +141,47 @@ try
         // Nur Checks ausführen, die mit "ready" getaggt sind
         Predicate = check => check.Tags.Contains("ready"),
         ResponseWriter = HealthCheckResponseWriter.WriteAsync
+    });
+
+    // Strava-OAuth (Phase 7): Login-Redirect und Callback zum Token-Tausch.
+    // Der state-Parameter (zufällig, in einem kurzlebigen Cookie gespiegelt) schützt
+    // den Callback gegen CSRF/Token-Injection.
+    const string stravaStateCookie = "strava_oauth_state";
+
+    app.MapGet("/strava/connect", (HttpContext httpContext, StravaTokenService tokenService) =>
+    {
+        var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+        httpContext.Response.Cookies.Append(stravaStateCookie, state, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = httpContext.Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            MaxAge = TimeSpan.FromMinutes(10),
+            IsEssential = true
+        });
+        return Results.Redirect(tokenService.BuildAuthorizeUrl(state).ToString());
+    });
+
+    app.MapGet("/strava/callback", async (
+        HttpContext httpContext, StravaTokenService tokenService, CancellationToken ct) =>
+    {
+        var code = httpContext.Request.Query["code"].ToString();
+        var error = httpContext.Request.Query["error"].ToString();
+        var state = httpContext.Request.Query["state"].ToString();
+        var expectedState = httpContext.Request.Cookies[stravaStateCookie];
+        httpContext.Response.Cookies.Delete(stravaStateCookie);
+
+        var stateValid = !string.IsNullOrEmpty(expectedState)
+            && CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(state), Encoding.UTF8.GetBytes(expectedState));
+
+        if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code) || !stateValid)
+        {
+            return Results.Redirect("/heatmap");
+        }
+
+        await tokenService.ExchangeCodeAsync(code, ct);
+        return Results.Redirect("/heatmap");
     });
 
     // Configure the HTTP request pipeline.

@@ -26,3 +26,12 @@
     width: 2rem;
     text-align: center;
 }
+
+/* Einstieg in die Lauf-Heatmap aus dem Habit-Bereich (FA-8.04) */
+.habits-heatmap {
+    margin-top: auto;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}

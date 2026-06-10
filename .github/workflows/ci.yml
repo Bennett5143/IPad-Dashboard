@@ -1,14 +1,17 @@
 name: CI
 
+# Feature-Branches laufen über ihren PR (pull_request); ein zusätzlicher push-Trigger
+# auf '**' würde build-test pro PR doppelt starten. Daher push nur auf main
+# (Post-Merge-Validierung); die PR-Läufe decken die Feature-Branches ab.
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
     branches: [main]
 
-# Alte Pipelines auf demselben Branch abbrechen, wenn ein neuer Push kommt.
+# Alte Pipelines für denselben PR/Ref abbrechen, wenn ein neuer Push kommt.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 # Least Privilege: Workflow braucht nur Lesezugriff aufs Repo.
