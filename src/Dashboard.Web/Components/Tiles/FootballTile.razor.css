@@ -34,26 +34,57 @@
     font-variant-numeric: tabular-nums;
 }
 
-.football-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    font-size: var(--font-size-sm);
-}
-
 .football-label {
-    flex: 0 0 auto;
-    width: 4rem;
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
     color: var(--color-fg-muted);
 }
 
-.football-results {
+.match-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
+    flex-direction: column;
+    gap: var(--space-1);
 }
 
-.result-chip {
+.match {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr auto;
+    align-items: baseline;
+    column-gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-tight);
+}
+
+.match-date {
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.match-opp {
+    color: var(--color-fg-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.match-venue {
+    color: var(--color-fg-muted);
+}
+
+.match-comp {
+    grid-column: 2;
+    font-size: 0.75rem;
+    color: var(--color-fg-muted);
+}
+
+.match-score {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    justify-self: end;
     padding: 0.1rem var(--space-2);
     border-radius: var(--radius-md);
     font-variant-numeric: tabular-nums;
@@ -62,39 +93,19 @@
     color: var(--color-fg-secondary);
 }
 
-.result-chip.outcome-win {
+.match-score.outcome-win {
     background-color: color-mix(in srgb, var(--color-success) 18%, transparent);
     color: var(--color-success);
 }
 
-.result-chip.outcome-draw {
+.match-score.outcome-draw {
     background-color: color-mix(in srgb, var(--color-warning) 18%, transparent);
     color: var(--color-warning);
 }
 
-.result-chip.outcome-loss {
+.match-score.outcome-loss {
     background-color: color-mix(in srgb, var(--color-error) 18%, transparent);
     color: var(--color-error);
-}
-
-.football-fixtures {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-}
-
-.fixture {
-    display: flex;
-    flex-direction: column;
-    line-height: var(--line-height-tight);
-}
-
-.fixture-date {
-    color: var(--color-fg-muted);
-}
-
-.fixture-opp {
-    color: var(--color-fg-primary);
 }
 
 .football-stale {

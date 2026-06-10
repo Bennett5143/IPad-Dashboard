@@ -3,7 +3,7 @@ namespace Dashboard.Tests.Components.Tiles;
 public class FootballFormatterTests
 {
     private static Match Finished(int own, int opp, bool home = true) =>
-        new(new DateTimeOffset(2026, 5, 24, 13, 0, 0, TimeSpan.Zero), "La Liga", "Barça", home, own, opp);
+        new(new DateTimeOffset(2026, 5, 24, 13, 0, 0, TimeSpan.Zero), "PD", "Barça", home, own, opp);
 
     [Fact]
     public void ShortDate_IsGermanWeekdayAndDayMonth()
@@ -12,6 +12,25 @@ public class FootballFormatterTests
         var utc = new DateTimeOffset(2026, 5, 24, 13, 0, 0, TimeSpan.Zero);
 
         Assert.Equal("So 24.05.", FootballFormatter.ShortDate(utc));
+    }
+
+    [Fact]
+    public void DateTimeLabel_IncludesBerlinKickoffTime()
+    {
+        // 24. Mai 2026, 13:00 UTC = 15:00 Berlin (Sommerzeit)
+        var utc = new DateTimeOffset(2026, 5, 24, 13, 0, 0, TimeSpan.Zero);
+
+        Assert.Equal("So 24.05. 15:00", FootballFormatter.DateTimeLabel(utc));
+    }
+
+    [Theory]
+    [InlineData("PD", "La Liga")]
+    [InlineData("CL", "Champions League")]
+    [InlineData("BL1", "Bundesliga")]
+    [InlineData("XYZ", "XYZ")]
+    public void Competition_MapsCodeToFriendlyName(string code, string expected)
+    {
+        Assert.Equal(expected, FootballFormatter.Competition(code));
     }
 
     [Fact]
@@ -24,7 +43,7 @@ public class FootballFormatterTests
     public void Score_ShowsDash_WhenNotFinished()
     {
         var fixture = new Match(
-            new DateTimeOffset(2026, 6, 1, 19, 0, 0, TimeSpan.Zero), "La Liga", "Valencia", true, null, null);
+            new DateTimeOffset(2026, 6, 1, 19, 0, 0, TimeSpan.Zero), "PD", "Valencia", true, null, null);
 
         Assert.Equal("–", FootballFormatter.Score(fixture));
     }
