@@ -169,10 +169,20 @@ Vereins-Perspektive auf (Gegner, Heim/Auswärts, eigene Tore) und pusht sie via
 
 ### HVV-Abfahrtsmonitor
 
-Haltestellen werden **ausschließlich** in `appsettings.json` (Sektion `Hvv`)
-gepflegt (FA-6.06) – kein API-Key nötig. Je Haltestelle eine `MasterId` und
-optionale `Lines`-Filter (`Line` = Liniennname, `Direction` = Teilstring des
-Richtungstexts, case-insensitiv; leer = alle Abfahrten). Beispiel:
+Haltestellen gehören **nicht** ins versionierte `appsettings.json` (sie verraten
+die ungefähre Wohngegend), sondern in die **gitignored `appsettings.Local.json`**
+(Sektion `Hvv`) – kein API-Key nötig. Vorlage kopieren und anpassen:
+
+```bash
+cd src/Dashboard.Web
+cp appsettings.Local.json.example appsettings.Local.json
+# danach Stationen eintragen
+```
+
+`appsettings.Local.json` wird **umgebungsunabhängig** geladen (auch in Production /
+auf dem Raspberry Pi) und überschreibt `appsettings.json`. Je Haltestelle eine
+`MasterId` und optionale `Lines`-Filter (`Line` = Liniennname, `Direction` =
+Teilstring des Richtungstexts, case-insensitiv; leer = alle Abfahrten). Beispiel:
 
 ```json
 { "Name": "Lühmannstraße", "MasterId": "Master:42026", "City": "Hamburg",
@@ -230,12 +240,17 @@ Verbindung zeigt `/heatmap` einen „Mit Strava verbinden"-Hinweis.
 
 ### Secrets-Management
 
-Sensible Daten (Connection-Strings, später API-Keys) gehören **nicht**
+Sensible Daten (Connection-Strings, API-Keys) gehören **nicht**
 in `appsettings.json` und damit nicht ins Repo:
 
 - **Lokal:** `dotnet user-secrets`
 - **Container:** `.env`-Datei (in `.gitignore`)
 - **CI/CD:** GitHub Secrets
+
+Daten, die zwar kein Geheimnis, aber **privat** sind (z. B. die konkreten
+HVV-Haltestellen in Wohnortnähe oder der Wetter-Standort), gehören in die
+gitignored **`appsettings.Local.json`** (Vorlage: `appsettings.Local.json.example`).
+Sie wird umgebungsunabhängig geladen und überschreibt `appsettings.json`.
 
 ## CI / Quality Gates
 
