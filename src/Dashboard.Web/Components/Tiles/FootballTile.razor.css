@@ -5,6 +5,11 @@
     height: 100%;
 }
 
+.football-unavailable {
+    color: var(--color-fg-muted);
+    font-style: italic;
+}
+
 .football-team {
     display: flex;
     flex-direction: column;
@@ -26,9 +31,74 @@
 .football-position {
     font-size: var(--font-size-sm);
     color: var(--color-fg-secondary);
+    font-variant-numeric: tabular-nums;
 }
 
-.football-next {
+.football-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
     font-size: var(--font-size-sm);
+}
+
+.football-label {
+    flex: 0 0 auto;
+    width: 4rem;
+    color: var(--color-fg-muted);
+}
+
+.football-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.result-chip {
+    padding: 0.1rem var(--space-2);
+    border-radius: var(--radius-md);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-medium);
+    background-color: var(--color-surface-sunken);
     color: var(--color-fg-secondary);
+}
+
+.result-chip.outcome-win {
+    background-color: color-mix(in srgb, var(--color-success) 18%, transparent);
+    color: var(--color-success);
+}
+
+.result-chip.outcome-draw {
+    background-color: color-mix(in srgb, var(--color-warning) 18%, transparent);
+    color: var(--color-warning);
+}
+
+.result-chip.outcome-loss {
+    background-color: color-mix(in srgb, var(--color-error) 18%, transparent);
+    color: var(--color-error);
+}
+
+.football-fixtures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.fixture {
+    display: flex;
+    flex-direction: column;
+    line-height: var(--line-height-tight);
+}
+
+.fixture-date {
+    color: var(--color-fg-muted);
+}
+
+.fixture-opp {
+    color: var(--color-fg-primary);
+}
+
+.football-stale {
+    margin-top: auto;
+    color: var(--color-warning);
+    font-size: var(--font-size-sm);
 }
