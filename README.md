@@ -61,8 +61,8 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 - ✅ Phase 2: CI-Pipeline, Code-Coverage, Branch Protection, Dependabot
 - ✅ Phase 3: Dashboard-Skelett (Layouts, Tile-Komposition, Error-Isolation, Routing)
 - 🚧 Phase 4: Features
-  - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap), Fußball (football-data.org)
-  - ⬜ Habit-Tracker, HVV-Abfahrtsmonitor
+  - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap), Fußball (football-data.org), HVV-Abfahrtsmonitor
+  - ⬜ Habit-Tracker
 
 ## Setup
 
@@ -165,6 +165,25 @@ Free-Tier-Limit von 10 Requests/min), löst Ergebnisse/Spiele in die
 Vereins-Perspektive auf (Gegner, Heim/Auswärts, eigene Tore) und pusht sie via
 `FootballState` an die Kachel. Ohne Key/Vereine bleibt die Kachel im
 „nicht verfügbar"-Zustand.
+
+### HVV-Abfahrtsmonitor
+
+Haltestellen werden **ausschließlich** in `appsettings.json` (Sektion `Hvv`)
+gepflegt (FA-6.06) – kein API-Key nötig. Je Haltestelle eine `MasterId` und
+optionale Linien-`Filters` (Linie × Richtung). Die IDs werden einmalig über den
+Abfahrts-Generator auf <https://abfahrten.hvv.de> ermittelt (siehe Recherche-
+Notiz im Projekt-Vault). Die drei Kacheln auf dem Dashboard binden über
+`StationIndex` (0–3) an die konfigurierten Haltestellen.
+
+Ein `HvvRefreshService` (`BackgroundService`) pollt den inoffiziellen
+`geofox/departureList`-Endpoint konservativ (mind. 60 s pro Haltestelle,
+FA-6.04) und legt das Ergebnis in `HvvState` ab. `delay` wird als nullable
+`TimeSpan` modelliert (`null` = keine Echtzeitdaten ≠ pünktlich), `timeOffset`
+relativ zur gelieferten Server-Zeit gerechnet. Bei Ausfall bleibt der letzte
+Stand erhalten bzw. die Kachel zeigt freundlich „nicht verfügbar" (FA-6.05).
+
+> Hinweis: Der Endpoint ist inoffiziell (rechtliche Grauzone, private Nutzung,
+> ein Gerät, ≤ 1 Req/min). Details in der Recherche-Notiz.
 
 ### Secrets-Management
 
