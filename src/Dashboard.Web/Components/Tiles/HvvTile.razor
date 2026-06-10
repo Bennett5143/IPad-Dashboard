@@ -1,15 +1,50 @@
-<Tile CssClass="@CssClass" Title="@Title">
+@implements IDisposable
+@inject HvvState HvvState
+
+<Tile CssClass="@CssClass" Title="@TitleText">
     <Icon>
-        <span class="hvv-emoji" aria-hidden="true">🚌</span>
+        <span class="hvv-emoji" aria-hidden="true">🚏</span>
     </Icon>
     <ChildContent>
         <div class="hvv-tile">
-            <ul class="hvv-departures">
-                <li><time>14:25</time></li>
-                <li><time>14:35</time></li>
-                <li><time>14:45</time></li>
-            </ul>
-            <small class="placeholder-hint">Platzhalter — echte API in Phase 4.6</small>
+            @if (_board is null || !_board.Available)
+            {
+                <p class="hvv-unavailable">@UnavailableText</p>
+            }
+            else if (_board.Departures.Count == 0)
+            {
+                <p class="hvv-unavailable">Keine Abfahrten im Zeitfenster.</p>
+            }
+            else
+            {
+                <ul class="hvv-departures">
+                    @foreach (var departure in _board.Departures)
+                    {
+                        var badge = HvvFormatter.DelayBadge(departure);
+                        <li class="@(departure.HasLiveData ? "is-live" : "is-planned")">
+                            <span class="hvv-mode @HvvFormatter.ModeCss(departure.Mode)" aria-hidden="true">@HvvFormatter.ModeEmoji(departure.Mode)</span>
+                            <span class="hvv-line">@departure.LineName</span>
+                            <span class="hvv-direction">@departure.Direction</span>
+                            <span class="hvv-when">
+                                <time>@HvvFormatter.Time(departure)</time>
+                                @if (badge is not null)
+                                {
+                                    <span class="hvv-delay">@badge</span>
+                                }
+                                else if (!departure.HasLiveData)
+                                {
+                                    <span class="hvv-planned" title="Plandaten – keine Echtzeit">Plan</span>
+                                }
+                            </span>
+                        </li>
+                    }
+                </ul>
+
+                @if (_isStale && _snapshot is not null)
+                {
+                    <small class="hvv-stale">Stand @HvvFormatter.UpdatedAt(_snapshot.RetrievedAtUtc) — Aktualisierung fehlgeschlagen</small>
+                }
+            }
         </div>
     </ChildContent>
 </Tile>
@@ -17,6 +52,40 @@
 @code {
     [Parameter] public string? CssClass { get; set; }
 
-    [Parameter, EditorRequired]
-    public string Title { get; set; } = string.Empty;
+    /// <summary>Index der anzuzeigenden Haltestelle in der Hvv:Stations-Konfiguration.</summary>
+    [Parameter] public int StationIndex { get; set; }
+
+    private HvvSnapshot? _snapshot;
+    private StationBoard? _board;
+    private bool _isStale;
+
+    protected override void OnInitialized()
+    {
+        HvvState.Changed += OnHvvChanged;
+        ReadState();
+    }
+
+    private void OnHvvChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        _snapshot = HvvState.Current;
+        _board = _snapshot is not null && StationIndex < _snapshot.Stations.Count
+            ? _snapshot.Stations[StationIndex]
+            : null;
+        _isStale = HvvState.IsStale;
+    }
+
+    public void Dispose() => HvvState.Changed -= OnHvvChanged;
+
+    private string TitleText => _board?.StationName ?? "Abfahrten";
+
+    private string UnavailableText =>
+        _snapshot is null ? "Abfahrtsdaten gerade nicht verfügbar."
+        : _board is null ? "Haltestelle nicht konfiguriert."
+        : "Daten gerade nicht verfügbar.";
 }
