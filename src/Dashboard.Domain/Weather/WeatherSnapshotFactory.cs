@@ -28,12 +28,19 @@ public static class WeatherSnapshotFactory
         var todaySteps = steps.Where(s => LocalDate(s) == todayDate).ToList();
         var tomorrowSteps = steps.Where(s => LocalDate(s) == tomorrowDate).ToList();
 
-        // Spät am Abend liefert die Vorhersage ggf. keinen Tagesschritt mehr für "heute".
-        // Dann fällt die Tageskachel auf die aktuell gemessenen Werte zurück.
-        var today = Aggregate(todayDate, todaySteps)
-            ?? new DailyForecast(
+        // Spät am Abend liefert die Vorhersage ggf. keinen (oder nur einen) Tagesschritt mehr
+        // für "heute". Die aktuell gemessene Temperatur wird in Min/Max einbezogen, damit die
+        // Spanne nie im Widerspruch zur angezeigten Ist-Temperatur steht (z. B. 13/13 bei aktuell 14).
+        var todayAggregate = Aggregate(todayDate, todaySteps);
+        var today = todayAggregate is null
+            ? new DailyForecast(
                 todayDate, current.Temperature, current.Temperature,
-                current.Condition, current.Description, 0d);
+                current.Condition, current.Description, 0d)
+            : todayAggregate with
+            {
+                MinTemperature = Math.Min(todayAggregate.MinTemperature, current.Temperature),
+                MaxTemperature = Math.Max(todayAggregate.MaxTemperature, current.Temperature)
+            };
 
         var tomorrow = Aggregate(tomorrowDate, tomorrowSteps);
 

@@ -22,8 +22,11 @@
                         </div>
                         <div class="weather-desc">@_snapshot.Current.Description</div>
                         <div class="weather-meta">
-                            <span class="weather-range">@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
-                            <span class="weather-precip">@WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability) Regen</span>
+                            <span><span class="meta-label">Gefühlt</span> @WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</span>
+                            <span><span class="meta-label">Min/Max</span> @WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
+                            <span><span class="meta-label">Regen</span> @WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
+                            <span><span class="meta-label">Wind</span> @WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</span>
+                            <span><span class="meta-label">Luftf.</span> @WeatherFormatter.Humidity(_snapshot.Current.Humidity)</span>
                         </div>
                     </div>
                 }
@@ -56,8 +59,8 @@
                             <span class="weather-tomorrow-emoji" aria-hidden="true">@WeatherFormatter.Emoji(tomorrow.Condition)</span>
                             <div class="weather-desc">@tomorrow.Description</div>
                             <div class="weather-meta">
-                                <span class="weather-range">@WeatherFormatter.Temperature(tomorrow.MinTemperature) / @WeatherFormatter.Temperature(tomorrow.MaxTemperature)</span>
-                                <span class="weather-precip">@WeatherFormatter.Precipitation(tomorrow.PrecipitationProbability) Regen</span>
+                                <span><span class="meta-label">Min/Max</span> @WeatherFormatter.Temperature(tomorrow.MinTemperature) / @WeatherFormatter.Temperature(tomorrow.MaxTemperature)</span>
+                                <span><span class="meta-label">Regen</span> @WeatherFormatter.Precipitation(tomorrow.PrecipitationProbability)</span>
                             </div>
                         </div>
                     }
@@ -110,7 +113,7 @@
     private string TitleText => Variant switch
     {
         WeatherVariant.Today    => "Heute",
-        WeatherVariant.Hourly   => "Stündlich",
+        WeatherVariant.Hourly   => "Verlauf (3-Std)",
         WeatherVariant.Tomorrow => "Morgen",
         _ => string.Empty
     };

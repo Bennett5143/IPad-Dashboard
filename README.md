@@ -171,17 +171,27 @@ Vereins-Perspektive auf (Gegner, Heim/Auswärts, eigene Tore) und pusht sie via
 
 Haltestellen werden **ausschließlich** in `appsettings.json` (Sektion `Hvv`)
 gepflegt (FA-6.06) – kein API-Key nötig. Je Haltestelle eine `MasterId` und
-optionale Linien-`Filters` (Linie × Richtung). Die IDs werden einmalig über den
-Abfahrts-Generator auf <https://abfahrten.hvv.de> ermittelt (siehe Recherche-
-Notiz im Projekt-Vault). Die drei Kacheln auf dem Dashboard binden über
-`StationIndex` (0–3) an die konfigurierten Haltestellen.
+optionale `Lines`-Filter (`Line` = Liniennname, `Direction` = Teilstring des
+Richtungstexts, case-insensitiv; leer = alle Abfahrten). Beispiel:
+
+```json
+{ "Name": "Beispielhaltestelle", "MasterId": "Master:00000", "City": "Hamburg",
+  "Lines": [ { "Line": "42", "Direction": "Zielrichtung" } ] }
+```
+
+Die `MasterId` und die Richtungstexte lassen sich über den unauthentifizierten
+`geofox/checkName`- bzw. `geofox/departureList`-Endpoint ermitteln (alternativ
+der Abfahrts-Generator auf <https://abfahrten.hvv.de>). Die drei Kacheln auf
+dem Dashboard binden über `StationIndex` (0–2) an die konfigurierten Haltestellen.
 
 Ein `HvvRefreshService` (`BackgroundService`) pollt den inoffiziellen
 `geofox/departureList`-Endpoint konservativ (mind. 60 s pro Haltestelle,
-FA-6.04) und legt das Ergebnis in `HvvState` ab. `delay` wird als nullable
-`TimeSpan` modelliert (`null` = keine Echtzeitdaten ≠ pünktlich), `timeOffset`
-relativ zur gelieferten Server-Zeit gerechnet. Bei Ausfall bleibt der letzte
-Stand erhalten bzw. die Kachel zeigt freundlich „nicht verfügbar" (FA-6.05).
+FA-6.04) und legt das Ergebnis in `HvvState` ab. Gefiltert wird **client-seitig**
+nach Linie + Richtungstext (der serverseitige Filter bräuchte fragile
+next-stop-IDs). `delay` wird als nullable `TimeSpan` modelliert (`null` = keine
+Echtzeitdaten ≠ pünktlich), `timeOffset` relativ zur gelieferten Server-Zeit
+gerechnet. Bei Ausfall bleibt der letzte Stand erhalten bzw. die Kachel zeigt
+freundlich „nicht verfügbar" (FA-6.05).
 
 > Hinweis: Der Endpoint ist inoffiziell (rechtliche Grauzone, private Nutzung,
 > ein Gerät, ≤ 1 Req/min). Details in der Recherche-Notiz.

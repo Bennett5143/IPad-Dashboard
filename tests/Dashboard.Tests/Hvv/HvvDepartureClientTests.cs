@@ -21,7 +21,7 @@ public class HvvDepartureClientTests
         }
         """;
 
-    private static HvvOptions Options(int maxDepartures = 6) => new()
+    private static HvvOptions Options(int maxDepartures = 6, HvvLineFilter[]? lines = null) => new()
     {
         Endpoint = "https://test.local/departureList",
         Version = 47,
@@ -33,7 +33,7 @@ public class HvvDepartureClientTests
                 Name = "Wedel, Feldstraße",
                 MasterId = "Master:85001",
                 City = "Wedel",
-                Filters = [new HvvFilterConfig { ServiceId = "VHH:189_VHH", TargetStationId = "Master:81001" }]
+                Lines = lines ?? []
             }
         ]
     };
@@ -62,10 +62,23 @@ public class HvvDepartureClientTests
         Assert.NotNull(body);
         Assert.Contains("\"version\":47", body, StringComparison.Ordinal);
         Assert.Contains("Master:85001", body, StringComparison.Ordinal);
-        Assert.Contains("\"serviceID\":\"VHH:189_VHH\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"filter\":[]", body, StringComparison.Ordinal); // kein serverseitiger Filter
         Assert.Contains("\"date\":\"10.06.2026\"", body, StringComparison.Ordinal);
         Assert.Contains("\"time\":\"14:00\"", body, StringComparison.Ordinal);
         Assert.Contains("\"useRealtime\":true", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetDeparturesAsync_FiltersByLineAndDirection()
+    {
+        var options = Options(lines: [new HvvLineFilter { Line = "189", Direction = "Blankenese" }]);
+
+        var board = (await CreateClient(options, OkResponse).GetDeparturesAsync()).Stations[0];
+
+        // Nur die 189-Abfahrt Richtung "S Blankenese" bleibt – S1/U1 fallen raus.
+        Assert.Single(board.Departures);
+        Assert.Equal("189", board.Departures[0].LineName);
+        Assert.Contains("Blankenese", board.Departures[0].Direction, StringComparison.Ordinal);
     }
 
     [Fact]

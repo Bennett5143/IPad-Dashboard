@@ -9,7 +9,7 @@ public class WeatherSnapshotFactoryTests
     private static readonly DateTimeOffset NowUtc = new(2026, 6, 10, 12, 0, 0, TimeSpan.Zero);
 
     private static readonly CurrentWeather Current =
-        new(17.4, 16.8, WeatherCondition.Clear, "Klarer himmel");
+        new(17.4, 16.8, 70, 4.0, WeatherCondition.Clear, "Klarer himmel");
 
     private static ForecastStep Step(
         DateTimeOffset utc, double temp, double pop, WeatherCondition condition, string description = "") =>
@@ -95,6 +95,20 @@ public class WeatherSnapshotFactoryTests
         var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 4);
 
         Assert.Null(snapshot.Tomorrow);
+    }
+
+    [Fact]
+    public void Today_IncludesCurrentTemperatureInMinMax()
+    {
+        // Nur noch ein Rest-Schritt heute mit 13°, aktuell aber 14°
+        // → Spanne muss 13/14 sein, nicht 13/13 (sonst Widerspruch zur Ist-Temperatur).
+        var current = new CurrentWeather(14, 14, 70, 4.0, WeatherCondition.Clear, "Klar");
+        var steps = new[] { Utc(10, 16, 13, 0.1, WeatherCondition.Clear) };
+
+        var snapshot = WeatherSnapshotFactory.Create(current, steps, NowUtc, BerlinTz, 4);
+
+        Assert.Equal(13, snapshot.Today.MinTemperature);
+        Assert.Equal(14, snapshot.Today.MaxTemperature);
     }
 
     [Fact]

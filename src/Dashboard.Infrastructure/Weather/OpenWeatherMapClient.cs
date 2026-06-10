@@ -48,6 +48,8 @@ public sealed class OpenWeatherMapClient : IWeatherProvider
         return new CurrentWeather(
             response.Main.Temp,
             response.Main.FeelsLike,
+            response.Main.Humidity,
+            response.Wind?.Speed ?? 0d,
             OpenWeatherConditionMapper.Map(weather?.Id ?? 0),
             Capitalize(weather?.Description));
     }

@@ -20,10 +20,18 @@ public sealed class FootballOptions
     public IReadOnlyList<FootballTeamConfig> Teams { get; init; } = [];
 }
 
-/// <summary>Ein zu beobachtender Verein. <see cref="TeamId"/>/<see cref="CompetitionCode"/> sind football-data.org-IDs.</summary>
+/// <summary>Ein zu beobachtender Verein (football-data.org-IDs/-Codes).</summary>
 public sealed class FootballTeamConfig
 {
     public string Name { get; init; } = string.Empty;
     public int TeamId { get; init; }
+
+    /// <summary>Liga-Code für die Tabelle (z. B. <c>PD</c>, <c>BL1</c>).</summary>
     public string CompetitionCode { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Wettbewerbe, aus denen Spiele geholt werden (z. B. <c>["PD","CL"]</c>). Leer =
+    /// nur <see cref="CompetitionCode"/>. Nur Free-Tier-Wettbewerbe (kein Pokal).
+    /// </summary>
+    public IReadOnlyList<string> Competitions { get; init; } = [];
 }

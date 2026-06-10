@@ -37,6 +37,15 @@ public static class WeatherFormatter
     public static string Hour(DateTimeOffset localTime) =>
         localTime.ToString("HH:mm", CultureInfo.InvariantCulture);
 
+    public static string Humidity(int percent) => $"{percent.ToString("0", German)} %";
+
+    /// <summary>Windgeschwindigkeit von m/s in km/h gerundet.</summary>
+    public static string Wind(double metersPerSecond)
+    {
+        var kmh = Math.Round(metersPerSecond * 3.6, MidpointRounding.AwayFromZero);
+        return $"{kmh.ToString("0", German)} km/h";
+    }
+
     public static string UpdatedAt(DateTimeOffset retrievedAtUtc) =>
         TimeZoneInfo.ConvertTime(retrievedAtUtc, BerlinTz)
             .ToString("HH:mm", CultureInfo.InvariantCulture);

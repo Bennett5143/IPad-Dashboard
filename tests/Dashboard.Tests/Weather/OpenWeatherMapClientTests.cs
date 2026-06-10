@@ -8,7 +8,7 @@ public class OpenWeatherMapClientTests
     private static readonly DateTimeOffset NowUtc = new(2026, 6, 10, 12, 0, 0, TimeSpan.Zero);
 
     private const string CurrentJson =
-        """{"main":{"temp":17.4,"feels_like":16.8},"weather":[{"id":800,"description":"klarer himmel"}]}""";
+        """{"main":{"temp":17.4,"feels_like":16.8,"humidity":72},"wind":{"speed":3.5},"weather":[{"id":800,"description":"klarer himmel"}]}""";
 
     private static string ForecastJson()
     {
@@ -47,6 +47,8 @@ public class OpenWeatherMapClientTests
 
         Assert.Equal(17.4, snapshot.Current.Temperature);
         Assert.Equal(16.8, snapshot.Current.FeelsLike);
+        Assert.Equal(72, snapshot.Current.Humidity);
+        Assert.Equal(3.5, snapshot.Current.WindSpeedMs);
         Assert.Equal(WeatherCondition.Clear, snapshot.Current.Condition);
         Assert.Equal("Klarer himmel", snapshot.Current.Description); // erster Buchstabe großgeschrieben
     }
@@ -56,7 +58,8 @@ public class OpenWeatherMapClientTests
     {
         var snapshot = await CreateClient().GetWeatherAsync();
 
-        Assert.Equal(18, snapshot.Today.MinTemperature);
+        // Min bezieht die aktuelle Temperatur (17,4) ein – niedriger als die Forecast-Schritte (18/20).
+        Assert.Equal(17.4, snapshot.Today.MinTemperature);
         Assert.Equal(20, snapshot.Today.MaxTemperature);
         Assert.Equal(0.2, snapshot.Today.PrecipitationProbability);
         Assert.Equal(WeatherCondition.Clouds, snapshot.Today.Condition); // Clear vs Clouds → Gleichstand → schwerer
