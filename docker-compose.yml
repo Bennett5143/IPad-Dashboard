@@ -1,7 +1,10 @@
 services:
   db:
-    # PostGIS-fähiges Postgres (Phase 7: Lauf-Tracks als geometry(LineString,4326))
-    image: postgis/postgis:16-3.5
+    # PostGIS-fähiges Postgres (Phase 7: Lauf-Tracks als geometry(LineString,4326)).
+    # imresamu/postgis ist der Multi-Arch-Fork (amd64 + arm64) – das offizielle
+    # postgis/postgis-Image hat kein arm64-Manifest und scheitert auf Apple
+    # Silicon UND auf dem Raspberry Pi 4 (beide arm64).
+    image: imresamu/postgis:16-3.5
     container_name: dashboard-db
     restart: unless-stopped
     environment:
