@@ -1,7 +1,7 @@
-using Dashboard.Domain.Entities;   
+using Dashboard.Domain.Entities;
 using Dashboard.Domain.Enums;
+using Dashboard.Domain.Time;
 using Dashboard.Domain.ValueObjects;
-using Dashboard.Domain.Time;       
 
 namespace Dashboard.Domain.Habits;
 
@@ -37,7 +37,7 @@ public sealed class HabitTrackingService
         var yearCounts = await _repository.CountByKindAsync(yearStart, yearEnd, ct);
 
         var todaysEmom = await _repository.GetEmomAsync(date, ct);
-        var running     = await _repository.GetRunningForDateAsync(date, ct);
+        var running = await _repository.GetRunningForDateAsync(date, ct);
 
         return Enum.GetValues<HabitKind>()
             .Select(kind => new HabitSummary(

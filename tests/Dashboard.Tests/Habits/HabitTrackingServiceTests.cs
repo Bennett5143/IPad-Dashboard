@@ -72,7 +72,7 @@ public class HabitTrackingServiceTests
         var service = BuildService(new FakeHabitEntryRepository(),
             new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
 
-        var badSegments = new[] { new EmomSegment { FromMinute = 2, ToMinute = 8 } }; 
+        var badSegments = new[] { new EmomSegment { FromMinute = 2, ToMinute = 8 } };
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => service.SaveEmomAsync(new DateOnly(2026, 5, 20), badSegments));

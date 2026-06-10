@@ -1,4 +1,3 @@
-using Dashboard.Domain.Entities;   
 using Dashboard.Domain.Enums;
 using Dashboard.Domain.ValueObjects;
 

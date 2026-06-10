@@ -1,6 +1,5 @@
-using Dashboard.Domain.Entities;                       
-using Microsoft.EntityFrameworkCore;                    
-using Microsoft.EntityFrameworkCore.Metadata.Builders;  
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 public class EmomWorkoutConfiguration : IEntityTypeConfiguration<EmomWorkout>
 {

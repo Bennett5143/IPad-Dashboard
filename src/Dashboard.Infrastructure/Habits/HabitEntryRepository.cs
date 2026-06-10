@@ -1,9 +1,10 @@
-using Dashboard.Domain.Entities;              
-using Dashboard.Domain.Habits;                 
-using Dashboard.Infrastructure.Persistence;    
-using Microsoft.EntityFrameworkCore;           
+using Dashboard.Domain.Entities;
 using Dashboard.Domain.Enums;
+using Dashboard.Domain.Habits;
 using Dashboard.Domain.ValueObjects;
+using Dashboard.Infrastructure.Persistence;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace Dashboard.Infrastructure.Habits;
 
