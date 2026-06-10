@@ -61,8 +61,8 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 - ✅ Phase 2: CI-Pipeline, Code-Coverage, Branch Protection, Dependabot
 - ✅ Phase 3: Dashboard-Skelett (Layouts, Tile-Komposition, Error-Isolation, Routing)
 - 🚧 Phase 4: Features
-  - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap)
-  - ⬜ Habit-Tracker, Fußball, HVV-Abfahrtsmonitor
+  - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap), Fußball (football-data.org)
+  - ⬜ Habit-Tracker, HVV-Abfahrtsmonitor
 
 ## Setup
 
@@ -146,6 +146,25 @@ Ohne Key startet die App normal; die Wetter-Kacheln bleiben im freundlichen
 legt das Ergebnis prozessweit in `WeatherState` ab und pusht Aktualisierungen
 ohne Reload an die Kacheln. Die stündliche Vorschau nutzt das 3-Stunden-Raster
 des kostenlosen Forecast-Endpoints.
+
+### Fußball (football-data.org)
+
+Vereine und Intervall stehen in `appsettings.json` (Sektion `Football`); je
+Verein eine football-data.org-`TeamId` plus Liga-`CompetitionCode` (z. B. `PD`
+für La Liga, `BL1` für die Bundesliga). Der API-Key (Header `X-Auth-Token`)
+gehört in User Secrets:
+
+```bash
+cd src/Dashboard.Web
+dotnet user-secrets set "Football:ApiKey" "<dein-football-data-token>"
+```
+
+Ein `FootballRefreshService` (`BackgroundService`) holt pro Verein die
+Saison-Spielliste und die Ligatabelle (Default-Intervall 30 min, schont das
+Free-Tier-Limit von 10 Requests/min), löst Ergebnisse/Spiele in die
+Vereins-Perspektive auf (Gegner, Heim/Auswärts, eigene Tore) und pusht sie via
+`FootballState` an die Kachel. Ohne Key/Vereine bleibt die Kachel im
+„nicht verfügbar"-Zustand.
 
 ### Secrets-Management
 

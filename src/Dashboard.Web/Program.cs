@@ -63,6 +63,25 @@ try
     });
     builder.Services.AddHostedService<WeatherRefreshService>();
 
+    // Football
+    var footballOptions = builder.Configuration
+        .GetSection(FootballOptions.SectionName)
+        .Get<FootballOptions>() ?? new FootballOptions();
+
+    builder.Services.Configure<FootballOptions>(
+        builder.Configuration.GetSection(FootballOptions.SectionName));
+    builder.Services.AddSingleton<FootballState>();
+    builder.Services.AddHttpClient<IFootballProvider, FootballDataClient>(http =>
+    {
+        http.BaseAddress = new Uri(footballOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(10);
+        if (!string.IsNullOrWhiteSpace(footballOptions.ApiKey))
+        {
+            http.DefaultRequestHeaders.Add("X-Auth-Token", footballOptions.ApiKey);
+        }
+    });
+    builder.Services.AddHostedService<FootballRefreshService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
