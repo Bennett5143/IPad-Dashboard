@@ -7,7 +7,8 @@ namespace Dashboard.Infrastructure.Weather;
 
 internal sealed record OwmCurrentResponse(
     [property: JsonPropertyName("main")] OwmMain Main,
-    [property: JsonPropertyName("weather")] IReadOnlyList<OwmWeather> Weather);
+    [property: JsonPropertyName("weather")] IReadOnlyList<OwmWeather> Weather,
+    [property: JsonPropertyName("wind")] OwmWind? Wind);
 
 internal sealed record OwmForecastResponse(
     [property: JsonPropertyName("list")] IReadOnlyList<OwmForecastItem> List);
@@ -20,7 +21,11 @@ internal sealed record OwmForecastItem(
 
 internal sealed record OwmMain(
     [property: JsonPropertyName("temp")] double Temp,
-    [property: JsonPropertyName("feels_like")] double FeelsLike);
+    [property: JsonPropertyName("feels_like")] double FeelsLike,
+    [property: JsonPropertyName("humidity")] int Humidity);
+
+internal sealed record OwmWind(
+    [property: JsonPropertyName("speed")] double Speed);
 
 internal sealed record OwmWeather(
     [property: JsonPropertyName("id")] int Id,

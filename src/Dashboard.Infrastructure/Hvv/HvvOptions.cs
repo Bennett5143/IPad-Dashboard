@@ -21,7 +21,7 @@ public sealed class HvvOptions
     public int PollIntervalSeconds { get; init; } = 60;
 
     /// <summary>Maximale Anzahl angezeigter Abfahrten pro Haltestelle (nach Filterung).</summary>
-    public int MaxDepartures { get; init; } = 6;
+    public int MaxDepartures { get; init; } = 3;
 
     public IReadOnlyList<HvvStationConfig> Stations { get; init; } = [];
 }
