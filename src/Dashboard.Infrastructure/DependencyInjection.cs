@@ -16,7 +16,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' missing.");
 
         services.AddDbContextFactory<DashboardDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString, npgsql => npgsql.UseNetTopologySuite()));
 
         return services;
     }

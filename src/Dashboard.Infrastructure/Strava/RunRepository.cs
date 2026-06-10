@@ -1,0 +1,115 @@
+using Dashboard.Domain.Running;
+using Dashboard.Infrastructure.Persistence;
+
+using Microsoft.EntityFrameworkCore;
+
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
+
+namespace Dashboard.Infrastructure.Strava;
+
+/// <summary>
+/// EF/PostGIS-Implementierung von <see cref="IRunRepository"/>. Bildet zwischen der Domänen-<see cref="Run"/>
+/// (GeoPoint-Track) und der Persistenz-Entity (<see cref="LineString"/>) hin und her.
+/// </summary>
+internal sealed class RunRepository : IRunRepository
+{
+    private static readonly GeometryFactory GeometryFactory =
+        NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+
+    private readonly IDbContextFactory<DashboardDbContext> _factory;
+
+    public RunRepository(IDbContextFactory<DashboardDbContext> factory) => _factory = factory;
+
+    public async Task UpsertAsync(IReadOnlyList<Run> runs, CancellationToken ct = default)
+    {
+        if (runs.Count == 0)
+        {
+            return;
+        }
+
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        var ids = runs.Select(r => r.Id).ToList();
+        var existing = await db.Set<RunActivityEntity>()
+            .Where(e => ids.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id, ct);
+
+        foreach (var run in runs)
+        {
+            if (existing.TryGetValue(run.Id, out var entity))
+            {
+                Apply(run, entity);
+            }
+            else
+            {
+                var created = new RunActivityEntity { Id = run.Id };
+                Apply(run, created);
+                db.Add(created);
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<Run>> GetRunsAsync(DateTimeOffset? sinceUtc, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        var query = db.Set<RunActivityEntity>().AsNoTracking();
+        if (sinceUtc is { } since)
+        {
+            query = query.Where(e => e.StartUtc >= since);
+        }
+
+        var entities = await query.OrderByDescending(e => e.StartUtc).ToListAsync(ct);
+        return entities.Select(ToDomain).ToList();
+    }
+
+    public async Task<DateTimeOffset?> GetLatestRunStartAsync(CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        if (!await db.Set<RunActivityEntity>().AnyAsync(ct))
+        {
+            return null;
+        }
+
+        return await db.Set<RunActivityEntity>().MaxAsync(e => e.StartUtc, ct);
+    }
+
+    public async Task<int> CountAsync(CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        return await db.Set<RunActivityEntity>().CountAsync(ct);
+    }
+
+    private static void Apply(Run run, RunActivityEntity entity)
+    {
+        entity.Name = run.Name;
+        entity.Type = run.Type;
+        entity.StartUtc = run.StartUtc;
+        entity.DistanceMeters = run.DistanceMeters;
+        entity.MovingTimeSeconds = (int)run.MovingTime.TotalSeconds;
+        entity.Route = ToLineString(run.Track);
+    }
+
+    private static LineString? ToLineString(IReadOnlyList<GeoPoint> track)
+    {
+        if (track.Count < 2)
+        {
+            return null; // ein LineString braucht mind. zwei Punkte
+        }
+
+        var coordinates = track.Select(p => new Coordinate(p.Longitude, p.Latitude)).ToArray();
+        return GeometryFactory.CreateLineString(coordinates);
+    }
+
+    private static Run ToDomain(RunActivityEntity entity)
+    {
+        IReadOnlyList<GeoPoint> track = entity.Route is null
+            ? []
+            : entity.Route.Coordinates.Select(c => new GeoPoint(c.Y, c.X)).ToList();
+
+        return new Run(
+            entity.Id, entity.Name, entity.Type, entity.StartUtc,
+            entity.DistanceMeters, TimeSpan.FromSeconds(entity.MovingTimeSeconds), track);
+    }
+}

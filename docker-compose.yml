@@ -1,6 +1,7 @@
 services:
   db:
-    image: postgres:16-alpine
+    # PostGIS-fähiges Postgres (Phase 7: Lauf-Tracks als geometry(LineString,4326))
+    image: postgis/postgis:16-3.5
     container_name: dashboard-db
     restart: unless-stopped
     environment:
