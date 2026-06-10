@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Dashboard.Infrastructure.Strava;
 
 /// <summary>Single-Row-Persistenz des Sync-Zustands (letzter Erfolg/Versuch/Fehler).</summary>
-internal sealed class SyncStateStore : ISyncStateStore
+public sealed class SyncStateStore : ISyncStateStore
 {
     private const int RowId = 1;
 

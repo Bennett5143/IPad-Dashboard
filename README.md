@@ -63,6 +63,7 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 - 🚧 Phase 4: Features
   - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap), Fußball (football-data.org), HVV-Abfahrtsmonitor
   - ⬜ Habit-Tracker
+- 🟡 Phase 7: Lauf-Heatmap vorgezogen implementiert (Strava-OAuth-Sync, PostGIS, Leaflet)
 
 ## Setup
 
@@ -184,6 +185,36 @@ Stand erhalten bzw. die Kachel zeigt freundlich „nicht verfügbar" (FA-6.05).
 
 > Hinweis: Der Endpoint ist inoffiziell (rechtliche Grauzone, private Nutzung,
 > ein Gerät, ≤ 1 Req/min). Details in der Recherche-Notiz.
+
+### Strava / Lauf-Heatmap (Phase 7)
+
+GPS-Tracks der Läufe werden via offizieller Strava-API (OAuth2) in die lokale
+DB synchronisiert und als PostGIS-`geometry(LineString,4326)` gespeichert; die
+Heatmap unter `/heatmap` rendert sie clientseitig mit Leaflet.
+
+**Voraussetzung DB:** PostGIS — `docker-compose.yml` nutzt dafür das
+`postgis/postgis`-Image (statt `postgres:alpine`). Die Migration legt die
+Extension an.
+
+Eine eigene Strava-API-App anlegen (<https://www.strava.com/settings/api>),
+als „Authorization Callback Domain" `localhost` eintragen und Client-ID/Secret
+als User Secrets setzen:
+
+```bash
+cd src/Dashboard.Web
+dotnet user-secrets set "Strava:ClientId" "<client-id>"
+dotnet user-secrets set "Strava:ClientSecret" "<client-secret>"
+```
+
+Verbinden über `/strava/connect` (oder den Link in der Habit-Kachel, FA-8.04).
+Ein `StravaSyncService` (`BackgroundService`) lädt beim Erst-Sync die Historie
+und danach inkrementell neue Läufe (nur `Run`/`TrailRun`), respektiert das
+Rate-Limit (pausiert bei HTTP 429 statt abzubrechen) und merkt sich den letzten
+erfolgreichen Sync. Tokens werden serverseitig in der DB gehalten. Ohne
+Verbindung zeigt `/heatmap` einen „Mit Strava verbinden"-Hinweis.
+
+> Hinweis: Die Heatmap lädt Leaflet und OSM-Kartenkacheln über das Internet
+> (CDN/Tile-Server) – im reinen Offline-Kiosk müsste man diese vendoren.
 
 ### Secrets-Management
 

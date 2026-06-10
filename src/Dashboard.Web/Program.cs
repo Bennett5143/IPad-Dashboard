@@ -100,6 +100,30 @@ try
     });
     builder.Services.AddHostedService<HvvRefreshService>();
 
+    // Strava / Lauf-Heatmap (Phase 7)
+    var stravaOptions = builder.Configuration
+        .GetSection(StravaOptions.SectionName)
+        .Get<StravaOptions>() ?? new StravaOptions();
+
+    builder.Services.Configure<StravaOptions>(
+        builder.Configuration.GetSection(StravaOptions.SectionName));
+    builder.Services.AddScoped<IRunRepository, RunRepository>();
+    builder.Services.AddScoped<IStravaTokenStore, StravaTokenStore>();
+    builder.Services.AddScoped<ISyncStateStore, SyncStateStore>();
+    builder.Services.AddHttpClient<StravaTokenService>(http =>
+    {
+        http.BaseAddress = new Uri(stravaOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(20);
+    });
+    builder.Services.AddScoped<IStravaAccessTokenProvider>(
+        sp => sp.GetRequiredService<StravaTokenService>());
+    builder.Services.AddHttpClient<IStravaActivityProvider, StravaClient>(http =>
+    {
+        http.BaseAddress = new Uri(stravaOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(20);
+    });
+    builder.Services.AddHostedService<StravaSyncService>();
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -114,6 +138,24 @@ try
         // Nur Checks ausführen, die mit "ready" getaggt sind
         Predicate = check => check.Tags.Contains("ready"),
         ResponseWriter = HealthCheckResponseWriter.WriteAsync
+    });
+
+    // Strava-OAuth (Phase 7): Login-Redirect und Callback zum Token-Tausch.
+    app.MapGet("/strava/connect", (StravaTokenService tokenService) =>
+        Results.Redirect(tokenService.BuildAuthorizeUrl().ToString()));
+
+    app.MapGet("/strava/callback", async (
+        HttpContext httpContext, StravaTokenService tokenService, CancellationToken ct) =>
+    {
+        var code = httpContext.Request.Query["code"].ToString();
+        var error = httpContext.Request.Query["error"].ToString();
+        if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
+        {
+            return Results.Redirect("/heatmap");
+        }
+
+        await tokenService.ExchangeCodeAsync(code, ct);
+        return Results.Redirect("/heatmap");
     });
 
     // Configure the HTTP request pipeline.

@@ -12,7 +12,7 @@ namespace Dashboard.Infrastructure.Strava;
 /// EF/PostGIS-Implementierung von <see cref="IRunRepository"/>. Bildet zwischen der Domänen-<see cref="Run"/>
 /// (GeoPoint-Track) und der Persistenz-Entity (<see cref="LineString"/>) hin und her.
 /// </summary>
-internal sealed class RunRepository : IRunRepository
+public sealed class RunRepository : IRunRepository
 {
     private static readonly GeometryFactory GeometryFactory =
         NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

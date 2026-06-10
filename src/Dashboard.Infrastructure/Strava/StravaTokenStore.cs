@@ -9,7 +9,7 @@ namespace Dashboard.Infrastructure.Strava;
 /// Serverseitige Token-Persistenz (Single-Row) in der DB (FA-8.02). Die Tokens verlassen den Server nie.
 /// Hinweis: für Produktion zusätzlich at-rest verschlüsseln (z. B. ASP.NET Data Protection / pgcrypto).
 /// </summary>
-internal sealed class StravaTokenStore : IStravaTokenStore
+public sealed class StravaTokenStore : IStravaTokenStore
 {
     private const int RowId = 1;
 
