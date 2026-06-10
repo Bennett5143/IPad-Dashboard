@@ -42,8 +42,10 @@ public sealed class FootballDataClient : IFootballProvider
 
     private async Task<FootballTeamSnapshot> GetTeamAsync(FootballTeamConfig team, CancellationToken ct)
     {
+        // Auf die Liga einschränken: ohne competitions-Filter zieht der Endpoint alle
+        // Wettbewerbe (auch Pokal/CL) – im Free-Tier nicht freigeschaltete liefern 403.
         var matches = await _http.GetFromJsonAsync<FdMatchesResponse>(
-            $"v4/teams/{team.TeamId}/matches", ct)
+            $"v4/teams/{team.TeamId}/matches?competitions={team.CompetitionCode}", ct)
             ?? throw new InvalidOperationException($"Leere Antwort (matches) für Team {team.TeamId}.");
 
         var standings = await _http.GetFromJsonAsync<FdStandingsResponse>(
