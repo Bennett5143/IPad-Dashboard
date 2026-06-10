@@ -79,3 +79,12 @@
     border: 1px solid #1976d2; color: #1976d2; background: transparent;
     border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; font: inherit; font-weight: 600;
 }
+
+/* Einstieg in die Lauf-Heatmap aus dem Habit-Bereich (FA-8.04) */
+.habits-heatmap {
+    margin-top: auto;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
