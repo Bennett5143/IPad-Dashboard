@@ -81,6 +81,56 @@ public sealed class StravaClient : IStravaActivityProvider
         return runs;
     }
 
+    public async Task<StravaStreams?> GetStreamsAsync(long activityId, CancellationToken ct = default)
+    {
+        var token = await _tokenProvider.GetValidAccessTokenAsync(ct)
+            ?? throw new InvalidOperationException("Strava ist nicht verbunden (kein Token).");
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"api/v3/activities/{activityId}/streams?keys=latlng,time,altitude,heartrate&key_by_type=true");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        using var response = await _http.SendAsync(request, ct);
+        if (response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500)
+        {
+            throw new StravaRateLimitException($"Strava-Streams pausiert (HTTP {(int)response.StatusCode}).");
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // z. B. 404 – Activity ohne Streams. Als „abgerufen, keine Daten" behandeln.
+            _logger.LogDebug("Strava: Keine Streams für Activity {Id} (HTTP {Status}).", activityId, (int)response.StatusCode);
+            return null;
+        }
+
+        var set = await response.Content.ReadFromJsonAsync<StravaStreamSet>(ct);
+        var latlng = set?.LatLng?.Data;
+        if (latlng is null || latlng.Count < 2)
+        {
+            return null; // ohne GPS-Spur keine nutzbaren Streams (z. B. Indoor-Lauf)
+        }
+
+        var track = latlng
+            .Where(p => p is { Length: >= 2 })
+            .Select(p => new GeoPoint(p[0], p[1]))
+            .ToList();
+        if (track.Count < 2)
+        {
+            return null;
+        }
+
+        // Höhe/HF nur übernehmen, wenn sie zur latlng-Länge passen (sonst nicht index-aligned).
+        var time = Aligned(set!.Time?.Data, latlng.Count) ?? [];
+        var altitude = Aligned(set.Altitude?.Data, latlng.Count);
+        var heartRate = Aligned(set.HeartRate?.Data, latlng.Count);
+
+        return new StravaStreams(track, time, altitude, heartRate);
+    }
+
+    private static IReadOnlyList<T>? Aligned<T>(IReadOnlyList<T>? data, int expectedLength) =>
+        data is not null && data.Count == expectedLength ? data : null;
+
     private static Run Map(StravaActivityDto activity, string type) => new(
         activity.Id,
         activity.Name ?? string.Empty,

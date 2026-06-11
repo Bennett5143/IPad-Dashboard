@@ -13,7 +13,9 @@ internal sealed class RunActivityEntityConfiguration : IEntityTypeConfiguration<
         builder.Property(e => e.Name).HasMaxLength(200);
         builder.Property(e => e.Type).HasMaxLength(32);
         builder.Property(e => e.Route).HasColumnType("geometry(LineString, 4326)");
+        builder.Property(e => e.StreamsFetched).HasDefaultValue(false);
         builder.HasIndex(e => e.StartUtc);
+        builder.HasIndex(e => e.StreamsFetched);
     }
 }
 

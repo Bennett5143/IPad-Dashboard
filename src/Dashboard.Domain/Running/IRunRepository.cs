@@ -13,4 +13,14 @@ public interface IRunRepository
     Task<DateTimeOffset?> GetLatestRunStartAsync(CancellationToken ct = default);
 
     Task<int> CountAsync(CancellationToken ct = default);
+
+    /// <summary>Ids gespeicherter Läufe, deren Streams noch nicht abgerufen wurden (neueste zuerst).</summary>
+    Task<IReadOnlyList<long>> GetIdsMissingStreamsAsync(int limit, CancellationToken ct = default);
+
+    /// <summary>
+    /// Speichert die Streams eines Laufs und markiert ihn als abgerufen (auch bei <c>null</c>, damit
+    /// Läufe ohne Stream-Daten nicht endlos erneut versucht werden). Ersetzt die Route durch die
+    /// volle Auflösung aus dem latlng-Stream.
+    /// </summary>
+    Task SaveStreamsAsync(long runId, StravaStreams? streams, CancellationToken ct = default);
 }
