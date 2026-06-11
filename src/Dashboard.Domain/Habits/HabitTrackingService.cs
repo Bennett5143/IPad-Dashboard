@@ -63,6 +63,16 @@ public sealed class HabitTrackingService
         }
     }
 
+    /// <summary>Hakt ein Habit ab, falls noch nicht geschehen (idempotent – entfernt nie). Für Auto-Übernahmen.</summary>
+    public async Task CompleteAsync(DateOnly date, HabitKind kind, CancellationToken ct = default)
+    {
+        var existing = await _repository.GetAsync(date, kind, ct);
+        if (existing is null)
+        {
+            await _repository.AddAsync(new HabitEntry { Date = date, Kind = kind }, ct);
+        }
+    }
+
     public async Task SaveEmomAsync(
         DateOnly date, IReadOnlyList<EmomSegment> segments, CancellationToken ct = default)
     {
