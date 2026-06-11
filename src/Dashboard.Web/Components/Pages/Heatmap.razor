@@ -114,45 +114,8 @@
 
         // Pro Lauf Punkte + (sofern vorhanden) Streams; die JS verbindet sie zu Linien und
         // färbt je nach Ebene segmentweise ein.
-        var runs = _runs.Select(BuildRunPayload).Where(r => r is not null).ToArray();
+        var runs = HeatmapPayloadBuilder.Build(_runs);
         await _module.InvokeVoidAsync("render", MapElementId, runs, _layer);
-    }
-
-    // Auf MaxPoints dünnen, damit die Nutzlast über die Blazor-Verbindung klein bleibt;
-    // Streams (Zeit/Höhe/HF) werden index-gleich mitgedünnt, sonst null.
-    private const int MaxPoints = 250;
-
-    private static object? BuildRunPayload(Run run)
-    {
-        var n = run.Track.Count;
-        if (n < 2)
-        {
-            return null;
-        }
-
-        var stride = Math.Max(1, (int)Math.Ceiling(n / (double)MaxPoints));
-        var idx = new List<int>();
-        for (var i = 0; i < n; i += stride)
-        {
-            idx.Add(i);
-        }
-        if (idx[^1] != n - 1)
-        {
-            idx.Add(n - 1);
-        }
-
-        var streams = run.Streams;
-        var time = streams?.TimeOffsetsSeconds is { } t && t.Count == n ? idx.Select(i => t[i]).ToArray() : null;
-        var altitude = streams?.AltitudesMeters is { } a && a.Count == n ? idx.Select(i => a[i]).ToArray() : null;
-        var heartRate = streams?.HeartRates is { } h && h.Count == n ? idx.Select(i => h[i]).ToArray() : null;
-
-        return new
-        {
-            pts = idx.Select(i => new[] { run.Track[i].Latitude, run.Track[i].Longitude }).ToArray(),
-            t = time,
-            alt = altitude,
-            hr = heartRate
-        };
     }
 
     private async Task SetLayerAsync(string layer)
