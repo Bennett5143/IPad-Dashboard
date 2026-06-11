@@ -16,6 +16,9 @@ public class StravaClientTests
     private const string TrailJson =
         """{"id":333,"name":"Trail","type":"TrailRun","sport_type":"TrailRun","distance":8000,"moving_time":2700,"start_date":"2026-05-30T06:30:00Z","map":{"summary_polyline":"_p~iF~ps|U"}}""";
 
+    private const string StreamsJson =
+        """{"latlng":{"data":[[53.55,9.99],[53.551,9.991],[53.552,9.992]]},"time":{"data":[0,10,20]},"altitude":{"data":[5.0,7.5,6.0]},"heartrate":{"data":[120,135,140]}}""";
+
     private static StravaClient Client(HttpMessageHandler handler, string? token = "test-token", int perPage = 2)
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://www.strava.com/") };
@@ -77,5 +80,37 @@ public class StravaClientTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => Client(handler, token: null).GetActivitiesAsync(null));
+    }
+
+    [Fact]
+    public async Task GetStreamsAsync_MapsLatLngTimeAltitudeAndHeartRate()
+    {
+        var handler = new StubHttpMessageHandler(_ => StubHttpMessageHandler.Json(StreamsJson));
+
+        var streams = await Client(handler).GetStreamsAsync(111);
+
+        Assert.NotNull(streams);
+        Assert.Equal(3, streams!.Track.Count);
+        Assert.Equal(53.55, streams.Track[0].Latitude);
+        Assert.Equal(9.99, streams.Track[0].Longitude);
+        Assert.Equal(new[] { 0, 10, 20 }, streams.TimeOffsetsSeconds);
+        Assert.Equal(new[] { 5.0, 7.5, 6.0 }, streams.AltitudesMeters);
+        Assert.Equal(new[] { 120, 135, 140 }, streams.HeartRates);
+    }
+
+    [Fact]
+    public async Task GetStreamsAsync_Throws_OnRateLimit()
+    {
+        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests));
+
+        await Assert.ThrowsAsync<StravaRateLimitException>(() => Client(handler).GetStreamsAsync(111));
+    }
+
+    [Fact]
+    public async Task GetStreamsAsync_ReturnsNull_WhenNoLatLngStream()
+    {
+        var handler = new StubHttpMessageHandler(_ => StubHttpMessageHandler.Json("""{"time":{"data":[0,10]}}"""));
+
+        Assert.Null(await Client(handler).GetStreamsAsync(111));
     }
 }
