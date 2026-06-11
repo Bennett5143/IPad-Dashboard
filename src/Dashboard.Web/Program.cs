@@ -234,7 +234,12 @@ try
     });
 
     app.MapGet("/whoop/callback", async (
-        HttpContext httpContext, WhoopTokenService tokenService, CancellationToken ct) =>
+        HttpContext httpContext,
+        WhoopTokenService tokenService,
+        IWhoopProvider whoopProvider,
+        WhoopState whoopState,
+        ILoggerFactory loggerFactory,
+        CancellationToken ct) =>
     {
         var code = httpContext.Request.Query["code"].ToString();
         var error = httpContext.Request.Query["error"].ToString();
@@ -252,6 +257,19 @@ try
         }
 
         await tokenService.ExchangeCodeAsync(code, ct);
+
+        // Direkt nach dem Verbinden einen ersten Snapshot holen, damit die Kachel sofort
+        // befüllt ist – statt bis zum nächsten Hintergrund-Poll (alle 30 min) zu warten.
+        try
+        {
+            whoopState.Update(await whoopProvider.GetWhoopAsync(ct));
+        }
+        catch (Exception ex)
+        {
+            loggerFactory.CreateLogger("Whoop").LogWarning(
+                ex, "WHOOP: Erst-Abruf nach Verbindung fehlgeschlagen – der Hintergrund-Sync holt es nach.");
+        }
+
         return Results.Redirect("/");
     });
 
