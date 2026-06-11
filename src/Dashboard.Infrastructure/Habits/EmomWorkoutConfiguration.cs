@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class EmomWorkoutConfiguration : IEntityTypeConfiguration<EmomWorkout>
+namespace Dashboard.Infrastructure.Habits;
+
+internal sealed class EmomWorkoutConfiguration : IEntityTypeConfiguration<EmomWorkout>
 {
     public void Configure(EntityTypeBuilder<EmomWorkout> builder)
     {
