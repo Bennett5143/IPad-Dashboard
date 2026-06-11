@@ -101,11 +101,14 @@
     private async Task RenderMapAsync()
     {
         _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js");
-        var points = _runs
-            .SelectMany(run => run.Track)
-            .Select(point => new[] { point.Latitude, point.Longitude })
+
+        // Pro Lauf eine zusammenhängende Punktfolge (Strecke) übergeben – die JS verbindet
+        // sie zu einer Linie. Überlagerung häufig gelaufener Strecken erzeugt den Heat-Effekt.
+        var tracks = _runs
+            .Select(run => run.Track.Select(point => new[] { point.Latitude, point.Longitude }).ToArray())
+            .Where(track => track.Length > 1)
             .ToArray();
-        await _module.InvokeVoidAsync("render", MapElementId, points);
+        await _module.InvokeVoidAsync("render", MapElementId, tracks);
     }
 
     private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
