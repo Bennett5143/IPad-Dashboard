@@ -291,9 +291,12 @@ try
         app.UseExceptionHandler("/Error", createScopeForErrors: true);
         // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
         app.UseHsts();
+        // HTTPS nur außerhalb von Development erzwingen. In Development lauscht die App
+        // zusätzlich per HTTP auf allen Interfaces (LAN-Kiosk vom iPad); ein Redirect würde
+        // dort auf das nur für localhost gültige Dev-Zertifikat verweisen.
+        app.UseHttpsRedirection();
     }
     app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-    app.UseHttpsRedirection();
 
     app.UseAntiforgery();
 
