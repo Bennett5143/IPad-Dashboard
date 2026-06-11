@@ -43,12 +43,10 @@ public sealed class WhoopClient : IWhoopProvider
         var token = await _tokens.GetValidAccessTokenAsync(ct)
             ?? throw new InvalidOperationException("WHOOP nicht verbunden (kein Token).");
 
-        var from = Iso(fromUtc);
-        var to = Iso(toUtc);
-        var resp = await GetAsync<WhoopCollection<WhoopWorkoutRecord>>(
-            $"developer/v2/activity/workout?start={from}&end={to}&limit=25", token, ct);
+        var records = await GetPagedAsync<WhoopWorkoutRecord>(
+            $"developer/v2/activity/workout?start={Iso(fromUtc)}&end={Iso(toUtc)}&limit=25", token, ct);
 
-        return resp.Records
+        return records
             .Where(r => !string.IsNullOrEmpty(r.Id))
             .Select(r => new WhoopWorkout(
                 r.Id,
@@ -57,6 +55,54 @@ public sealed class WhoopClient : IWhoopProvider
                 r.End,
                 r.Score?.DistanceMeter,
                 r.Score?.ZoneDurations?.HighIntensityShare ?? 0))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<WhoopDailyMetric>> GetHistoryAsync(
+        DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)
+    {
+        var token = await _tokens.GetValidAccessTokenAsync(ct)
+            ?? throw new InvalidOperationException("WHOOP nicht verbunden (kein Token).");
+
+        var window = $"start={Iso(fromUtc)}&end={Iso(toUtc)}&limit=25";
+        var recoveries = await GetPagedAsync<WhoopRecoveryRecord>($"developer/v2/recovery?{window}", token, ct);
+        var sleeps = await GetPagedAsync<WhoopSleepRecord>($"developer/v2/activity/sleep?{window}", token, ct);
+        var cycles = await GetPagedAsync<WhoopCycleRecord>($"developer/v2/cycle?{window}", token, ct);
+
+        var byDate = new Dictionary<DateOnly, MetricBuilder>();
+
+        foreach (var r in recoveries)
+        {
+            if (r is { ScoreState: "SCORED", Score: { } score, CreatedAt: { } created })
+            {
+                var builder = GetOrAdd(byDate, BerlinDate(created));
+                builder.RecoveryScore = (int)Math.Round(score.RecoveryScore);
+                builder.Hrv = score.HrvRmssdMilli;
+                builder.Rhr = (int)Math.Round(score.RestingHeartRate);
+            }
+        }
+
+        foreach (var s in sleeps)
+        {
+            if (!s.Nap && s is { ScoreState: "SCORED", Score: { StageSummary: { } stages } score })
+            {
+                var builder = GetOrAdd(byDate, BerlinDate(s.End));
+                builder.SleepHours = (stages.LightMilli + stages.SlowWaveMilli + stages.RemMilli) / 3_600_000.0;
+                builder.SleepPerformance = (int)Math.Round(score.SleepPerformancePercentage);
+            }
+        }
+
+        foreach (var c in cycles)
+        {
+            if (c is { ScoreState: "SCORED", Score: { } score })
+            {
+                GetOrAdd(byDate, BerlinDate(c.Start)).DayStrain = score.Strain;
+            }
+        }
+
+        return byDate.Values
+            .Select(b => b.Build())
+            .OrderBy(m => m.Date)
             .ToList();
     }
 
@@ -114,5 +160,56 @@ public sealed class WhoopClient : IWhoopProvider
 
         return await response.Content.ReadFromJsonAsync<T>(ct)
             ?? throw new InvalidOperationException($"Leere Antwort von '{url}'.");
+    }
+
+    // Folgt next_token über mehrere Seiten (mit Sicherheits-Obergrenze).
+    private async Task<List<T>> GetPagedAsync<T>(string url, string token, CancellationToken ct)
+    {
+        const int maxPages = 8;
+        var all = new List<T>();
+        string? next = null;
+
+        for (var page = 0; page < maxPages; page++)
+        {
+            var pageUrl = next is null ? url : $"{url}&nextToken={Uri.EscapeDataString(next)}";
+            var response = await GetAsync<WhoopCollection<T>>(pageUrl, token, ct);
+            all.AddRange(response.Records);
+            next = response.NextToken;
+            if (string.IsNullOrEmpty(next))
+            {
+                break;
+            }
+        }
+
+        return all;
+    }
+
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private static DateOnly BerlinDate(DateTimeOffset value) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(value, BerlinTz).DateTime);
+
+    private static MetricBuilder GetOrAdd(Dictionary<DateOnly, MetricBuilder> map, DateOnly date)
+    {
+        if (!map.TryGetValue(date, out var builder))
+        {
+            builder = new MetricBuilder(date);
+            map[date] = builder;
+        }
+        return builder;
+    }
+
+    private sealed class MetricBuilder(DateOnly date)
+    {
+        public int? RecoveryScore;
+        public double? Hrv;
+        public int? Rhr;
+        public double? SleepHours;
+        public int? SleepPerformance;
+        public double? DayStrain;
+
+        public WhoopDailyMetric Build() =>
+            new(date, RecoveryScore, Hrv, Rhr, SleepHours, SleepPerformance, DayStrain);
     }
 }

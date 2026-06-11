@@ -82,7 +82,18 @@
 }
 
 .whoop-stale {
-    margin-top: auto;
     color: var(--color-warning);
     font-size: var(--font-size-sm);
+}
+
+.whoop-link {
+    margin-top: auto;
+    align-self: flex-end;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+}
+
+.whoop-link:hover {
+    text-decoration: underline;
 }

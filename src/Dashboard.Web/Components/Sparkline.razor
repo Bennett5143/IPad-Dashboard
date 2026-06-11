@@ -1,0 +1,16 @@
+<svg class="sparkline @CssClass" viewBox="0 0 120 32" preserveAspectRatio="none" role="img" aria-hidden="true">
+    @if (_points.Length > 0)
+    {
+        <polyline points="@_points" fill="none" vector-effect="non-scaling-stroke" />
+    }
+</svg>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<double?> Values { get; set; } = [];
+    [Parameter] public string? CssClass { get; set; }
+
+    private string _points = string.Empty;
+
+    protected override void OnParametersSet() =>
+        _points = SparklineGeometry.ToPolylinePoints(Values, 120, 32);
+}

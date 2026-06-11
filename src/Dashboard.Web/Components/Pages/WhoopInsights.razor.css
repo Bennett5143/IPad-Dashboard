@@ -1,0 +1,165 @@
+.insights {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100dvh;
+    padding: var(--space-4);
+}
+
+.insights-header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+}
+
+.insights-header h1 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+}
+
+.insights-back {
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+}
+
+.insights-back:hover {
+    text-decoration: underline;
+}
+
+.insights-msg {
+    color: var(--color-fg-muted);
+}
+
+.insights-error {
+    color: var(--color-error);
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-4);
+}
+
+.metric-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-sunken);
+}
+
+.metric-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.metric-title {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metric-current {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg-primary);
+}
+
+.metric-unit {
+    margin-left: 2px;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.metric-stats {
+    display: flex;
+    gap: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .sparkline {
+    width: 100%;
+    height: 36px;
+    overflow: visible;
+}
+
+::deep .sparkline polyline {
+    fill: none;
+    stroke: var(--color-fg-secondary);
+    stroke-width: 1.5px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+::deep .sparkline.recovery polyline,
+::deep .sparkline.hrv polyline {
+    stroke: var(--color-success);
+}
+
+::deep .sparkline.rhr polyline {
+    stroke: var(--color-warning);
+}
+
+::deep .sparkline.strain polyline {
+    stroke: var(--color-error);
+}
+
+.runs h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+    margin-bottom: var(--space-2);
+}
+
+.run-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.run {
+    display: grid;
+    grid-template-columns: auto 4rem 5rem 1fr;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--font-size-sm);
+}
+
+.run-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background-color: var(--color-fg-muted);
+}
+
+.run-dot.recovery-high {
+    background-color: var(--color-success);
+}
+
+.run-dot.recovery-medium {
+    background-color: var(--color-warning);
+}
+
+.run-dot.recovery-low {
+    background-color: var(--color-error);
+}
+
+.run-date {
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.run-detail {
+    color: var(--color-fg-primary);
+    font-variant-numeric: tabular-nums;
+}
