@@ -2,28 +2,48 @@
    Design Tokens (CSS Custom Properties)
    ============================================================
    Single source of truth für Farben, Spacing, Typografie.
-   Wenn du später Dark Mode willst, überschreibst du nur diese
-   Variablen unter [data-theme="dark"] – kein Refactoring nötig.
+   Thema: futuristisches Kiosk-HUD („Command Center") – tiefes
+   Space-Blau mit feinem Raster, Neon-Cyan-Akzent, Display-Typo
+   für Kennzahlen. Kompakte Skala, damit die Hauptansicht ohne
+   Scrollen auf 768 px Höhe (iPad 9,7" quer) passt.
    ============================================================ */
 
 :root {
+    color-scheme: dark;
+
     /* Farben: Surface-Levels (Hintergrund-Hierarchie) */
-    --color-surface-base:    #f5f5f7;  /* Seiten-Hintergrund */
-    --color-surface-raised:  #ffffff;  /* Tile-Hintergrund     */
-    --color-surface-sunken:  #ebebee;  /* z.B. innere Boxen   */
+    --color-surface-base:    #05070d;  /* Seiten-Hintergrund (Deep Space) */
+    --color-surface-raised:  #0d1320;  /* Panel-/Tile-Hintergrund */
+    --color-surface-sunken:  #141c2e;  /* innere Boxen/Chips */
 
     /* Farben: Vordergrund (Text) */
-    --color-fg-primary:      #1a1a1c;
-    --color-fg-secondary:    #5a5a5e;
-    --color-fg-muted:        #8e8e92;
+    --color-fg-primary:      #e9f1ff;
+    --color-fg-secondary:    #9fb0cc;
+    --color-fg-muted:        #5d6e8e;
 
-    /* Farben: Akzent & Status */
-    --color-accent:          #007aff;
-    --color-success:         #34c759;
-    --color-warning:         #ff9500;
-    --color-error:           #ff3b30;
+    /* Farben: Akzent & Status (Neon-Set) */
+    --color-accent:          #00d4ff;  /* Cyan – Links, aktive Controls */
+    --color-accent-2:        #7c5cff;  /* Violett – Verlaufs-Partner des Akzents */
+    --color-success:         #2ee6a8;
+    --color-warning:         #ffd166;
+    --color-error:           #ff5470;
 
-    --color-border:          #e0e0e3;
+    /* Marken-Farbe Strava (Connect-Button, bewusst kein Statuston) */
+    --color-strava:          #fc4c02;
+
+    --color-border:          #1b2740;
+
+    /* Glow-Effekte (sparsam einsetzen: große Zahlen, aktive Controls) */
+    --glow-accent:  0 0 14px rgba(0, 212, 255, 0.30);
+    --glow-success: 0 0 14px rgba(46, 230, 168, 0.30);
+
+    /* Liquid Glass: durchscheinende Panels mit Blur, heller Glanzkante & Tiefe */
+    --glass-bg:        rgba(18, 27, 46, 0.55);
+    --glass-bg-strong: rgba(16, 24, 41, 0.74);
+    --glass-blur:      blur(18px) saturate(140%);
+    --glass-rim:       rgba(255, 255, 255, 0.12);
+    --glass-sheen:     linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 45%);
+    --glass-shadow:    0 8px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
 
     /* Spacing-Scale (4px-Basis, modulare Schritte) */
     --space-1: 0.25rem;  /*  4px */
@@ -34,30 +54,31 @@
     --space-6: 2rem;     /* 32px */
     --space-7: 3rem;     /* 48px */
 
-    /* Typografie */
-    --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                        Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Typografie – Space Grotesk für Text, Rajdhani für Display/Kennzahlen */
+    --font-family-base: "Space Grotesk", -apple-system, BlinkMacSystemFont,
+                        "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-family-display: "Rajdhani", "Space Grotesk", -apple-system, sans-serif;
 
-    --font-size-sm:   0.875rem;  /* 14px */
-    --font-size-base: 1rem;      /* 16px */
-    --font-size-lg:   1.25rem;   /* 20px */
-    --font-size-xl:   1.5rem;    /* 24px */
-    --font-size-2xl:  2rem;      /* 32px */
-    --font-size-3xl:  3rem;      /* 48px */
+    --font-size-sm:   0.8125rem; /* 13px */
+    --font-size-base: 0.9375rem; /* 15px */
+    --font-size-lg:   1.125rem;  /* 18px */
+    --font-size-xl:   1.375rem;  /* 22px */
+    --font-size-2xl:  1.75rem;   /* 28px */
+    --font-size-3xl:  2.25rem;   /* 36px */
 
     --font-weight-regular:  400;
     --font-weight-medium:   500;
     --font-weight-semibold: 600;
 
     --line-height-tight: 1.2;
-    --line-height-base:  1.5;
+    --line-height-base:  1.45;
 
     /* Radien & Schatten */
     --radius-md: 0.5rem;   /*  8px */
     --radius-lg: 0.75rem;  /* 12px */
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 /* ============================================================
@@ -84,7 +105,18 @@ body {
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     color: var(--color-fg-primary);
+
+    /* Command-Center-Grund: farbige Licht-Blobs (cyan/violett) hinter dem Glas +
+       feines Blueprint-Raster. background-attachment:fixed → ruhige, gemeinsame
+       „Szene", die alle Glas-Panels einheitlich brechen. */
     background-color: var(--color-surface-base);
+    background-image:
+        radial-gradient(950px 650px at 80% -12%, rgba(0, 150, 255, 0.32), transparent 60%),
+        radial-gradient(820px 640px at 4% 110%, rgba(124, 92, 255, 0.22), transparent 60%),
+        linear-gradient(rgba(0, 212, 255, 0.030) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.030) 1px, transparent 1px);
+    background-size: auto, auto, 34px 34px, 34px 34px;
+    background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -105,6 +137,28 @@ button {
     color: inherit;
 }
 
+a {
+    color: var(--color-accent);
+}
+
+input, select, textarea {
+    font: inherit;
+    color: var(--color-fg-primary);
+    background-color: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    accent-color: var(--color-accent);
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+
 /* ============================================================
    Utility Classes
    ============================================================ */
@@ -117,21 +171,32 @@ button {
 
 .dialog-backdrop {
     position: fixed; inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(2, 4, 9, 0.7);
     display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 .dialog {
-    background: #fff; border-radius: 16px; padding: 1.5rem;
+    background: var(--glass-sheen), var(--glass-bg-strong);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
     width: min(90vw, 480px); max-height: 85vh; overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--glass-shadow);
 }
-.dialog-title  { margin: 0 0 1rem; font-size: 1.3rem; }
-.dialog-error  { color: #c62828; font-size: 0.9rem; margin: 0.75rem 0 0; }
-.dialog-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+.dialog-title  { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); font-family: var(--font-family-display); text-transform: uppercase; letter-spacing: 0.04em; }
+.dialog-error  { color: var(--color-error); font-size: var(--font-size-sm); margin: var(--space-3) 0 0; }
+.dialog-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 .dialog-actions button {
     flex: 1; min-width: 120px; padding: 0.6rem 1rem;
-    border: none; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600;
+    border: none; border-radius: var(--radius-md); cursor: pointer;
+    font: inherit; font-weight: var(--font-weight-semibold);
+    background: var(--color-surface-sunken); color: var(--color-fg-primary);
 }
-.dialog-actions button:first-child { background: #1976d2; color: #fff; }
+.dialog-actions button:first-child {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+    color: #04101a;
+    box-shadow: var(--glow-accent);
+}
 .dialog-actions button:disabled { opacity: 0.6; cursor: default; }

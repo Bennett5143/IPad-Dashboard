@@ -9,4 +9,4 @@ public sealed record WeatherSnapshot(
     DailyForecast Today,
     DailyForecast? Tomorrow,
     IReadOnlyList<HourlyForecast> Hourly,
-    DateTimeOffset RetrievedAtUtc);
+    DateTimeOffset RetrievedAtUtc) : Common.ISnapshot;

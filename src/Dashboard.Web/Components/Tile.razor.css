@@ -1,39 +1,73 @@
 .tile {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+    position: relative;
+    isolation: isolate;
+
+    /* Liquid Glass: durchscheinendes Panel – das Raster/die Lichter dahinter
+       schimmern weich durch (Backdrop-Blur), helle Glanzkante oben. */
+    background: var(--glass-sheen), var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: var(--space-4);
+    box-shadow: var(--glass-shadow);
+    padding: var(--space-3);
 
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-2);
 
     /* Verhindert, dass Tile-Inhalt aus dem Grid-Cell-Bereich ausbricht */
+    height: 100%;
     min-height: 0;
     overflow: hidden;
+}
+
+/* Neon-Hairline an der Oberkante – das „HUD-Panel"-Signet jeder Kachel */
+.tile::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 4%, rgba(0, 212, 255, 0.65), rgba(124, 92, 255, 0.4) 70%, transparent 96%);
+    pointer-events: none;
 }
 
 .tile-header {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    flex-shrink: 0;
+}
 
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--color-border);
+/* Akzent-Tick vor der Überschrift */
+.tile-header::before {
+    content: "";
+    width: 3px;
+    height: 0.95em;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--color-accent), var(--color-accent-2));
+    box-shadow: var(--glow-accent);
+    flex-shrink: 0;
 }
 
 .tile-icon {
     display: inline-flex;
     align-items: center;
-    color: var(--color-fg-secondary);
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-base);
     flex-shrink: 0;
 }
 
+/* Einheitliche Kachel-Überschrift: Display-Typo, Versalien, weit gesperrt */
 .tile-title {
-    font-size: var(--font-size-lg);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
+    color: var(--color-fg-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
 }
 
 .tile-body {

@@ -8,13 +8,7 @@ global using Dashboard.Domain.Running;
 global using Dashboard.Domain.Time;
 global using Dashboard.Domain.Weather;
 global using Dashboard.Domain.Whoop;
-global using Dashboard.Infrastructure;
-global using Dashboard.Infrastructure.Football;
-global using Dashboard.Infrastructure.Habits;
-global using Dashboard.Infrastructure.Hvv;
-global using Dashboard.Infrastructure.Quotes;
-global using Dashboard.Infrastructure.Seeding;
-global using Dashboard.Infrastructure.Strava;
-global using Dashboard.Infrastructure.Time;
-global using Dashboard.Infrastructure.Weather;
-global using Dashboard.Infrastructure.Whoop;
+
+// Bewusst KEINE Dashboard.Infrastructure.*-Usings: Komponenten/Seiten arbeiten nur gegen
+// Domain-Abstraktionen; Infrastructure wird ausschließlich im Composition Root (Program.cs)
+// referenziert.
