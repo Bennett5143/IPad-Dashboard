@@ -14,10 +14,12 @@ internal sealed class WhoopTokenResponse
 internal sealed class WhoopCollection<T>
 {
     [JsonPropertyName("records")] public IReadOnlyList<T> Records { get; init; } = [];
+    [JsonPropertyName("next_token")] public string? NextToken { get; init; }
 }
 
 internal sealed class WhoopRecoveryRecord
 {
+    [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; init; }
     [JsonPropertyName("score_state")] public string? ScoreState { get; init; }
     [JsonPropertyName("score")] public WhoopRecoveryScore? Score { get; init; }
 }
@@ -32,6 +34,8 @@ internal sealed class WhoopRecoveryScore
 internal sealed class WhoopSleepRecord
 {
     [JsonPropertyName("nap")] public bool Nap { get; init; }
+    [JsonPropertyName("start")] public DateTimeOffset Start { get; init; }
+    [JsonPropertyName("end")] public DateTimeOffset End { get; init; }
     [JsonPropertyName("score_state")] public string? ScoreState { get; init; }
     [JsonPropertyName("score")] public WhoopSleepScore? Score { get; init; }
 }
@@ -51,6 +55,7 @@ internal sealed class WhoopSleepStageSummary
 
 internal sealed class WhoopCycleRecord
 {
+    [JsonPropertyName("start")] public DateTimeOffset Start { get; init; }
     [JsonPropertyName("score_state")] public string? ScoreState { get; init; }
     [JsonPropertyName("score")] public WhoopCycleScore? Score { get; init; }
 }
