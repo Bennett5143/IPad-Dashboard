@@ -11,4 +11,5 @@ public sealed record Run(
     DateTimeOffset StartUtc,
     double DistanceMeters,
     TimeSpan MovingTime,
-    IReadOnlyList<GeoPoint> Track);
+    IReadOnlyList<GeoPoint> Track,
+    StravaStreams? Streams = null);
