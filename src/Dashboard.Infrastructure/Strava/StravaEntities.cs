@@ -12,6 +12,12 @@ internal sealed class RunActivityEntity
     public double DistanceMeters { get; set; }
     public int MovingTimeSeconds { get; set; }
     public LineString? Route { get; set; }
+
+    // Pro-Punkt-Streams (index-aligned mit Route.Coordinates), erst nach dem Backfill befüllt.
+    public bool StreamsFetched { get; set; }
+    public int[]? TimeOffsetsSeconds { get; set; }
+    public double[]? AltitudesMeters { get; set; }
+    public int[]? HeartRates { get; set; }
 }
 
 /// <summary>Single-Row-Entity (Id = 1) mit dem aktuellen OAuth-Token-Satz.</summary>

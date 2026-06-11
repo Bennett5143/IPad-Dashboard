@@ -71,6 +71,8 @@ public sealed class StravaSyncService : BackgroundService
             await repository.UpsertAsync(runs, ct);
             await syncState.RecordSuccessAsync(_clock.UtcNow, ct);
             _logger.LogInformation("Strava: {Count} Läufe synchronisiert (ab {After:o}).", runs.Count, after);
+
+            await BackfillStreamsAsync(provider, repository, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -80,6 +82,52 @@ public sealed class StravaSyncService : BackgroundService
         {
             _logger.LogError(ex, "Strava: Sync fehlgeschlagen – letzter Stand bleibt erhalten.");
             await syncState.RecordFailureAsync(ex.Message, _clock.UtcNow, ct);
+        }
+    }
+
+    // Pro-Punkt-Streams (Höhe/HF/Zeit) für die erweiterten Heatmap-Ebenen nachladen.
+    // Bewusst gedrosselt (ein API-Call je Lauf), pausiert bei Rate-Limit und füllt über
+    // mehrere Sync-Zyklen nach. Darf den eigentlichen Lauf-Sync nicht gefährden.
+    private const int MaxStreamsPerCycle = 20;
+
+    private async Task BackfillStreamsAsync(
+        IStravaActivityProvider provider, IRunRepository repository, CancellationToken ct)
+    {
+        var ids = await repository.GetIdsMissingStreamsAsync(MaxStreamsPerCycle, ct);
+        if (ids.Count == 0)
+        {
+            return;
+        }
+
+        var done = 0;
+        foreach (var id in ids)
+        {
+            try
+            {
+                var streams = await provider.GetStreamsAsync(id, ct);
+                await repository.SaveStreamsAsync(id, streams, ct);
+                done++;
+            }
+            catch (StravaRateLimitException ex)
+            {
+                _logger.LogInformation(
+                    "Strava: Stream-Backfill pausiert ({Reason}) – {Done}/{Total} in diesem Zyklus.",
+                    ex.Message, done, ids.Count);
+                break;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Strava: Streams für Lauf {Id} übersprungen.", id);
+            }
+        }
+
+        if (done > 0)
+        {
+            _logger.LogInformation("Strava: Streams für {Done} Läufe nachgeladen.", done);
         }
     }
 }

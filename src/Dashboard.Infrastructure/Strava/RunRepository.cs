@@ -81,6 +81,39 @@ public sealed class RunRepository : IRunRepository
         return await db.Set<RunActivityEntity>().CountAsync(ct);
     }
 
+    public async Task<IReadOnlyList<long>> GetIdsMissingStreamsAsync(int limit, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        return await db.Set<RunActivityEntity>().AsNoTracking()
+            .Where(e => !e.StreamsFetched)
+            .OrderByDescending(e => e.StartUtc)
+            .Take(limit)
+            .Select(e => e.Id)
+            .ToListAsync(ct);
+    }
+
+    public async Task SaveStreamsAsync(long runId, StravaStreams? streams, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        var entity = await db.Set<RunActivityEntity>().FirstOrDefaultAsync(e => e.Id == runId, ct);
+        if (entity is null)
+        {
+            return;
+        }
+
+        entity.StreamsFetched = true;
+        if (streams is not null && streams.Track.Count >= 2)
+        {
+            // Volle Auflösung aus dem latlng-Stream übernehmen + index-aligned Streams.
+            entity.Route = ToLineString(streams.Track);
+            entity.TimeOffsetsSeconds = [.. streams.TimeOffsetsSeconds];
+            entity.AltitudesMeters = streams.AltitudesMeters is null ? null : [.. streams.AltitudesMeters];
+            entity.HeartRates = streams.HeartRates is null ? null : [.. streams.HeartRates];
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
     private static void Apply(Run run, RunActivityEntity entity)
     {
         entity.Name = run.Name;
@@ -88,7 +121,13 @@ public sealed class RunRepository : IRunRepository
         entity.StartUtc = run.StartUtc;
         entity.DistanceMeters = run.DistanceMeters;
         entity.MovingTimeSeconds = (int)run.MovingTime.TotalSeconds;
-        entity.Route = ToLineString(run.Track);
+
+        // Solange noch keine vollaufgelösten Streams da sind, die Summary-Polyline verwenden;
+        // nach dem Stream-Backfill die feinere Route nicht durch die grobe Polyline überschreiben.
+        if (!entity.StreamsFetched)
+        {
+            entity.Route = ToLineString(run.Track);
+        }
     }
 
     private static LineString? ToLineString(IReadOnlyList<GeoPoint> track)
@@ -108,8 +147,14 @@ public sealed class RunRepository : IRunRepository
             ? []
             : entity.Route.Coordinates.Select(c => new GeoPoint(c.Y, c.X)).ToList();
 
+        StravaStreams? streams = null;
+        if (entity.StreamsFetched && entity.TimeOffsetsSeconds is { } times && track.Count >= 2)
+        {
+            streams = new StravaStreams(track, times, entity.AltitudesMeters, entity.HeartRates);
+        }
+
         return new Run(
             entity.Id, entity.Name, entity.Type, entity.StartUtc,
-            entity.DistanceMeters, TimeSpan.FromSeconds(entity.MovingTimeSeconds), track);
+            entity.DistanceMeters, TimeSpan.FromSeconds(entity.MovingTimeSeconds), track, streams);
     }
 }
