@@ -23,9 +23,12 @@
 }
 
 .football-team h3 {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: var(--color-fg-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .football-position {

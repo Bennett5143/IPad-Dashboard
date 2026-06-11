@@ -28,9 +28,11 @@
 }
 
 .weather-now-temp {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 700;
     line-height: var(--line-height-tight);
+    text-shadow: 0 0 16px rgba(0, 212, 255, 0.22);
 }
 
 .weather-desc {
@@ -80,8 +82,9 @@
 }
 
 .weather-hourly .hour-temp {
+    font-family: var(--font-family-display);
     font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-semibold);
 }
 
 .weather-hourly .hour-precip {

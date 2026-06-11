@@ -15,11 +15,19 @@
 
 .clock-date {
     color: var(--color-fg-secondary);
+    font-family: var(--font-family-display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
+/* HUD-Herzstück: große, leuchtende Digitalzeit */
 .clock-time {
-    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold, 700);
     font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
 }
 
 .clock-separator {

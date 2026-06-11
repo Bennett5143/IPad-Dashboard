@@ -1,8 +1,15 @@
 .tile {
-    background-color: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+    position: relative;
+    isolation: isolate;
+
+    /* Liquid Glass: durchscheinendes Panel – das Raster/die Lichter dahinter
+       schimmern weich durch (Backdrop-Blur), helle Glanzkante oben. */
+    background: var(--glass-sheen), var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--glass-shadow);
     padding: var(--space-3);
 
     display: flex;
@@ -15,10 +22,33 @@
     overflow: hidden;
 }
 
+/* Neon-Hairline an der Oberkante – das „HUD-Panel"-Signet jeder Kachel */
+.tile::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 4%, rgba(0, 212, 255, 0.65), rgba(124, 92, 255, 0.4) 70%, transparent 96%);
+    pointer-events: none;
+}
+
 .tile-header {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+/* Akzent-Tick vor der Überschrift */
+.tile-header::before {
+    content: "";
+    width: 3px;
+    height: 0.95em;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--color-accent), var(--color-accent-2));
+    box-shadow: var(--glow-accent);
     flex-shrink: 0;
 }
 
@@ -30,13 +60,14 @@
     flex-shrink: 0;
 }
 
-/* Einheitliche, dezente Kachel-Überschrift: klein, gedämpft, Versalien */
+/* Einheitliche Kachel-Überschrift: Display-Typo, Versalien, weit gesperrt */
 .tile-title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-fg-muted);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.12em;
 }
 
 .tile-body {
