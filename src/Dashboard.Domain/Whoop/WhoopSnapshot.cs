@@ -5,7 +5,7 @@ public sealed record WhoopSnapshot(
     WhoopRecovery? Recovery,
     WhoopSleepSummary? Sleep,
     double? DayStrain,
-    DateTimeOffset RetrievedAtUtc);
+    DateTimeOffset RetrievedAtUtc) : Common.ISnapshot;
 
 /// <summary>Recovery des letzten physiologischen Zyklus.</summary>
 public sealed record WhoopRecovery(int ScorePercent, double HrvMillis, int RestingHeartRate)
