@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -35,6 +36,32 @@ public sealed class WhoopClient : IWhoopProvider
 
         return new WhoopSnapshot(recovery, sleep, strain, _clock.UtcNow);
     }
+
+    public async Task<IReadOnlyList<WhoopWorkout>> GetWorkoutsAsync(
+        DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)
+    {
+        var token = await _tokens.GetValidAccessTokenAsync(ct)
+            ?? throw new InvalidOperationException("WHOOP nicht verbunden (kein Token).");
+
+        var from = Iso(fromUtc);
+        var to = Iso(toUtc);
+        var resp = await GetAsync<WhoopCollection<WhoopWorkoutRecord>>(
+            $"developer/v2/activity/workout?start={from}&end={to}&limit=25", token, ct);
+
+        return resp.Records
+            .Where(r => !string.IsNullOrEmpty(r.Id))
+            .Select(r => new WhoopWorkout(
+                r.Id,
+                r.SportName ?? string.Empty,
+                r.Start,
+                r.End,
+                r.Score?.DistanceMeter,
+                r.Score?.ZoneDurations?.HighIntensityShare ?? 0))
+            .ToList();
+    }
+
+    private static string Iso(DateTimeOffset value) => Uri.EscapeDataString(
+        value.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture));
 
     private async Task<WhoopRecovery?> GetLatestRecoveryAsync(string token, CancellationToken ct)
     {

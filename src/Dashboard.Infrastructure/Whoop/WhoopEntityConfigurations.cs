@@ -13,3 +13,14 @@ internal sealed class WhoopTokenEntityConfiguration : IEntityTypeConfiguration<W
         // WHOOP-Tokens sind JWTs und können lang sein → bewusst unbeschränkt (text), nicht limitieren.
     }
 }
+
+internal sealed class WhoopProcessedWorkoutEntityConfiguration
+    : IEntityTypeConfiguration<WhoopProcessedWorkoutEntity>
+{
+    public void Configure(EntityTypeBuilder<WhoopProcessedWorkoutEntity> builder)
+    {
+        builder.ToTable("WhoopProcessedWorkouts");
+        builder.HasKey(e => e.WorkoutId);
+        builder.Property(e => e.WorkoutId).HasMaxLength(64); // WHOOP-Workout-UUID
+    }
+}

@@ -59,3 +59,34 @@ internal sealed class WhoopCycleScore
 {
     [JsonPropertyName("strain")] public double Strain { get; init; }
 }
+
+internal sealed class WhoopWorkoutRecord
+{
+    [JsonPropertyName("id")] public string Id { get; init; } = string.Empty;
+    [JsonPropertyName("sport_name")] public string? SportName { get; init; }
+    [JsonPropertyName("start")] public DateTimeOffset Start { get; init; }
+    [JsonPropertyName("end")] public DateTimeOffset End { get; init; }
+    [JsonPropertyName("score_state")] public string? ScoreState { get; init; }
+    [JsonPropertyName("score")] public WhoopWorkoutScore? Score { get; init; }
+}
+
+internal sealed class WhoopWorkoutScore
+{
+    [JsonPropertyName("distance_meter")] public double? DistanceMeter { get; init; }
+    [JsonPropertyName("zone_durations")] public WhoopZoneDurations? ZoneDurations { get; init; }
+}
+
+internal sealed class WhoopZoneDurations
+{
+    [JsonPropertyName("zone_zero_milli")] public long ZoneZero { get; init; }
+    [JsonPropertyName("zone_one_milli")] public long ZoneOne { get; init; }
+    [JsonPropertyName("zone_two_milli")] public long ZoneTwo { get; init; }
+    [JsonPropertyName("zone_three_milli")] public long ZoneThree { get; init; }
+    [JsonPropertyName("zone_four_milli")] public long ZoneFour { get; init; }
+    [JsonPropertyName("zone_five_milli")] public long ZoneFive { get; init; }
+
+    private long Total => ZoneZero + ZoneOne + ZoneTwo + ZoneThree + ZoneFour + ZoneFive;
+
+    /// <summary>Zeitanteil in den HF-Zonen 4+5 (0..1).</summary>
+    public double HighIntensityShare => Total == 0 ? 0 : (double)(ZoneFour + ZoneFive) / Total;
+}
