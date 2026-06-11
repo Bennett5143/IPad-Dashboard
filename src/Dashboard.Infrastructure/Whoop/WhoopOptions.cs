@@ -11,8 +11,11 @@ public sealed class WhoopOptions
     public string ClientId { get; init; } = string.Empty;
     public string ClientSecret { get; init; } = string.Empty;
 
-    /// <summary>Muss exakt der in der WHOOP-App hinterlegten Redirect-URL entsprechen.</summary>
-    public string RedirectUri { get; init; } = "http://localhost:5235/whoop/callback";
+    /// <summary>
+    /// Muss exakt der in der WHOOP-App hinterlegten Redirect-URL entsprechen.
+    /// WHOOP akzeptiert nur <c>https://</c> (kein <c>http://</c>) – daher der https-Dev-Port (Profil „https").
+    /// </summary>
+    public string RedirectUri { get; init; } = "https://localhost:7204/whoop/callback";
 
     /// <summary><c>offline</c> ist für Refresh-Tokens nötig; restliche Read-Scopes für Daten.</summary>
     public string Scope { get; init; } = "offline read:recovery read:sleep read:cycles read:workout read:profile";
