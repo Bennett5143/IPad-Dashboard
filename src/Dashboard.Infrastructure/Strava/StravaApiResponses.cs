@@ -21,3 +21,13 @@ internal sealed record StravaActivityDto(
 
 internal sealed record StravaMapDto(
     [property: JsonPropertyName("summary_polyline")] string? SummaryPolyline);
+
+// Activity-Streams (key_by_type=true): je Typ ein Objekt mit "data"-Array.
+internal sealed record StravaStreamSet(
+    [property: JsonPropertyName("latlng")] StravaStreamData<double[]>? LatLng,
+    [property: JsonPropertyName("time")] StravaStreamData<int>? Time,
+    [property: JsonPropertyName("altitude")] StravaStreamData<double>? Altitude,
+    [property: JsonPropertyName("heartrate")] StravaStreamData<int>? HeartRate);
+
+internal sealed record StravaStreamData<T>(
+    [property: JsonPropertyName("data")] IReadOnlyList<T>? Data);
