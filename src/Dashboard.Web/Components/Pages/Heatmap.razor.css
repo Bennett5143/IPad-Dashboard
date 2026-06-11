@@ -96,6 +96,31 @@
     background: #0b0d10; /* dunkler Grund, passend zur dark-Basiskarte */
 }
 
+.layer-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.layer-buttons button {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-sunken);
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.layer-buttons button.active {
+    background: var(--color-accent);
+    color: #fff;
+    font-weight: var(--font-weight-medium);
+}
+
+.heatmap-legend {
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-sm);
+}
+
 .sync-info {
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
