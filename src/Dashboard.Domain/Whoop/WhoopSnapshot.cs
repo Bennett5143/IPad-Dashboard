@@ -10,8 +10,10 @@ public sealed record WhoopSnapshot(
 /// <summary>Recovery des letzten physiologischen Zyklus.</summary>
 public sealed record WhoopRecovery(int ScorePercent, double HrvMillis, int RestingHeartRate)
 {
+    public WhoopRecoveryLevel Level => LevelFor(ScorePercent);
+
     /// <summary>WHOOP-Ampel: grün ab 67 %, gelb 34–66 %, rot darunter.</summary>
-    public WhoopRecoveryLevel Level => ScorePercent switch
+    public static WhoopRecoveryLevel LevelFor(int scorePercent) => scorePercent switch
     {
         >= 67 => WhoopRecoveryLevel.High,
         >= 34 => WhoopRecoveryLevel.Medium,
