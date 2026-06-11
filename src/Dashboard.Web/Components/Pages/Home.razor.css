@@ -1,16 +1,20 @@
+/* Kiosk-Raster für iPad 6th gen quer (1024×768): feste Viewport-Höhe, kein Scrollen.
+   minmax(0, …)-Zeilen + min-height:0 auf den Zellen lassen Tiles schrumpfen/clippen,
+   statt die Seite zu sprengen. */
 .dashboard {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: auto auto 1fr auto;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.05fr);
     grid-template-areas:
         "header   header     header     header      quote       quote"
         "hvv1     hvv1       hvv2       hvv2        hvv3        hvv3"
         "habits   habits     football   football    whoop       whoop"
         "weather  weather    hourly     hourly      tomorrow    tomorrow";
 
-    min-height: 100dvh;
-    gap: var(--space-4);
-    padding: var(--space-4);
+    height: 100dvh;
+    overflow: hidden;
+    gap: var(--space-3);
+    padding: var(--space-3);
 }
 
 .dashboard ::deep .area-header   { grid-area: header; }
@@ -24,3 +28,8 @@
 .dashboard ::deep .area-weather  { grid-area: weather; }
 .dashboard ::deep .area-hourly   { grid-area: hourly; }
 .dashboard ::deep .area-tomorrow { grid-area: tomorrow; }
+
+.dashboard ::deep [class*="area-"] {
+    min-width: 0;
+    min-height: 0;
+}
