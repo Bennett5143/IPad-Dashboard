@@ -5,7 +5,7 @@
     grid-template-areas:
         "header   header     header     header      quote       quote"
         "hvv1     hvv1       hvv2       hvv2        hvv3        hvv3"
-        "habits   habits     habits     football    football    football"
+        "habits   habits     football   football    whoop       whoop"
         "weather  weather    hourly     hourly      tomorrow    tomorrow";
 
     min-height: 100dvh;
@@ -20,6 +20,7 @@
 .dashboard ::deep .area-hvv3     { grid-area: hvv3; }
 .dashboard ::deep .area-habits   { grid-area: habits; }
 .dashboard ::deep .area-football { grid-area: football; }
+.dashboard ::deep .area-whoop    { grid-area: whoop; }
 .dashboard ::deep .area-weather  { grid-area: weather; }
 .dashboard ::deep .area-hourly   { grid-area: hourly; }
 .dashboard ::deep .area-tomorrow { grid-area: tomorrow; }
