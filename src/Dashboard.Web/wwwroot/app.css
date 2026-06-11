@@ -2,28 +2,35 @@
    Design Tokens (CSS Custom Properties)
    ============================================================
    Single source of truth für Farben, Spacing, Typografie.
-   Wenn du später Dark Mode willst, überschreibst du nur diese
-   Variablen unter [data-theme="dark"] – kein Refactoring nötig.
+   Thema: dunkles, ruhiges Kiosk-Display („Nightboard") – passt
+   zur Lauf-Heatmap und ist auf dem iPad (1024×768) blendfrei.
+   Die Skala ist bewusst kompakt, damit die Hauptansicht ohne
+   Scrollen auf 768 px Höhe passt.
    ============================================================ */
 
 :root {
+    color-scheme: dark;
+
     /* Farben: Surface-Levels (Hintergrund-Hierarchie) */
-    --color-surface-base:    #f5f5f7;  /* Seiten-Hintergrund */
-    --color-surface-raised:  #ffffff;  /* Tile-Hintergrund     */
-    --color-surface-sunken:  #ebebee;  /* z.B. innere Boxen   */
+    --color-surface-base:    #0c0e12;  /* Seiten-Hintergrund (≙ Heatmap-Karte) */
+    --color-surface-raised:  #14181f;  /* Tile-Hintergrund   */
+    --color-surface-sunken:  #1d222b;  /* innere Boxen/Chips */
 
     /* Farben: Vordergrund (Text) */
-    --color-fg-primary:      #1a1a1c;
-    --color-fg-secondary:    #5a5a5e;
-    --color-fg-muted:        #8e8e92;
+    --color-fg-primary:      #f2f3f5;
+    --color-fg-secondary:    #aeb4bf;
+    --color-fg-muted:        #757d89;
 
-    /* Farben: Akzent & Status */
-    --color-accent:          #007aff;
-    --color-success:         #34c759;
-    --color-warning:         #ff9500;
-    --color-error:           #ff3b30;
+    /* Farben: Akzent & Status (iOS-Dark-Palette, harmoniert mit den Tiles) */
+    --color-accent:          #0a84ff;
+    --color-success:         #30d158;
+    --color-warning:         #ffd60a;
+    --color-error:           #ff453a;
 
-    --color-border:          #e0e0e3;
+    /* Marken-Farbe Strava (Connect-Button, bewusst kein Statuston) */
+    --color-strava:          #fc4c02;
+
+    --color-border:          #262c36;
 
     /* Spacing-Scale (4px-Basis, modulare Schritte) */
     --space-1: 0.25rem;  /*  4px */
@@ -34,30 +41,30 @@
     --space-6: 2rem;     /* 32px */
     --space-7: 3rem;     /* 48px */
 
-    /* Typografie */
+    /* Typografie – kompakte Skala fürs 9,7"-Kiosk */
     --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI",
                         Roboto, "Helvetica Neue", Arial, sans-serif;
 
-    --font-size-sm:   0.875rem;  /* 14px */
-    --font-size-base: 1rem;      /* 16px */
-    --font-size-lg:   1.25rem;   /* 20px */
-    --font-size-xl:   1.5rem;    /* 24px */
-    --font-size-2xl:  2rem;      /* 32px */
-    --font-size-3xl:  3rem;      /* 48px */
+    --font-size-sm:   0.8125rem; /* 13px */
+    --font-size-base: 0.9375rem; /* 15px */
+    --font-size-lg:   1.125rem;  /* 18px */
+    --font-size-xl:   1.375rem;  /* 22px */
+    --font-size-2xl:  1.75rem;   /* 28px */
+    --font-size-3xl:  2.25rem;   /* 36px */
 
     --font-weight-regular:  400;
     --font-weight-medium:   500;
     --font-weight-semibold: 600;
 
     --line-height-tight: 1.2;
-    --line-height-base:  1.5;
+    --line-height-base:  1.45;
 
     /* Radien & Schatten */
     --radius-md: 0.5rem;   /*  8px */
     --radius-lg: 0.75rem;  /* 12px */
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 /* ============================================================
@@ -105,6 +112,24 @@ button {
     color: inherit;
 }
 
+a {
+    color: var(--color-accent);
+}
+
+input, select, textarea {
+    font: inherit;
+    color: var(--color-fg-primary);
+    background-color: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    accent-color: var(--color-accent);
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
 /* ============================================================
    Utility Classes
    ============================================================ */
@@ -117,21 +142,26 @@ button {
 
 .dialog-backdrop {
     position: fixed; inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 .dialog {
-    background: #fff; border-radius: 16px; padding: 1.5rem;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
     width: min(90vw, 480px); max-height: 85vh; overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-md);
 }
-.dialog-title  { margin: 0 0 1rem; font-size: 1.3rem; }
-.dialog-error  { color: #c62828; font-size: 0.9rem; margin: 0.75rem 0 0; }
-.dialog-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+.dialog-title  { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); }
+.dialog-error  { color: var(--color-error); font-size: var(--font-size-sm); margin: var(--space-3) 0 0; }
+.dialog-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 .dialog-actions button {
     flex: 1; min-width: 120px; padding: 0.6rem 1rem;
-    border: none; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600;
+    border: none; border-radius: var(--radius-md); cursor: pointer;
+    font: inherit; font-weight: var(--font-weight-semibold);
+    background: var(--color-surface-sunken); color: var(--color-fg-primary);
 }
-.dialog-actions button:first-child { background: #1976d2; color: #fff; }
+.dialog-actions button:first-child { background: var(--color-accent); color: #fff; }
 .dialog-actions button:disabled { opacity: 0.6; cursor: default; }
