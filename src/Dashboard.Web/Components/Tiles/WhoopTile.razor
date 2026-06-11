@@ -1,0 +1,64 @@
+@implements IDisposable
+@inject WhoopState WhoopState
+
+<Tile CssClass="@CssClass" Title="WHOOP">
+    <Icon>
+        <span class="whoop-emoji" aria-hidden="true">💪</span>
+    </Icon>
+    <ChildContent>
+        <div class="whoop-tile">
+            @if (_snapshot is null)
+            {
+                <p class="whoop-unavailable">
+                    WHOOP nicht verbunden – <a href="/whoop/connect">jetzt verbinden</a>.
+                </p>
+            }
+            else
+            {
+                <div class="whoop-recovery @WhoopFormatter.RecoveryCss(_snapshot.Recovery?.Level)">
+                    <span class="whoop-recovery-value">@WhoopFormatter.RecoveryScore(_snapshot.Recovery)</span>
+                    <span class="whoop-recovery-label">Recovery</span>
+                </div>
+
+                <dl class="whoop-metrics">
+                    <div><dt>HRV</dt><dd>@WhoopFormatter.Hrv(_snapshot.Recovery)</dd></div>
+                    <div><dt>Ruhepuls</dt><dd>@WhoopFormatter.RestingHr(_snapshot.Recovery)</dd></div>
+                    <div><dt>Schlaf</dt><dd>@WhoopFormatter.Sleep(_snapshot.Sleep)</dd></div>
+                    <div><dt>Strain</dt><dd>@WhoopFormatter.Strain(_snapshot.DayStrain)</dd></div>
+                </dl>
+
+                @if (_isStale)
+                {
+                    <small class="whoop-stale">Stand @WhoopFormatter.UpdatedAt(_snapshot.RetrievedAtUtc) — Aktualisierung fehlgeschlagen</small>
+                }
+            }
+        </div>
+    </ChildContent>
+</Tile>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+
+    private WhoopSnapshot? _snapshot;
+    private bool _isStale;
+
+    protected override void OnInitialized()
+    {
+        WhoopState.Changed += OnWhoopChanged;
+        ReadState();
+    }
+
+    private void OnWhoopChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        _snapshot = WhoopState.Current;
+        _isStale = WhoopState.IsStale;
+    }
+
+    public void Dispose() => WhoopState.Changed -= OnWhoopChanged;
+}

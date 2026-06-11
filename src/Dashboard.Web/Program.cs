@@ -132,6 +132,29 @@ try
     });
     builder.Services.AddHostedService<StravaSyncService>();
 
+    // WHOOP / Recovery-Readiness (Phase 8)
+    var whoopOptions = builder.Configuration
+        .GetSection(WhoopOptions.SectionName)
+        .Get<WhoopOptions>() ?? new WhoopOptions();
+
+    builder.Services.Configure<WhoopOptions>(
+        builder.Configuration.GetSection(WhoopOptions.SectionName));
+    builder.Services.AddSingleton<WhoopState>();
+    builder.Services.AddScoped<IWhoopTokenStore, WhoopTokenStore>();
+    builder.Services.AddHttpClient<WhoopTokenService>(http =>
+    {
+        http.BaseAddress = new Uri(whoopOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(20);
+    });
+    builder.Services.AddScoped<IWhoopAccessTokenProvider>(
+        sp => sp.GetRequiredService<WhoopTokenService>());
+    builder.Services.AddHttpClient<IWhoopProvider, WhoopClient>(http =>
+    {
+        http.BaseAddress = new Uri(whoopOptions.BaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(20);
+    });
+    builder.Services.AddHostedService<WhoopRefreshService>();
+
     // Habits
     builder.Services.AddScoped<IHabitEntryRepository, HabitEntryRepository>();
     builder.Services.AddScoped<HabitTrackingService>();
@@ -191,6 +214,63 @@ try
 
         await tokenService.ExchangeCodeAsync(code, ct);
         return Results.Redirect("/heatmap");
+    });
+
+    // WHOOP-OAuth (Phase 8): gleiches state-Cookie-/CSRF-Muster wie bei Strava.
+    const string whoopStateCookie = "whoop_oauth_state";
+
+    app.MapGet("/whoop/connect", (HttpContext httpContext, WhoopTokenService tokenService) =>
+    {
+        var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+        httpContext.Response.Cookies.Append(whoopStateCookie, state, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = httpContext.Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            MaxAge = TimeSpan.FromMinutes(10),
+            IsEssential = true
+        });
+        return Results.Redirect(tokenService.BuildAuthorizeUrl(state).ToString());
+    });
+
+    app.MapGet("/whoop/callback", async (
+        HttpContext httpContext,
+        WhoopTokenService tokenService,
+        IWhoopProvider whoopProvider,
+        WhoopState whoopState,
+        ILoggerFactory loggerFactory,
+        CancellationToken ct) =>
+    {
+        var code = httpContext.Request.Query["code"].ToString();
+        var error = httpContext.Request.Query["error"].ToString();
+        var state = httpContext.Request.Query["state"].ToString();
+        var expectedState = httpContext.Request.Cookies[whoopStateCookie];
+        httpContext.Response.Cookies.Delete(whoopStateCookie);
+
+        var stateValid = !string.IsNullOrEmpty(expectedState)
+            && CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(state), Encoding.UTF8.GetBytes(expectedState));
+
+        if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code) || !stateValid)
+        {
+            return Results.Redirect("/");
+        }
+
+        await tokenService.ExchangeCodeAsync(code, ct);
+
+        // Direkt nach dem Verbinden einen ersten Snapshot holen, damit die Kachel sofort
+        // befüllt ist – statt bis zum nächsten Hintergrund-Poll (alle 30 min) zu warten.
+        try
+        {
+            whoopState.Update(await whoopProvider.GetWhoopAsync(ct));
+        }
+        catch (Exception ex)
+        {
+            loggerFactory.CreateLogger("Whoop").LogWarning(
+                ex, "WHOOP: Erst-Abruf nach Verbindung fehlgeschlagen – der Hintergrund-Sync holt es nach.");
+        }
+
+        return Results.Redirect("/");
     });
 
     // Configure the HTTP request pipeline.
