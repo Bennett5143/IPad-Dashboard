@@ -1,5 +1,8 @@
-// Leaflet + Heatmap-Layer für die Lauf-Heatmap (FA-8.05). Leaflet wird per CDN
-// nachgeladen; clientseitig gerendert, die Punkte kommen aus Blazor.
+// Lauf-Heatmap im Stil von Sam Wilsons "running-heatmap" / Stravas Personal Heatmap:
+// jede Aktivität wird als zusammenhängende Linie auf dunkler Karte gezeichnet. Wo sich
+// Strecken überlagern (oft gelaufen), addiert sich die Deckkraft -> die Route leuchtet heller.
+// Leaflet wird per CDN nachgeladen; gerendert wird auf einem Canvas (additive Überlagerung,
+// gute Performance bei vielen Linien). Die Tracks kommen pro Lauf gruppiert aus Blazor.
 
 let leafletLoader = null;
 
@@ -25,19 +28,23 @@ function addStylesheet(href) {
 }
 
 function ensureLeaflet() {
-    if (window.L && window.L.heatLayer) {
+    if (window.L) {
         return Promise.resolve();
     }
     if (leafletLoader) {
         return leafletLoader;
     }
     addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-    leafletLoader = loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
-        .then(() => loadScript('https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js'));
+    leafletLoader = loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
     return leafletLoader;
 }
 
-export async function render(elementId, points) {
+// Zwei Linien pro Lauf: ein breiter, sehr schwacher "Glow" + ein schmaler, kräftiger Kern.
+// Niedrige Deckkraft, damit sich überlagernde Strecken sichtbar aufsummieren.
+const GLOW_STYLE = { color: '#ff5a1f', weight: 7, opacity: 0.06, lineCap: 'round', lineJoin: 'round', interactive: false };
+const CORE_STYLE = { color: '#ff8a3d', weight: 2, opacity: 0.45, lineCap: 'round', lineJoin: 'round', interactive: false };
+
+export async function render(elementId, tracks) {
     await ensureLeaflet();
 
     const element = document.getElementById(elementId);
@@ -51,15 +58,32 @@ export async function render(elementId, points) {
         element._leafletMap = null;
     }
 
-    const map = L.map(element).setView([53.55, 9.99], 11); // Default: Hamburg
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
+    const renderer = L.canvas({ padding: 0.5 });
+    const map = L.map(element, { renderer, preferCanvas: true }).setView([53.55, 9.99], 11); // Default: Hamburg
+
+    // Dunkle, label-arme Basiskarte (kostenlos, kein Key) – passt zum leuchtenden Routen-Look.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        subdomains: 'abcd',
+        attribution: '© OpenStreetMap, © CARTO'
     }).addTo(map);
 
-    if (points && points.length > 0) {
-        L.heatLayer(points, { radius: 6, blur: 8, maxZoom: 14 }).addTo(map);
-        map.fitBounds(points);
+    const routes = Array.isArray(tracks) ? tracks : [];
+    const bounds = L.latLngBounds([]);
+
+    for (const track of routes) {
+        if (!Array.isArray(track) || track.length < 2) {
+            continue;
+        }
+        L.polyline(track, { ...GLOW_STYLE, renderer }).addTo(map);
+        L.polyline(track, { ...CORE_STYLE, renderer }).addTo(map);
+        for (const point of track) {
+            bounds.extend(point);
+        }
+    }
+
+    if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [24, 24] });
     }
 
     element._leafletMap = map;
