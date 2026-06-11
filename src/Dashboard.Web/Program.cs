@@ -153,6 +153,8 @@ try
         http.BaseAddress = new Uri(whoopOptions.BaseUrl);
         http.Timeout = TimeSpan.FromSeconds(20);
     });
+    builder.Services.AddScoped<IWhoopProcessedWorkoutStore, WhoopProcessedWorkoutStore>();
+    builder.Services.AddScoped<WhoopHabitSync>();
     builder.Services.AddHostedService<WhoopRefreshService>();
 
     // Habits

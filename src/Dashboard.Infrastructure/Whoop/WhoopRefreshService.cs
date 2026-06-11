@@ -74,6 +74,21 @@ public sealed class WhoopRefreshService : BackgroundService
             _state.Update(snapshot);
             _logger.LogInformation(
                 "WHOOP: Snapshot aktualisiert (Recovery {Recovery}%).", snapshot.Recovery?.ScorePercent);
+
+            // Heutige Workouts in Habits übernehmen – darf den Recovery-Snapshot nicht gefährden.
+            try
+            {
+                var applied = await scope.ServiceProvider
+                    .GetRequiredService<WhoopHabitSync>().ApplyTodayAsync(ct);
+                if (applied > 0)
+                {
+                    _logger.LogInformation("WHOOP: {Count} Habit(s) aus heutigen Workouts übernommen.", applied);
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "WHOOP: Habit-Übernahme aus Workouts fehlgeschlagen.");
+            }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
