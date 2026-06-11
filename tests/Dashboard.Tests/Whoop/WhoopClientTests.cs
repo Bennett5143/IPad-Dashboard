@@ -33,6 +33,16 @@ public class WhoopClientTests
         { "records": [ { "score_state": "SCORED", "score": { "strain": 12.7 } } ] }
         """;
 
+    private const string WorkoutsJson =
+        """
+        { "records": [
+          { "id": "wid-1", "sport_name": "running", "score_state": "SCORED",
+            "start": "2026-06-11T06:00:00.000Z", "end": "2026-06-11T06:30:00.000Z",
+            "score": { "distance_meter": 5000,
+              "zone_durations": { "zone_zero_milli": 0, "zone_one_milli": 600000, "zone_two_milli": 900000, "zone_three_milli": 300000, "zone_four_milli": 120000, "zone_five_milli": 60000 } } }
+        ] }
+        """;
+
     private sealed class FixedTokenProvider : IWhoopAccessTokenProvider
     {
         public string? Token = "access-token";
@@ -46,6 +56,7 @@ public class WhoopClientTests
             var path = request.RequestUri!.AbsolutePath;
             if (path.Contains("recovery", StringComparison.Ordinal)) return StubHttpMessageHandler.Json(RecoveryJson);
             if (path.Contains("sleep", StringComparison.Ordinal)) return StubHttpMessageHandler.Json(SleepJson);
+            if (path.Contains("workout", StringComparison.Ordinal)) return StubHttpMessageHandler.Json(WorkoutsJson);
             if (path.Contains("cycle", StringComparison.Ordinal)) return StubHttpMessageHandler.Json(CycleJson);
             return new HttpResponseMessage(HttpStatusCode.NotFound);
         });
@@ -91,5 +102,22 @@ public class WhoopClientTests
         var client = Create(new FixedTokenProvider { Token = null });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetWhoopAsync());
+    }
+
+    [Fact]
+    public async Task GetWorkoutsAsync_MapsSportDistanceDurationAndIntensity()
+    {
+        var from = new DateTimeOffset(2026, 6, 11, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 6, 11, 23, 59, 0, TimeSpan.Zero);
+
+        var workouts = await Create().GetWorkoutsAsync(from, to);
+
+        var workout = Assert.Single(workouts);
+        Assert.Equal("wid-1", workout.Id);
+        Assert.Equal("running", workout.Sport);
+        Assert.Equal(5000, workout.DistanceMeters);
+        Assert.Equal(TimeSpan.FromMinutes(30), workout.Duration);
+        // (zone4 120000 + zone5 60000) / 1.980.000 gesamt
+        Assert.Equal(180000d / 1980000d, workout.HighIntensityShare, 3);
     }
 }
