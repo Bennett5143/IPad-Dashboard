@@ -44,6 +44,44 @@
             }
         </section>
 
+        @if (_night is not null)
+        {
+            <section class="sleep">
+                <h2>Letzte Nacht <span class="sleep-date">@_night.DateLabel</span></h2>
+                <article class="sleep-card">
+                    <div class="sleep-meta">
+                        @if (_night.TimeRange is not null)
+                        {
+                            <span>@_night.TimeRange</span>
+                        }
+                        <span>@_night.AsleepLabel</span>
+                        @if (_night.RespiratoryLabel is not null)
+                        {
+                            <span>@_night.RespiratoryLabel</span>
+                        }
+                    </div>
+                    <div class="sleep-bar">
+                        @foreach (var seg in _night.Segments)
+                        {
+                            <div class="sleep-seg @seg.CssClass"
+                                 style="width: @(seg.WidthPercent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"
+                                 title="@seg.Label: @seg.Detail"></div>
+                        }
+                    </div>
+                    <ul class="sleep-legend">
+                        @foreach (var seg in _night.Segments)
+                        {
+                            <li>
+                                <span class="sleep-swatch @seg.CssClass" aria-hidden="true"></span>
+                                <span class="sleep-stage">@seg.Label</span>
+                                <span class="sleep-detail">@seg.Detail</span>
+                            </li>
+                        }
+                    </ul>
+                </article>
+            </section>
+        }
+
         <section class="runs">
             <h2>Läufe nach Recovery</h2>
             @if (_runs.Count == 0)
@@ -76,6 +114,7 @@
     private string? _error;
     private IReadOnlyList<WhoopMetricCard> _cards = [];
     private IReadOnlyList<WhoopRunRow> _runs = [];
+    private WhoopSleepNight? _night;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,6 +132,7 @@
             var history = await Whoop.GetHistoryAsync(from, now);
             var workouts = await Whoop.GetWorkoutsAsync(from, now);
             _cards = WhoopInsightsBuilder.BuildCards(history);
+            _night = WhoopInsightsBuilder.BuildSleepNight(history);
             _runs = WhoopInsightsBuilder.BuildRuns(workouts, history);
         }
         catch (Exception ex)
