@@ -1,5 +1,3 @@
-using Dashboard.Domain.Running;
-
 namespace Dashboard.Tests.Running;
 
 public class AerobicEfficiencyCalculatorTests

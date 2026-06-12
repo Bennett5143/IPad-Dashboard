@@ -407,6 +407,34 @@
     stroke: var(--color-accent-2);
 }
 
+.fitness-current {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg-primary);
+}
+
+.fitness-trend {
+    font-size: var(--font-size-sm);
+}
+
+.fitness-trend.trend-good {
+    color: var(--color-success);
+}
+
+.fitness-trend.trend-bad {
+    color: var(--color-warning);
+}
+
+.fitness-trend.trend-flat {
+    color: var(--color-fg-muted);
+}
+
+::deep .sparkline.fitness polyline {
+    stroke: var(--color-success);
+}
+
 .tod-matrix {
     border-collapse: collapse;
     font-size: var(--font-size-sm);
