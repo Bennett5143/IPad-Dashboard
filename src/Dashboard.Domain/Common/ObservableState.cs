@@ -10,7 +10,8 @@ namespace Dashboard.Domain.Common;
 /// neben dem In-Memory-Halten auch ein Change-Signal, das die Kacheln zum Neu-Rendern bewegt –
 /// das liefert ein reines Cache-Abstract nicht.
 /// </remarks>
-public abstract class ObservableState<TSnapshot> where TSnapshot : class, ISnapshot
+public abstract class ObservableState<TSnapshot> : ISliceStatusSource
+    where TSnapshot : class, ISnapshot
 {
     private readonly Lock _gate = new();
     private TSnapshot? _current;
@@ -18,6 +19,18 @@ public abstract class ObservableState<TSnapshot> where TSnapshot : class, ISnaps
 
     /// <summary>Wird ausgelöst, sobald sich Daten oder Stale-Status ändern.</summary>
     public event Action? Changed;
+
+    /// <summary>Slice-Name aus dem Typnamen („WeatherState" → „Weather") — für Status-Anzeigen.</summary>
+    public string SliceName
+    {
+        get
+        {
+            var name = GetType().Name;
+            return name.EndsWith("State", StringComparison.Ordinal) ? name[..^"State".Length] : name;
+        }
+    }
+
+    public bool HasData => Current is not null;
 
     public TSnapshot? Current
     {
