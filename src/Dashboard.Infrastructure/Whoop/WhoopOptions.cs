@@ -23,4 +23,10 @@ public sealed class WhoopOptions
     public string BaseUrl { get; init; } = "https://api.prod.whoop.com/";
 
     public TimeSpan RefreshInterval { get; init; } = TimeSpan.FromMinutes(30);
+
+    /// <summary>
+    /// Wie weit der historische Backfill der Tageswerte zurückreicht (FA-9.10);
+    /// <c>0</c> deaktiviert ihn. Geholt wird gefenstert, ein Fenster pro Sync-Zyklus.
+    /// </summary>
+    public int BackfillDays { get; init; } = 365;
 }

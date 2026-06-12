@@ -164,6 +164,7 @@ try
         http.Timeout = TimeSpan.FromSeconds(20);
     });
     builder.Services.AddScoped<IWhoopProcessedWorkoutStore, WhoopProcessedWorkoutStore>();
+    builder.Services.AddScoped<IWhoopMetricStore, WhoopMetricStore>();
     builder.Services.AddScoped<WhoopHabitSync>();
     builder.Services.AddHostedService<WhoopRefreshService>();
 
