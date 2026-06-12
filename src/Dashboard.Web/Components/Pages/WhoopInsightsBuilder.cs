@@ -29,6 +29,24 @@ public sealed record WhoopSleepNight(
 /// <summary>Ein Segment des Schlafphasen-Balkens; <see cref="WidthPercent"/> ist der Zeitanteil (0..100).</summary>
 public sealed record WhoopSleepStageSegment(string Label, string CssClass, double WidthPercent, string Detail);
 
+/// <summary>Eine Trainingsart-Karte der Tageszeit-Auswertung (FA-10.01).</summary>
+public sealed record TimeOfDayCard(
+    string Title,
+    string MeasureHint,
+    string Verdict,
+    IReadOnlyList<TimeOfDayRow> Rows);
+
+/// <summary>Ein Zeitfenster innerhalb einer Trainingsart-Karte.</summary>
+public sealed record TimeOfDayRow(
+    string BucketLabel, int Count, string ValueLabel, double BarPercent, bool IsBest, bool LowSample);
+
+/// <summary>Trainings-Häufigkeit als Matrix Zeitfenster × Wochentag.</summary>
+public sealed record TimeOfDayMatrix(IReadOnlyList<string> DayLabels, IReadOnlyList<TimeOfDayMatrixRow> Rows);
+
+public sealed record TimeOfDayMatrixRow(string BucketLabel, IReadOnlyList<TimeOfDayMatrixCell> Cells);
+
+public sealed record TimeOfDayMatrixCell(int Count, string Css);
+
 /// <summary>
 /// Baut die View-Modelle der WHOOP-Insights-Seite aus Tages-Historie und Workouts –
 /// reine, testbare Aufbereitung ohne Blazor-Abhängigkeiten.
@@ -112,6 +130,81 @@ public static class WhoopInsightsBuilder
         var from = TimeZoneInfo.ConvertTime(start, BerlinTz);
         var to = TimeZoneInfo.ConvertTime(end, BerlinTz);
         return $"{from.ToString("HH:mm", German)}–{to.ToString("HH:mm", German)}";
+    }
+
+    private static readonly string[] BucketLabels =
+        ["früh", "vormittags", "mittags", "nachmittags", "abends", "nachts"];
+
+    private static readonly string[] DayLabels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+
+    /// <summary>
+    /// Baut die Tageszeit-Karten (FA-10.01); Trainingsarten ganz ohne messbare Workouts
+    /// entfallen. Stichproben stehen an jeder Zeile, die Bestzeit-Aussage kommt aus dem
+    /// Analyzer (mind. 5 Trainings je Fenster, FA-10.02).
+    /// </summary>
+    public static IReadOnlyList<TimeOfDayCard> BuildTimeOfDayCards(IReadOnlyList<WhoopWorkout> workouts)
+    {
+        List<TimeOfDayCard> cards = [];
+        Add(TrainingCategory.Running, "Laufen", "Ø Herzschläge/km · niedriger = effizienter", "Schläge/km", "0");
+        Add(TrainingCategory.Strength, "Kraft", "Ø kJ/min · höher = dichter", "kJ/min", "0.0");
+        Add(TrainingCategory.JumpRope, "Seilspringen", "Ø kJ/min · höher = dichter", "kJ/min", "0.0");
+        return cards;
+
+        void Add(TrainingCategory category, string title, string hint, string unit, string format)
+        {
+            var stats = TimeOfDayAnalyzer.Analyze(workouts, category);
+            if (stats.Sum(s => s.SampleCount) == 0)
+            {
+                return;
+            }
+
+            var best = TimeOfDayAnalyzer.BestBucket(stats, TimeOfDayAnalyzer.LowerIsBetter(category));
+            var maxMeasure = stats.Max(s => s.AverageMeasure) ?? 0;
+
+            var rows = stats
+                .Select(s => new TimeOfDayRow(
+                    BucketLabels[(int)s.Bucket],
+                    s.SampleCount,
+                    s.AverageMeasure is { } value ? value.ToString(format, German) : "–",
+                    maxMeasure > 0 && s.AverageMeasure is { } v ? v / maxMeasure * 100 : 0,
+                    IsBest: best == s.Bucket,
+                    LowSample: s.SampleCount is > 0 and < TimeOfDayAnalyzer.MinSampleForVerdict))
+                .ToList();
+
+            var verdict = best is { } bucket
+                ? FormatVerdict(stats.Single(s => s.Bucket == bucket), unit, format)
+                : $"Noch keine belastbare Aussage – mind. {TimeOfDayAnalyzer.MinSampleForVerdict} Trainings je Zeitfenster nötig.";
+
+            cards.Add(new TimeOfDayCard(title, hint, verdict, rows));
+        }
+
+        string FormatVerdict(TimeOfDayBucketStats best, string unit, string format) =>
+            $"Stärkstes Zeitfenster: {BucketLabels[(int)best.Bucket]} – " +
+            $"Ø {best.AverageMeasure!.Value.ToString(format, German)} {unit} (n = {best.SampleCount})";
+    }
+
+    /// <summary>Trainings-Häufigkeit Zeitfenster × Wochentag (alle Trainingsarten zusammen).</summary>
+    public static TimeOfDayMatrix BuildTimeOfDayMatrix(IReadOnlyList<WhoopWorkout> workouts)
+    {
+        var matrix = TimeOfDayAnalyzer.WeekdayMatrix(workouts);
+
+        var rows = Enum.GetValues<TimeOfDayBucket>()
+            .Select(bucket => new TimeOfDayMatrixRow(
+                BucketLabels[(int)bucket],
+                Enumerable.Range(0, 7)
+                    .Select(day => Cell(matrix[(int)bucket, day]))
+                    .ToList()))
+            .ToList();
+
+        return new TimeOfDayMatrix(DayLabels, rows);
+
+        static TimeOfDayMatrixCell Cell(int count) => new(count, count switch
+        {
+            0 => "cell-0",
+            <= 2 => "cell-1",
+            <= 5 => "cell-2",
+            _ => "cell-3"
+        });
     }
 
     public static IReadOnlyList<WhoopRunRow> BuildRuns(

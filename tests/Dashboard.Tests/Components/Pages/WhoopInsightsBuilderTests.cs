@@ -144,4 +144,59 @@ public class WhoopInsightsBuilderTests
         Assert.Null(night.RespiratoryLabel);
         Assert.Equal(3, night.Segments.Count);         // ohne Wachzeit kein Wach-Segment
     }
+
+    private static WhoopWorkout TodWorkout(
+        int day, int hourUtc, string sport = "running", int? avgHr = 150, double? kilojoule = null) =>
+        new("tod-" + day + "-" + hourUtc, sport,
+            new DateTimeOffset(2026, 6, day, hourUtc, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 6, day, hourUtc, 30, 0, TimeSpan.Zero),
+            5000, 0,
+            Kilojoule: kilojoule,
+            AverageHeartRate: avgHr);
+
+    [Fact]
+    public void BuildTimeOfDayCards_OmitsEmptyCategories_AndShowsSamples()
+    {
+        // 6 Morgenläufe (05:00 UTC = früh) → genug für eine Aussage; kein Kraft/Seil.
+        var workouts = Enumerable.Range(1, 6).Select(d => TodWorkout(d, 5)).ToList();
+
+        var cards = WhoopInsightsBuilder.BuildTimeOfDayCards(workouts);
+
+        var card = Assert.Single(cards);               // nur Laufen
+        Assert.Equal("Laufen", card.Title);
+        Assert.Equal(6, card.Rows.Count);              // alle Zeitfenster, auch leere
+        var early = card.Rows.Single(r => r.BucketLabel == "früh");
+        Assert.Equal(6, early.Count);
+        Assert.True(early.IsBest);
+        Assert.Equal("900", early.ValueLabel);         // 150 bpm × 30 min ÷ 5 km
+        Assert.StartsWith("Stärkstes Zeitfenster: früh", card.Verdict, StringComparison.Ordinal);
+        Assert.Contains("n = 6", card.Verdict, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildTimeOfDayCards_WithoutEnoughSamples_ExplainsInsteadOfGuessing()
+    {
+        var cards = WhoopInsightsBuilder.BuildTimeOfDayCards([TodWorkout(1, 5), TodWorkout(2, 17)]);
+
+        var card = Assert.Single(cards);
+        Assert.DoesNotContain("Stärkstes Zeitfenster", card.Verdict, StringComparison.Ordinal);
+        Assert.Contains("mind. 5", card.Verdict, StringComparison.Ordinal);
+        Assert.All(card.Rows.Where(r => r.Count > 0), r => Assert.True(r.LowSample));
+    }
+
+    [Fact]
+    public void BuildTimeOfDayMatrix_MapsCountsToIntensities()
+    {
+        // 01.06.2026 = Montag, 05:00 UTC = früh.
+        var matrix = WhoopInsightsBuilder.BuildTimeOfDayMatrix(
+            [TodWorkout(1, 5), TodWorkout(1, 17, sport: "weightlifting", kilojoule: 600)]);
+
+        Assert.Equal(["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], matrix.DayLabels);
+        var early = matrix.Rows.Single(r => r.BucketLabel == "früh");
+        Assert.Equal(1, early.Cells[0].Count);          // Montag
+        Assert.Equal("cell-1", early.Cells[0].Css);
+        Assert.Equal("cell-0", early.Cells[1].Css);     // Dienstag leer
+        var evening = matrix.Rows.Single(r => r.BucketLabel == "abends");
+        Assert.Equal(1, evening.Cells[0].Count);        // 17:00 UTC = 19:00 Berlin
+    }
 }
