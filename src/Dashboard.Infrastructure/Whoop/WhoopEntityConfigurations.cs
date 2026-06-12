@@ -24,3 +24,12 @@ internal sealed class WhoopProcessedWorkoutEntityConfiguration
         builder.Property(e => e.WorkoutId).HasMaxLength(64); // WHOOP-Workout-UUID
     }
 }
+
+internal sealed class WhoopDailyMetricEntityConfiguration : IEntityTypeConfiguration<WhoopDailyMetricEntity>
+{
+    public void Configure(EntityTypeBuilder<WhoopDailyMetricEntity> builder)
+    {
+        builder.ToTable("WhoopDailyMetrics");
+        builder.HasKey(e => e.Date); // ein Datensatz pro Kalendertag (Berlin)
+    }
+}

@@ -1,6 +1,7 @@
 @page "/whoop"
 @rendermode InteractiveServer
 @inject IWhoopProvider Whoop
+@inject IWhoopMetricStore Metrics
 @inject IWhoopTokenStore Tokens
 @inject IClock Clock
 
@@ -109,6 +110,9 @@
 @code {
     private const int WindowDays = 30;
 
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
     private bool _connected;
     private bool _loading = true;
     private string? _error;
@@ -129,7 +133,16 @@
         {
             var now = Clock.UtcNow;
             var from = now.AddDays(-WindowDays);
-            var history = await Whoop.GetHistoryAsync(from, now);
+
+            // Historie aus der DB (FA-9.10) – die Live-API bleibt nur Fallback, solange die
+            // Tabelle leer ist (frisch deployt, erster Hintergrund-Sync läuft noch).
+            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, BerlinTz).DateTime);
+            var history = await Metrics.GetRangeAsync(today.AddDays(-WindowDays), today);
+            if (history.Count == 0)
+            {
+                history = await Whoop.GetHistoryAsync(from, now);
+            }
+
             var workouts = await Whoop.GetWorkoutsAsync(from, now);
             _cards = WhoopInsightsBuilder.BuildCards(history);
             _night = WhoopInsightsBuilder.BuildSleepNight(history);
