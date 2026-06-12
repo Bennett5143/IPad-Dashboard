@@ -152,6 +152,74 @@
             }
         </section>
 
+        <section class="tod">
+            <h2>Schlafenszeiten <span class="tod-window">letzte 12 Monate</span></h2>
+            @if (_sleepInsights is null)
+            {
+                <p class="insights-msg">
+                    Schlaf-Historie wird noch aufgebaut – Fortschritt auf <a href="/status">/status</a>.
+                </p>
+            }
+            else
+            {
+                @if (_sleepInsights.ConsistencyLabel is not null)
+                {
+                    <p class="tod-fact">@_sleepInsights.ConsistencyLabel</p>
+                }
+
+                <div class="tod-grid">
+                    <article class="tod-card">
+                        <div class="tod-head">
+                            <span class="tod-title">Einschlafzeit → Recovery</span>
+                            <span class="tod-hint">Ø Recovery am Folgetag je Einschlaf-Fenster</span>
+                        </div>
+                        <ul class="tod-rows">
+                            @foreach (var row in _sleepInsights.BedtimeRows)
+                            {
+                                <li class="@(row.IsBest ? "is-best" : null) @(row.LowSample ? "is-thin" : null)">
+                                    <span class="tod-bucket">@row.Label</span>
+                                    <span class="tod-bar">
+                                        <span class="tod-bar-fill"
+                                              style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+                                    </span>
+                                    <span class="tod-value">@row.ValueLabel</span>
+                                    <span class="tod-n">n=@row.Count</span>
+                                </li>
+                            }
+                        </ul>
+                        <p class="tod-verdict">@_sleepInsights.BedtimeVerdict</p>
+                    </article>
+
+                    <article class="tod-card">
+                        <div class="tod-head">
+                            <span class="tod-title">Schlafdauer → Recovery</span>
+                            <span class="tod-hint">Ø Recovery je Schlafdauer</span>
+                        </div>
+                        <ul class="tod-rows">
+                            @foreach (var row in _sleepInsights.DurationRows)
+                            {
+                                <li class="@(row.IsBest ? "is-best" : null) @(row.LowSample ? "is-thin" : null)">
+                                    <span class="tod-bucket">@row.Label</span>
+                                    <span class="tod-bar">
+                                        <span class="tod-bar-fill"
+                                              style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+                                    </span>
+                                    <span class="tod-value">@row.ValueLabel</span>
+                                    <span class="tod-n">n=@row.Count</span>
+                                </li>
+                            }
+                        </ul>
+                        <p class="tod-verdict">@_sleepInsights.DurationVerdict</p>
+                    </article>
+                </div>
+
+                @if (_sleepInsights.EveningLabel is not null)
+                {
+                    <p class="tod-fact">@_sleepInsights.EveningLabel</p>
+                }
+            }
+        </section>
+
         <section class="runs">
             <h2>Läufe nach Recovery</h2>
             @if (_runs.Count == 0)
@@ -190,6 +258,7 @@
     private WhoopSleepNight? _night;
     private IReadOnlyList<TimeOfDayCard> _todCards = [];
     private TimeOfDayMatrix? _todMatrix;
+    private SleepInsightsView? _sleepInsights;
 
     protected override async Task OnInitializedAsync()
     {
@@ -219,13 +288,17 @@
             _night = WhoopInsightsBuilder.BuildSleepNight(history);
             _runs = WhoopInsightsBuilder.BuildRuns(workouts, history);
 
-            // Tageszeit-Effektivität über die persistierte Workout-Historie (FA-10.01) –
-            // bewusst kein Live-Fallback: ein Jahr Workouts je Reload wäre API-Verschwendung.
+            // Tageszeit- und Schlafenszeiten-Auswertungen über die persistierte Historie
+            // (FA-10.01/10.03) – bewusst kein Live-Fallback: ein Jahr je Reload wäre
+            // API-Verschwendung.
             var yearWorkouts = await Workouts.GetRangeAsync(now.AddDays(-365), now);
             _todCards = WhoopInsightsBuilder.BuildTimeOfDayCards(yearWorkouts);
             _todMatrix = yearWorkouts.Count > 0
                 ? WhoopInsightsBuilder.BuildTimeOfDayMatrix(yearWorkouts)
                 : null;
+
+            var yearMetrics = await Metrics.GetRangeAsync(today.AddDays(-365), today);
+            _sleepInsights = WhoopInsightsBuilder.BuildSleepInsights(yearMetrics, yearWorkouts);
         }
         catch (Exception ex)
         {

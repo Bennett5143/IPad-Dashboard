@@ -337,6 +337,12 @@
     color: var(--color-fg-secondary);
 }
 
+.tod-fact {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
 .tod-matrix {
     border-collapse: collapse;
     font-size: var(--font-size-sm);
