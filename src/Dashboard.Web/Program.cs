@@ -165,6 +165,7 @@ try
     });
     builder.Services.AddScoped<IWhoopProcessedWorkoutStore, WhoopProcessedWorkoutStore>();
     builder.Services.AddScoped<IWhoopMetricStore, WhoopMetricStore>();
+    builder.Services.AddScoped<IWhoopWorkoutStore, WhoopWorkoutStore>();
     builder.Services.AddScoped<WhoopHabitSync>();
     builder.Services.AddHostedService<WhoopRefreshService>();
 
