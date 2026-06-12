@@ -126,7 +126,11 @@ public static class SleepAnalyzer
         return eligible.Count == 0 ? null : eligible.OrderByDescending(s => s.Average!.Value).First();
     }
 
-    private static double MinutesSinceAnchor(DateTimeOffset sleepStartUtc)
+    /// <summary>
+    /// Einschlafzeit als Minuten seit dem 18-Uhr-Anker (Berlin) — monoton „je später, desto
+    /// größer", ohne Mitternachts-Umbruch. Auch Basis der Treiber-Korrelationen (FA-10.06).
+    /// </summary>
+    public static double MinutesSinceAnchor(DateTimeOffset sleepStartUtc)
     {
         var local = TimeZoneInfo.ConvertTime(sleepStartUtc, BerlinTz);
         var sinceAnchor = local.TimeOfDay - BedtimeAnchor;

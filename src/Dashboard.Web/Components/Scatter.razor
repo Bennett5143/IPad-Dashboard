@@ -1,0 +1,19 @@
+<svg class="scatter @CssClass" viewBox="0 0 120 80" preserveAspectRatio="none" role="img" aria-hidden="true">
+    @foreach (var (cx, cy) in _points)
+    {
+        <circle cx="@Fmt(cx)" cy="@Fmt(cy)" r="1.8" />
+    }
+</svg>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<(double X, double Y)> Pairs { get; set; } = [];
+    [Parameter] public string? CssClass { get; set; }
+
+    private IReadOnlyList<(double Cx, double Cy)> _points = [];
+
+    protected override void OnParametersSet() =>
+        _points = Tiles.ScatterGeometry.ToPoints(Pairs, 120, 80);
+
+    private static string Fmt(double value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

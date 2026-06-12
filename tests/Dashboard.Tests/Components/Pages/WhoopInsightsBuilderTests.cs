@@ -296,6 +296,37 @@ public class WhoopInsightsBuilderTests
     }
 
     [Fact]
+    public void BuildRecoveryDrivers_FormatsRowsAndScatters()
+    {
+        // 14 Tage: Recovery steigt mit Schlafdauer (perfekt positiv), Strain variiert.
+        var metrics = Enumerable.Range(1, 14)
+            .Select(d => Metric(d, recovery: 50 + d, sleepHours: 6 + d * 0.1) with
+            {
+                DayStrain = 8.0 + (d % 3)
+            })
+            .ToList();
+
+        var view = WhoopInsightsBuilder.BuildRecoveryDrivers(metrics);
+
+        Assert.NotNull(view);
+        var sleep = view!.Rows.Single(r => r.Label == "Schlafdauer");
+        Assert.Equal("+1,00", sleep.RLabel);
+        Assert.Equal("stark", sleep.StrengthLabel);
+        Assert.Equal(100, sleep.BarPercent, 1);
+        var bedtime = view.Rows.Single(r => r.Label == "Einschlafzeit (später)");
+        Assert.Equal("–", bedtime.RLabel);                     // keine Schlafzeiten gesetzt
+        Assert.Equal("zu wenig Daten", bedtime.StrengthLabel);
+        Assert.Equal(2, view.Scatters.Count);                  // Schlafdauer + Vortages-Strain
+        Assert.Contains("keine Kausalität", view.Hint, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildRecoveryDrivers_NullWithoutAnyPairs()
+    {
+        Assert.Null(WhoopInsightsBuilder.BuildRecoveryDrivers([]));
+    }
+
+    [Fact]
     public void BuildTimeOfDayMatrix_MapsCountsToIntensities()
     {
         // 01.06.2026 = Montag, 05:00 UTC = früh.
