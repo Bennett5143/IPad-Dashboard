@@ -343,6 +343,70 @@
     font-variant-numeric: tabular-nums;
 }
 
+.load {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.load h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+}
+
+.load .tod-card {
+    max-width: 420px;
+}
+
+.load-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+}
+
+.load-ratio {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.load-zone {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.load-ratio.load-low,
+.load-zone.load-low {
+    color: var(--color-accent);
+}
+
+.load-ratio.load-ok,
+.load-zone.load-ok {
+    color: var(--color-success);
+}
+
+.load-ratio.load-warn,
+.load-zone.load-warn {
+    color: var(--color-warning);
+}
+
+.load-ratio.load-high,
+.load-zone.load-high {
+    color: var(--color-error);
+}
+
+.load-confidence {
+    font-size: var(--font-size-sm);
+    color: var(--color-warning);
+}
+
+::deep .sparkline.load polyline {
+    stroke: var(--color-accent-2);
+}
+
 .tod-matrix {
     border-collapse: collapse;
     font-size: var(--font-size-sm);

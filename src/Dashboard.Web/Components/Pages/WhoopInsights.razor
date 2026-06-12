@@ -46,6 +46,25 @@
             }
         </section>
 
+        @if (_trainingLoad is not null)
+        {
+            <section class="load">
+                <h2>Trainingslast <span class="tod-window">ACWR · Tages-Strain</span></h2>
+                <article class="tod-card">
+                    <div class="load-head">
+                        <span class="load-ratio @_trainingLoad.ZoneCss">@_trainingLoad.RatioLabel</span>
+                        <span class="load-zone @_trainingLoad.ZoneCss">@_trainingLoad.ZoneLabel</span>
+                    </div>
+                    <Sparkline Values="_trainingLoad.Sparkline" CssClass="load" />
+                    @if (_trainingLoad.ConfidenceHint is not null)
+                    {
+                        <p class="load-confidence">@_trainingLoad.ConfidenceHint</p>
+                    }
+                    <p class="tod-hint">@_trainingLoad.MethodHint</p>
+                </article>
+            </section>
+        }
+
         @if (_night is not null)
         {
             <section class="sleep">
@@ -259,6 +278,7 @@
     private IReadOnlyList<TimeOfDayCard> _todCards = [];
     private TimeOfDayMatrix? _todMatrix;
     private SleepInsightsView? _sleepInsights;
+    private TrainingLoadView? _trainingLoad;
 
     protected override async Task OnInitializedAsync()
     {
@@ -299,6 +319,7 @@
 
             var yearMetrics = await Metrics.GetRangeAsync(today.AddDays(-365), today);
             _sleepInsights = WhoopInsightsBuilder.BuildSleepInsights(yearMetrics, yearWorkouts);
+            _trainingLoad = WhoopInsightsBuilder.BuildTrainingLoad(yearMetrics);
         }
         catch (Exception ex)
         {

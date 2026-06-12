@@ -53,6 +53,15 @@ public sealed record SleepInsightsView(
     string DurationVerdict,
     string? EveningLabel);
 
+/// <summary>Trainingslast-Anzeige (FA-10.04): aktueller ACWR + Zone + Verlaufs-Sparkline.</summary>
+public sealed record TrainingLoadView(
+    string RatioLabel,
+    string ZoneLabel,
+    string ZoneCss,
+    IReadOnlyList<double?> Sparkline,
+    string? ConfidenceHint,
+    string MethodHint);
+
 /// <summary>Trainings-Häufigkeit als Matrix Zeitfenster × Wochentag.</summary>
 public sealed record TimeOfDayMatrix(IReadOnlyList<string> DayLabels, IReadOnlyList<TimeOfDayMatrixRow> Rows);
 
@@ -229,6 +238,45 @@ public static class WhoopInsightsBuilder
                   $"{e.AvgSleepPerformanceAfterEvening.ToString("0", German)} % (n = {e.EveningNights}) – " +
                   $"sonst {e.AvgSleepPerformanceOther.ToString("0", German)} % (n = {e.OtherNights})."
                 : null);
+    }
+
+    /// <summary>
+    /// Baut die Trainingslast-Anzeige (FA-10.04); <c>null</c>, solange die chronische EWMA
+    /// noch im Warmlauf ist (mind. 28 Tage Strain-Historie nötig).
+    /// </summary>
+    public static TrainingLoadView? BuildTrainingLoad(IReadOnlyList<WhoopDailyMetric> metrics)
+    {
+        var points = TrainingLoadCalculator.Compute(metrics);
+        if (points.Count == 0 || points[^1].Ratio is not { } ratio)
+        {
+            return null;
+        }
+
+        var zone = TrainingLoadCalculator.ZoneFor(ratio);
+        var acuteDays = TrainingLoadCalculator.AcuteDaysWithData(metrics, points[^1].Date);
+
+        return new TrainingLoadView(
+            ratio.ToString("0.00", German),
+            zone switch
+            {
+                TrainingLoadZone.Low => "Unterlast",
+                TrainingLoadZone.Balanced => "ausgewogen",
+                TrainingLoadZone.Elevated => "erhöht",
+                _ => "hoch"
+            },
+            zone switch
+            {
+                TrainingLoadZone.Low => "load-low",
+                TrainingLoadZone.Balanced => "load-ok",
+                TrainingLoadZone.Elevated => "load-warn",
+                _ => "load-high"
+            },
+            points.TakeLast(90).Select(p => p.Ratio).ToList(),
+            acuteDays < TrainingLoadCalculator.MinAcuteSamples
+                ? $"Nur {acuteDays} von {TrainingLoadCalculator.AcuteDays} Tagen mit Daten – Aussage eingeschränkt."
+                : null,
+            $"Akut ({TrainingLoadCalculator.AcuteDays} Tage) ÷ chronisch ({TrainingLoadCalculator.ChronicDays} Tage), " +
+            "EWMA über den Tages-Strain – Form-Heuristik, keine Verletzungs-Vorhersage.");
     }
 
     private static IReadOnlyList<SleepBucketRow> SleepRows(IReadOnlyList<SleepBucketStats> stats)
