@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject IWhoopProvider Whoop
 @inject IWhoopMetricStore Metrics
+@inject IWhoopWorkoutStore Workouts
 @inject IWhoopTokenStore Tokens
 @inject IClock Clock
 
@@ -83,6 +84,74 @@
             </section>
         }
 
+        <section class="tod">
+            <h2>Tageszeit-Effektivität <span class="tod-window">letzte 12 Monate</span></h2>
+            @if (_todCards.Count == 0)
+            {
+                <p class="insights-msg">
+                    Workout-Historie wird noch aufgebaut – Fortschritt auf <a href="/status">/status</a>.
+                </p>
+            }
+            else
+            {
+                <div class="tod-grid">
+                    @foreach (var card in _todCards)
+                    {
+                        <article class="tod-card">
+                            <div class="tod-head">
+                                <span class="tod-title">@card.Title</span>
+                                <span class="tod-hint">@card.MeasureHint</span>
+                            </div>
+                            <ul class="tod-rows">
+                                @foreach (var row in card.Rows)
+                                {
+                                    <li class="@(row.IsBest ? "is-best" : null) @(row.LowSample ? "is-thin" : null)">
+                                        <span class="tod-bucket">@row.BucketLabel</span>
+                                        <span class="tod-bar">
+                                            <span class="tod-bar-fill"
+                                                  style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+                                        </span>
+                                        <span class="tod-value">@row.ValueLabel</span>
+                                        <span class="tod-n">n=@row.Count</span>
+                                    </li>
+                                }
+                            </ul>
+                            <p class="tod-verdict">@card.Verdict</p>
+                        </article>
+                    }
+                </div>
+
+                @if (_todMatrix is not null)
+                {
+                    <table class="tod-matrix">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                @foreach (var day in _todMatrix.DayLabels)
+                                {
+                                    <th scope="col">@day</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in _todMatrix.Rows)
+                            {
+                                <tr>
+                                    <th scope="row">@row.BucketLabel</th>
+                                    @foreach (var cell in row.Cells)
+                                    {
+                                        <td class="@cell.Css" title="@cell.Count Training(s)">
+                                            @(cell.Count > 0 ? cell.Count : null)
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+        </section>
+
         <section class="runs">
             <h2>Läufe nach Recovery</h2>
             @if (_runs.Count == 0)
@@ -119,6 +188,8 @@
     private IReadOnlyList<WhoopMetricCard> _cards = [];
     private IReadOnlyList<WhoopRunRow> _runs = [];
     private WhoopSleepNight? _night;
+    private IReadOnlyList<TimeOfDayCard> _todCards = [];
+    private TimeOfDayMatrix? _todMatrix;
 
     protected override async Task OnInitializedAsync()
     {
@@ -147,6 +218,14 @@
             _cards = WhoopInsightsBuilder.BuildCards(history);
             _night = WhoopInsightsBuilder.BuildSleepNight(history);
             _runs = WhoopInsightsBuilder.BuildRuns(workouts, history);
+
+            // Tageszeit-Effektivität über die persistierte Workout-Historie (FA-10.01) –
+            // bewusst kein Live-Fallback: ein Jahr Workouts je Reload wäre API-Verschwendung.
+            var yearWorkouts = await Workouts.GetRangeAsync(now.AddDays(-365), now);
+            _todCards = WhoopInsightsBuilder.BuildTimeOfDayCards(yearWorkouts);
+            _todMatrix = yearWorkouts.Count > 0
+                ? WhoopInsightsBuilder.BuildTimeOfDayMatrix(yearWorkouts)
+                : null;
         }
         catch (Exception ex)
         {
