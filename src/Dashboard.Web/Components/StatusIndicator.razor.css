@@ -1,0 +1,24 @@
+/* Sitzt absolut in der oberen Ecke der umgebenden Kachel (Positionskontext liefert
+   der Host, z. B. .clock-tile). Bewusst klein und ohne Animation (iPad-GPU). */
+.status-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-fg-muted);
+}
+
+.status-dot.is-ok {
+    background: var(--color-success);
+    box-shadow: var(--glow-success);
+}
+
+.status-dot.is-warn {
+    background: var(--color-warning);
+}
+
+.status-dot.is-idle {
+    background: var(--color-fg-muted);
+}
