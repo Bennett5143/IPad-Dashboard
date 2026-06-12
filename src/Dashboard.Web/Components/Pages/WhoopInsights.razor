@@ -84,6 +84,46 @@
             </section>
         }
 
+        @if (_recoveryDrivers is not null)
+        {
+            <section class="tod">
+                <h2>Recovery-Treiber <span class="tod-window">Korrelation · letzte 12 Monate</span></h2>
+                <article class="tod-card drivers-card">
+                    <ul class="drv-rows">
+                        @foreach (var row in _recoveryDrivers.Rows)
+                        {
+                            <li class="@(row.LowSample ? "is-thin" : null)">
+                                <span class="tod-bucket">@row.Label</span>
+                                <span class="tod-bar">
+                                    <span class="tod-bar-fill"
+                                          style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+                                </span>
+                                <span class="tod-value">@row.RLabel</span>
+                                <span class="drv-strength">@row.StrengthLabel · n=@row.Count</span>
+                            </li>
+                        }
+                    </ul>
+                    <p class="tod-hint">@_recoveryDrivers.Hint</p>
+                </article>
+
+                @if (_recoveryDrivers.Scatters.Count > 0)
+                {
+                    <div class="tod-grid">
+                        @foreach (var scatter in _recoveryDrivers.Scatters)
+                        {
+                            <article class="tod-card">
+                                <div class="tod-head">
+                                    <span class="tod-title">@scatter.Title</span>
+                                    <span class="tod-hint">@scatter.AxisHint · n=@scatter.Count</span>
+                                </div>
+                                <Scatter Pairs="scatter.Pairs" CssClass="drivers" />
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
+
         @if (_night is not null)
         {
             <section class="sleep">
@@ -299,6 +339,7 @@
     private SleepInsightsView? _sleepInsights;
     private TrainingLoadView? _trainingLoad;
     private FitnessCurveView? _fitnessCurve;
+    private RecoveryDriversView? _recoveryDrivers;
 
     protected override async Task OnInitializedAsync()
     {
@@ -340,6 +381,7 @@
             var yearMetrics = await Metrics.GetRangeAsync(today.AddDays(-365), today);
             _sleepInsights = WhoopInsightsBuilder.BuildSleepInsights(yearMetrics, yearWorkouts);
             _trainingLoad = WhoopInsightsBuilder.BuildTrainingLoad(yearMetrics);
+            _recoveryDrivers = WhoopInsightsBuilder.BuildRecoveryDrivers(yearMetrics);
 
             // Fitness-Kurve aus den Strava-Lauf-Metriken (Projektion ohne Geometrie).
             _fitnessCurve = WhoopInsightsBuilder.BuildFitnessCurve(

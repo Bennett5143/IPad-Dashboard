@@ -70,6 +70,20 @@ public sealed record FitnessCurveView(
     string? TrendCss,
     string Hint);
 
+/// <summary>Eine Treiber-Zeile der Recovery-Korrelationen (FA-10.06).</summary>
+public sealed record RecoveryDriverRow(
+    string Label, string RLabel, string StrengthLabel, double BarPercent, int Count, bool LowSample);
+
+/// <summary>Ein Scatter (Faktor → Recovery) mit Roh-Wertepaaren.</summary>
+public sealed record RecoveryScatterView(
+    string Title, string AxisHint, IReadOnlyList<(double X, double Y)> Pairs, int Count);
+
+/// <summary>View-Modell der Recovery-Treiber-Sektion.</summary>
+public sealed record RecoveryDriversView(
+    IReadOnlyList<RecoveryDriverRow> Rows,
+    IReadOnlyList<RecoveryScatterView> Scatters,
+    string Hint);
+
 /// <summary>Trainings-Häufigkeit als Matrix Zeitfenster × Wochentag.</summary>
 public sealed record TimeOfDayMatrix(IReadOnlyList<string> DayLabels, IReadOnlyList<TimeOfDayMatrixRow> Rows);
 
@@ -319,6 +333,65 @@ public static class WhoopInsightsBuilder
             trendCss,
             $"Monats-Ø der Herzschläge pro km über alle Läufe ≥ {AerobicEfficiencyCalculator.MinDistanceKm:0} km – " +
             $"niedriger = aerob effizienter; Monate mit < {AerobicEfficiencyCalculator.MinRunsPerMonth} Läufen bleiben leer. Heuristik.");
+    }
+
+    /// <summary>
+    /// Baut die Recovery-Treiber-Sektion (FA-10.06); <c>null</c>, solange gar keine Paare
+    /// vorliegen. Scatter erscheinen erst ab der Korrelations-Mindeststichprobe.
+    /// </summary>
+    public static RecoveryDriversView? BuildRecoveryDrivers(IReadOnlyList<WhoopDailyMetric> metrics)
+    {
+        var stats = RecoveryDriverAnalyzer.Analyze(metrics);
+        if (stats.All(s => s.SampleCount == 0))
+        {
+            return null;
+        }
+
+        var rows = stats
+            .Select(s => new RecoveryDriverRow(
+                FactorLabel(s.Factor),
+                s.PearsonR is { } r
+                    ? (r >= 0 ? "+" : "−") + Math.Abs(r).ToString("0.00", German)
+                    : "–",
+                s.PearsonR is { } value ? StrengthLabel(value) : "zu wenig Daten",
+                s.PearsonR is { } abs ? Math.Abs(abs) * 100 : 0,
+                s.SampleCount,
+                LowSample: s.SampleCount is > 0 and < RecoveryDriverAnalyzer.MinSamples))
+            .ToList();
+
+        List<RecoveryScatterView> scatters = [];
+        AddScatter(RecoveryFactor.SleepDuration, "Schlafdauer → Recovery", "Stunden Schlaf → Recovery %");
+        AddScatter(RecoveryFactor.PreviousDayStrain, "Vortages-Strain → Recovery", "Strain am Vortag → Recovery %");
+
+        return new RecoveryDriversView(
+            rows,
+            scatters,
+            $"Pearson-Korrelation über die persistierte Historie – Zusammenhang, keine Kausalität; " +
+            $"Werte erst ab {RecoveryDriverAnalyzer.MinSamples} Tagen.");
+
+        void AddScatter(RecoveryFactor factor, string title, string axisHint)
+        {
+            var pairs = RecoveryDriverAnalyzer.Pairs(metrics, factor);
+            if (pairs.Count >= RecoveryDriverAnalyzer.MinSamples)
+            {
+                scatters.Add(new RecoveryScatterView(title, axisHint, pairs, pairs.Count));
+            }
+        }
+
+        static string FactorLabel(RecoveryFactor factor) => factor switch
+        {
+            RecoveryFactor.SleepDuration => "Schlafdauer",
+            RecoveryFactor.Bedtime => "Einschlafzeit (später)",
+            _ => "Vortages-Strain"
+        };
+
+        static string StrengthLabel(double r) => Math.Abs(r) switch
+        {
+            < 0.1 => "kein Zusammenhang",
+            < 0.3 => "schwach",
+            < 0.5 => "mittel",
+            _ => "stark"
+        };
     }
 
     private static IReadOnlyList<SleepBucketRow> SleepRows(IReadOnlyList<SleepBucketStats> stats)
