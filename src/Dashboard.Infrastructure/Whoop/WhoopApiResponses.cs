@@ -83,6 +83,10 @@ internal sealed class WhoopWorkoutRecord
 
 internal sealed class WhoopWorkoutScore
 {
+    [JsonPropertyName("strain")] public double? Strain { get; init; }
+    [JsonPropertyName("kilojoule")] public double? Kilojoule { get; init; }
+    [JsonPropertyName("average_heart_rate")] public double? AverageHeartRate { get; init; }
+    [JsonPropertyName("max_heart_rate")] public double? MaxHeartRate { get; init; }
     [JsonPropertyName("distance_meter")] public double? DistanceMeter { get; init; }
     [JsonPropertyName("zone_durations")] public WhoopZoneDurations? ZoneDurations { get; init; }
 }

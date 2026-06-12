@@ -54,9 +54,16 @@ public sealed class WhoopClient : IWhoopProvider
                 r.Start,
                 r.End,
                 r.Score?.DistanceMeter,
-                r.Score?.ZoneDurations?.HighIntensityShare ?? 0))
+                r.Score?.ZoneDurations?.HighIntensityShare ?? 0,
+                Strain: r.Score?.Strain,
+                Kilojoule: r.Score?.Kilojoule,
+                AverageHeartRate: RoundToInt(r.Score?.AverageHeartRate),
+                MaxHeartRate: RoundToInt(r.Score?.MaxHeartRate)))
             .ToList();
     }
+
+    private static int? RoundToInt(double? value) =>
+        value is { } v ? (int)Math.Round(v) : null;
 
     public async Task<IReadOnlyList<WhoopDailyMetric>> GetHistoryAsync(
         DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)

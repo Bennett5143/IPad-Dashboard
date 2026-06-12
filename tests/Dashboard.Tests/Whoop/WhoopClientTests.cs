@@ -38,7 +38,8 @@ public class WhoopClientTests
         { "records": [
           { "id": "wid-1", "sport_name": "running", "score_state": "SCORED",
             "start": "2026-06-11T06:00:00.000Z", "end": "2026-06-11T06:30:00.000Z",
-            "score": { "distance_meter": 5000,
+            "score": { "distance_meter": 5000, "strain": 10.4, "kilojoule": 1530.7,
+              "average_heart_rate": 151.6, "max_heart_rate": 178,
               "zone_durations": { "zone_zero_milli": 0, "zone_one_milli": 600000, "zone_two_milli": 900000, "zone_three_milli": 300000, "zone_four_milli": 120000, "zone_five_milli": 60000 } } }
         ] }
         """;
@@ -119,5 +120,19 @@ public class WhoopClientTests
         Assert.Equal(TimeSpan.FromMinutes(30), workout.Duration);
         // (zone4 120000 + zone5 60000) / 1.980.000 gesamt
         Assert.Equal(180000d / 1980000d, workout.HighIntensityShare, 3);
+    }
+
+    [Fact]
+    public async Task GetWorkoutsAsync_MapsStrainEnergyAndHeartRates()
+    {
+        var from = new DateTimeOffset(2026, 6, 11, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 6, 11, 23, 59, 0, TimeSpan.Zero);
+
+        var workout = Assert.Single(await Create().GetWorkoutsAsync(from, to));
+
+        Assert.Equal(10.4, workout.Strain);
+        Assert.Equal(1530.7, workout.Kilojoule);
+        Assert.Equal(152, workout.AverageHeartRate); // 151.6 gerundet
+        Assert.Equal(178, workout.MaxHeartRate);
     }
 }
