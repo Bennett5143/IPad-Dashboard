@@ -40,6 +40,19 @@ public sealed record TimeOfDayCard(
 public sealed record TimeOfDayRow(
     string BucketLabel, int Count, string ValueLabel, double BarPercent, bool IsBest, bool LowSample);
 
+/// <summary>Ein Schlaf-Bucket (Einschlaf-Fenster oder Dauer) mit Ø-Recovery (FA-10.03).</summary>
+public sealed record SleepBucketRow(
+    string Label, int Count, string ValueLabel, double BarPercent, bool IsBest, bool LowSample);
+
+/// <summary>View-Modell der Schlafenszeiten-Sektion; Teile fehlen, wenn die Daten fehlen.</summary>
+public sealed record SleepInsightsView(
+    string? ConsistencyLabel,
+    IReadOnlyList<SleepBucketRow> BedtimeRows,
+    string BedtimeVerdict,
+    IReadOnlyList<SleepBucketRow> DurationRows,
+    string DurationVerdict,
+    string? EveningLabel);
+
 /// <summary>Trainings-Häufigkeit als Matrix Zeitfenster × Wochentag.</summary>
 public sealed record TimeOfDayMatrix(IReadOnlyList<string> DayLabels, IReadOnlyList<TimeOfDayMatrixRow> Rows);
 
@@ -182,6 +195,62 @@ public static class WhoopInsightsBuilder
             $"Stärkstes Zeitfenster: {BucketLabels[(int)best.Bucket]} – " +
             $"Ø {best.AverageMeasure!.Value.ToString(format, German)} {unit} (n = {best.SampleCount})";
     }
+
+    /// <summary>
+    /// Baut die Schlafenszeiten-Sektion (FA-10.03); <c>null</c>, solange die Historie keine
+    /// Schlafdaten enthält. Aussagen erst ab 5 Nächten pro Bucket (FA-10.02).
+    /// </summary>
+    public static SleepInsightsView? BuildSleepInsights(
+        IReadOnlyList<WhoopDailyMetric> metrics, IReadOnlyList<WhoopWorkout> workouts)
+    {
+        var consistency = SleepAnalyzer.AnalyzeBedtimeConsistency(metrics);
+        var bedtime = SleepAnalyzer.AnalyzeBedtimeVsRecovery(metrics);
+        var duration = SleepAnalyzer.AnalyzeDurationVsRecovery(metrics);
+        var evening = SleepAnalyzer.AnalyzeEveningTraining(metrics, workouts);
+
+        if (consistency is null
+            && bedtime.Sum(b => b.SampleCount) == 0
+            && duration.Sum(d => d.SampleCount) == 0)
+        {
+            return null;
+        }
+
+        return new SleepInsightsView(
+            consistency is { } c
+                ? $"Ø Einschlafzeit {c.AverageBedtime.ToString("HH:mm", German)} ± " +
+                  $"{(int)Math.Round(c.StandardDeviation.TotalMinutes)} min (n = {c.SampleCount})"
+                : null,
+            SleepRows(bedtime),
+            SleepVerdict(bedtime),
+            SleepRows(duration),
+            SleepVerdict(duration),
+            evening is { } e
+                ? $"Nach Abendtraining (Ende ≥ {SleepAnalyzer.EveningHour} Uhr): Ø Schlaf-Performance " +
+                  $"{e.AvgSleepPerformanceAfterEvening.ToString("0", German)} % (n = {e.EveningNights}) – " +
+                  $"sonst {e.AvgSleepPerformanceOther.ToString("0", German)} % (n = {e.OtherNights})."
+                : null);
+    }
+
+    private static IReadOnlyList<SleepBucketRow> SleepRows(IReadOnlyList<SleepBucketStats> stats)
+    {
+        var best = SleepAnalyzer.BestBucket(stats);
+        var max = stats.Max(s => s.Average) ?? 0;
+
+        return stats
+            .Select(s => new SleepBucketRow(
+                s.Label,
+                s.SampleCount,
+                s.Average is { } avg ? $"{avg.ToString("0", German)} %" : "–",
+                max > 0 && s.Average is { } value ? value / max * 100 : 0,
+                IsBest: best is not null && s.Label == best.Label,
+                LowSample: s.SampleCount is > 0 and < SleepAnalyzer.MinSampleForVerdict))
+            .ToList();
+    }
+
+    private static string SleepVerdict(IReadOnlyList<SleepBucketStats> stats) =>
+        SleepAnalyzer.BestBucket(stats) is { } best
+            ? $"Beste Ø-Recovery: {best.Label} – {best.Average!.Value.ToString("0", German)} % (n = {best.SampleCount})"
+            : $"Noch keine belastbare Aussage – mind. {SleepAnalyzer.MinSampleForVerdict} Nächte je Bucket nötig.";
 
     /// <summary>Trainings-Häufigkeit Zeitfenster × Wochentag (alle Trainingsarten zusammen).</summary>
     public static TimeOfDayMatrix BuildTimeOfDayMatrix(IReadOnlyList<WhoopWorkout> workouts)

@@ -185,6 +185,45 @@ public class WhoopInsightsBuilderTests
     }
 
     [Fact]
+    public void BuildSleepInsights_FormatsConsistencyBucketsAndEvening()
+    {
+        // 6 Nächte 23:00 Berlin (21:00 UTC, CEST), Recovery 80, Performance 90, 7,5 h.
+        var metrics = Enumerable.Range(10, 6)
+            .Select(d => Metric(d, recovery: 80, sleepHours: 7.5) with
+            {
+                SleepStartUtc = new DateTimeOffset(2026, 6, d - 1, 21, 0, 0, TimeSpan.Zero),
+                SleepPerformance = 90
+            })
+            .ToList();
+        // Abendtraining am 09.06. (Ende 19:30 Berlin) → Nacht zum 10.06.
+        var workouts = new[]
+        {
+            new WhoopWorkout("e1", "weightlifting",
+                new DateTimeOffset(2026, 6, 9, 16, 30, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 6, 9, 17, 30, 0, TimeSpan.Zero), null, 0)
+        };
+
+        var view = WhoopInsightsBuilder.BuildSleepInsights(metrics, workouts);
+
+        Assert.NotNull(view);
+        Assert.Equal("Ø Einschlafzeit 23:00 ± 0 min (n = 6)", view!.ConsistencyLabel);
+        var bucket = view.BedtimeRows.Single(r => r.Count > 0);
+        Assert.Equal("22:30–23:30", bucket.Label);
+        Assert.Equal("80 %", bucket.ValueLabel);
+        Assert.True(bucket.IsBest);
+        Assert.StartsWith("Beste Ø-Recovery: 22:30–23:30", view.BedtimeVerdict, StringComparison.Ordinal);
+        Assert.StartsWith("Beste Ø-Recovery: 7–8 h", view.DurationVerdict, StringComparison.Ordinal);
+        Assert.Contains("(n = 1)", view.EveningLabel, StringComparison.Ordinal);   // 1 Abend-Nacht
+        Assert.Contains("(n = 5)", view.EveningLabel, StringComparison.Ordinal);   // 5 übrige
+    }
+
+    [Fact]
+    public void BuildSleepInsights_NullWithoutSleepData()
+    {
+        Assert.Null(WhoopInsightsBuilder.BuildSleepInsights([Metric(10, recovery: 70)], []));
+    }
+
+    [Fact]
     public void BuildTimeOfDayMatrix_MapsCountsToIntensities()
     {
         // 01.06.2026 = Montag, 05:00 UTC = früh.
