@@ -119,6 +119,106 @@
     stroke: var(--color-error);
 }
 
+::deep .sparkline.resp polyline {
+    stroke: var(--color-accent);
+}
+
+.sleep h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+    margin-bottom: var(--space-2);
+}
+
+.sleep-date {
+    color: var(--color-fg-muted);
+}
+
+.sleep-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--glass-sheen), var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow);
+}
+
+.sleep-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.sleep-bar {
+    display: flex;
+    height: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--color-surface-sunken);
+}
+
+.sleep-seg {
+    height: 100%;
+}
+
+.sleep-seg.sleep-light,
+.sleep-swatch.sleep-light {
+    background: var(--color-accent);
+}
+
+.sleep-seg.sleep-deep,
+.sleep-swatch.sleep-deep {
+    background: var(--color-accent-2);
+}
+
+.sleep-seg.sleep-rem,
+.sleep-swatch.sleep-rem {
+    background: var(--color-success);
+}
+
+.sleep-seg.sleep-awake,
+.sleep-swatch.sleep-awake {
+    background: var(--color-fg-muted);
+}
+
+.sleep-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+}
+
+.sleep-legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.sleep-swatch {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 3px;
+}
+
+.sleep-stage {
+    color: var(--color-fg-primary);
+}
+
+.sleep-detail {
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
 .runs h2 {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
