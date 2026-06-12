@@ -64,6 +64,44 @@ public sealed class RunRepository : IRunRepository
         return entities.Select(ToDomain).ToList();
     }
 
+    public async Task<IReadOnlyList<Run>> GetRunSummariesAsync(
+        DateTimeOffset? sinceUtc, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        var query = db.Set<RunActivityEntity>().AsNoTracking();
+        if (sinceUtc is { } since)
+        {
+            query = query.Where(e => e.StartUtc >= since);
+        }
+
+        // Bewusst eine Projektion ohne Route: der LineString ist für Metrik-Auswertungen
+        // unnötig schwer (volle Geometrie pro Lauf).
+        var rows = await query
+            .OrderByDescending(e => e.StartUtc)
+            .Select(e => new
+            {
+                e.Id,
+                e.Name,
+                e.Type,
+                e.StartUtc,
+                e.DistanceMeters,
+                e.MovingTimeSeconds,
+                e.ElevationGainMeters,
+                e.AverageHeartRate,
+                e.MaxHeartRate
+            })
+            .ToListAsync(ct);
+
+        return rows
+            .Select(r => new Run(
+                r.Id, r.Name, r.Type, r.StartUtc, r.DistanceMeters,
+                TimeSpan.FromSeconds(r.MovingTimeSeconds), [],
+                ElevationGainMeters: r.ElevationGainMeters,
+                AverageHeartRate: r.AverageHeartRate,
+                MaxHeartRate: r.MaxHeartRate))
+            .ToList();
+    }
+
     public async Task<DateTimeOffset?> GetLatestRunStartAsync(CancellationToken ct = default)
     {
         await using var db = await _factory.CreateDbContextAsync(ct);
