@@ -9,6 +9,12 @@ public interface IRunRepository
     /// <summary>Läufe ab <paramref name="sinceUtc"/> (oder alle), neueste zuerst.</summary>
     Task<IReadOnlyList<Run>> GetRunsAsync(DateTimeOffset? sinceUtc, CancellationToken ct = default);
 
+    /// <summary>
+    /// Wie <see cref="GetRunsAsync"/>, aber ohne Track/Streams (leerer Track) — für
+    /// Auswertungen und Listen, die nur Metriken brauchen; lädt keine PostGIS-Geometrie.
+    /// </summary>
+    Task<IReadOnlyList<Run>> GetRunSummariesAsync(DateTimeOffset? sinceUtc, CancellationToken ct = default);
+
     /// <summary>Startzeit des jüngsten gespeicherten Laufs – Basis für den inkrementellen Sync.</summary>
     Task<DateTimeOffset?> GetLatestRunStartAsync(CancellationToken ct = default);
 

@@ -62,6 +62,14 @@ public sealed record TrainingLoadView(
     string? ConfidenceHint,
     string MethodHint);
 
+/// <summary>Aerobe Fitness-Kurve (FA-10.05): Monats-Ø Herzschläge/km + Trend vs. ~3 Monate zuvor.</summary>
+public sealed record FitnessCurveView(
+    IReadOnlyList<double?> Sparkline,
+    string CurrentLabel,
+    string? TrendLabel,
+    string? TrendCss,
+    string Hint);
+
 /// <summary>Trainings-Häufigkeit als Matrix Zeitfenster × Wochentag.</summary>
 public sealed record TimeOfDayMatrix(IReadOnlyList<string> DayLabels, IReadOnlyList<TimeOfDayMatrixRow> Rows);
 
@@ -277,6 +285,40 @@ public static class WhoopInsightsBuilder
                 : null,
             $"Akut ({TrainingLoadCalculator.AcuteDays} Tage) ÷ chronisch ({TrainingLoadCalculator.ChronicDays} Tage), " +
             "EWMA über den Tages-Strain – Form-Heuristik, keine Verletzungs-Vorhersage.");
+    }
+
+    /// <summary>
+    /// Baut die Fitness-Kurve (FA-10.05) aus den Lauf-Metriken; <c>null</c>, solange kein
+    /// Monat die Min-Stichprobe erreicht. Trend nur, wenn ~3 Monate zuvor vergleichbar sind.
+    /// </summary>
+    public static FitnessCurveView? BuildFitnessCurve(IReadOnlyList<Run> runs)
+    {
+        var months = AerobicEfficiencyCalculator.Monthly(runs);
+        var latest = months.LastOrDefault(m => m.AvgBeatsPerKm is not null);
+        if (latest is null)
+        {
+            return null;
+        }
+
+        var trend = AerobicEfficiencyCalculator.TrendPercent(months);
+        string? trendLabel = null, trendCss = null;
+        if (trend is { } t)
+        {
+            var percent = Math.Abs(t).ToString("0.0", German);
+            (trendLabel, trendCss) = Math.Abs(t) < 0.5
+                ? ("stabil gegenüber vor ~3 Monaten", "trend-flat")
+                : t < 0
+                    ? ($"{percent} % effizienter als vor ~3 Monaten", "trend-good")
+                    : ($"{percent} % weniger effizient als vor ~3 Monaten", "trend-bad");
+        }
+
+        return new FitnessCurveView(
+            months.TakeLast(12).Select(m => m.AvgBeatsPerKm).ToList(),
+            $"Ø {latest.AvgBeatsPerKm!.Value.ToString("0", German)} Schläge/km (n = {latest.SampleCount})",
+            trendLabel,
+            trendCss,
+            $"Monats-Ø der Herzschläge pro km über alle Läufe ≥ {AerobicEfficiencyCalculator.MinDistanceKm:0} km – " +
+            $"niedriger = aerob effizienter; Monate mit < {AerobicEfficiencyCalculator.MinRunsPerMonth} Läufen bleiben leer. Heuristik.");
     }
 
     private static IReadOnlyList<SleepBucketRow> SleepRows(IReadOnlyList<SleepBucketStats> stats)

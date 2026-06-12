@@ -4,6 +4,7 @@
 @inject IWhoopMetricStore Metrics
 @inject IWhoopWorkoutStore Workouts
 @inject IWhoopTokenStore Tokens
+@inject IRunRepository RunRepo
 @inject IClock Clock
 
 <PageTitle>WHOOP – Auswertungen</PageTitle>
@@ -61,6 +62,24 @@
                         <p class="load-confidence">@_trainingLoad.ConfidenceHint</p>
                     }
                     <p class="tod-hint">@_trainingLoad.MethodHint</p>
+                </article>
+            </section>
+        }
+
+        @if (_fitnessCurve is not null)
+        {
+            <section class="load">
+                <h2>Aerobe Fitness <span class="tod-window">Monats-Ø · letzte 12 Monate</span></h2>
+                <article class="tod-card">
+                    <div class="load-head">
+                        <span class="fitness-current">@_fitnessCurve.CurrentLabel</span>
+                        @if (_fitnessCurve.TrendLabel is not null)
+                        {
+                            <span class="fitness-trend @_fitnessCurve.TrendCss">@_fitnessCurve.TrendLabel</span>
+                        }
+                    </div>
+                    <Sparkline Values="_fitnessCurve.Sparkline" CssClass="fitness" />
+                    <p class="tod-hint">@_fitnessCurve.Hint</p>
                 </article>
             </section>
         }
@@ -279,6 +298,7 @@
     private TimeOfDayMatrix? _todMatrix;
     private SleepInsightsView? _sleepInsights;
     private TrainingLoadView? _trainingLoad;
+    private FitnessCurveView? _fitnessCurve;
 
     protected override async Task OnInitializedAsync()
     {
@@ -320,6 +340,10 @@
             var yearMetrics = await Metrics.GetRangeAsync(today.AddDays(-365), today);
             _sleepInsights = WhoopInsightsBuilder.BuildSleepInsights(yearMetrics, yearWorkouts);
             _trainingLoad = WhoopInsightsBuilder.BuildTrainingLoad(yearMetrics);
+
+            // Fitness-Kurve aus den Strava-Lauf-Metriken (Projektion ohne Geometrie).
+            _fitnessCurve = WhoopInsightsBuilder.BuildFitnessCurve(
+                await RunRepo.GetRunSummariesAsync(now.AddDays(-365)));
         }
         catch (Exception ex)
         {

@@ -265,6 +265,36 @@ public class WhoopInsightsBuilderTests
         Assert.Contains("Nur 2 von 7 Tagen", view!.ConfidenceHint, StringComparison.Ordinal);
     }
 
+    private static Run EffRun(int month, int day, int minutes = 30, int? avgHr = 150) =>
+        new(month * 100 + day, "Lauf", "Run",
+            new DateTimeOffset(2026, month, day, 6, 0, 0, TimeSpan.Zero),
+            5000, TimeSpan.FromMinutes(minutes), [],
+            AverageHeartRate: avgHr);
+
+    [Fact]
+    public void BuildFitnessCurve_FormatsCurrentAndTrend()
+    {
+        var view = WhoopInsightsBuilder.BuildFitnessCurve(
+        [
+            EffRun(2, 3), EffRun(2, 10),                       // Feb: Ø 900
+            EffRun(5, 7, minutes: 27), EffRun(5, 14, minutes: 27) // Mai: Ø 810 → −10 %
+        ]);
+
+        Assert.NotNull(view);
+        Assert.Equal("Ø 810 Schläge/km (n = 2)", view!.CurrentLabel);
+        Assert.Equal("10,0 % effizienter als vor ~3 Monaten", view.TrendLabel);
+        Assert.Equal("trend-good", view.TrendCss);
+        Assert.Equal(4, view.Sparkline.Count);                 // Feb–Mai
+        Assert.Contains("Heuristik", view.Hint, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildFitnessCurve_NullWithoutQualifyingMonth()
+    {
+        Assert.Null(WhoopInsightsBuilder.BuildFitnessCurve([]));
+        Assert.Null(WhoopInsightsBuilder.BuildFitnessCurve([EffRun(5, 7)])); // 1 Lauf < Min-Stichprobe
+    }
+
     [Fact]
     public void BuildTimeOfDayMatrix_MapsCountsToIntensities()
     {
