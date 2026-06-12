@@ -1,0 +1,182 @@
+@page "/status"
+@rendermode InteractiveServer
+@using Microsoft.Extensions.Diagnostics.HealthChecks
+@inject IEnumerable<ISliceStatusSource> Sources
+@inject IStravaTokenStore StravaTokens
+@inject ISyncStateStore StravaSync
+@inject IRunRepository Runs
+@inject IWhoopTokenStore WhoopTokens
+@inject IWhoopMetricStore WhoopMetrics
+@inject IWhoopWorkoutStore WhoopWorkouts
+@inject ISystemMetricsProvider HostMetrics
+@inject HealthCheckService Health
+@inject IClock Clock
+
+<PageTitle>Status</PageTitle>
+
+<div class="status">
+    <header class="status-header">
+        <a class="status-back" href="/">← Dashboard</a>
+        <h1>Status</h1>
+    </header>
+
+    @if (_loading)
+    {
+        <p class="status-msg">Sammle Status …</p>
+    }
+    else
+    {
+        <section>
+            <h2>Datenquellen</h2>
+            <ul class="status-list">
+                @foreach (var row in _slices)
+                {
+                    <li>
+                        <span class="status-light @row.CssClass" aria-hidden="true"></span>
+                        <span class="status-name">@row.Label</span>
+                        <span class="status-state">@row.StateLabel</span>
+                        <span class="status-when">@row.UpdatedLabel</span>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <section>
+            <h2>Strava</h2>
+            <dl class="status-facts">
+                <div><dt>Verbindung</dt><dd>@(_stravaConnected ? "verbunden" : "nicht verbunden")</dd></div>
+                <div><dt>Letzter Sync</dt><dd>@_stravaLastSync</dd></div>
+                @if (_stravaError is not null)
+                {
+                    <div><dt>Letzter Fehler</dt><dd class="status-error-text">@_stravaError</dd></div>
+                }
+                <div><dt>Läufe</dt><dd>@_runCount</dd></div>
+                <div><dt>Streams</dt><dd>@_streamsLabel</dd></div>
+                <div><dt>Metrik-Re-Sync</dt><dd>@_detailsLabel</dd></div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>WHOOP</h2>
+            <dl class="status-facts">
+                <div><dt>Verbindung</dt><dd>@(_whoopConnected ? "verbunden" : "nicht verbunden")</dd></div>
+                <div><dt>Tageswerte</dt><dd>@_whoopDailyLabel</dd></div>
+                <div><dt>Workouts</dt><dd>@_whoopWorkoutLabel</dd></div>
+            </dl>
+        </section>
+
+        <section>
+            <h2>System</h2>
+            @if (_system is null)
+            {
+                <p class="status-msg">Host-Metriken sind nur unter Linux (Raspberry Pi) verfügbar.</p>
+            }
+            else
+            {
+                <dl class="status-facts">
+                    @if (_system.CpuTemperatureCelsius is { } temp)
+                    {
+                        <div><dt>CPU-Temperatur</dt><dd>@temp.ToString("0.0") °C</dd></div>
+                    }
+                    @if (_system is { MemoryUsedMegabytes: { } used, MemoryTotalMegabytes: { } total })
+                    {
+                        <div><dt>RAM</dt><dd>@used.ToString("0") / @total.ToString("0") MB</dd></div>
+                    }
+                    @if (_system.LoadAverage1Min is { } load)
+                    {
+                        <div><dt>Load (1 min)</dt><dd>@load.ToString("0.00")</dd></div>
+                    }
+                </dl>
+            }
+        </section>
+
+        <section>
+            <h2>Datenbank</h2>
+            <dl class="status-facts">
+                <div><dt>PostgreSQL</dt><dd>@_dbLabel</dd></div>
+            </dl>
+        </section>
+    }
+</div>
+
+@code {
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private bool _loading = true;
+    private IReadOnlyList<StatusSliceRow> _slices = [];
+    private bool _stravaConnected;
+    private string _stravaLastSync = "–";
+    private string? _stravaError;
+    private int _runCount;
+    private string _streamsLabel = "–";
+    private string _detailsLabel = "–";
+    private bool _whoopConnected;
+    private string _whoopDailyLabel = "–";
+    private string _whoopWorkoutLabel = "–";
+    private Dashboard.Domain.Status.SystemMetrics? _system;
+    private string _dbLabel = "–";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var now = Clock.UtcNow;
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, BerlinTz).DateTime);
+
+        _slices = StatusViewBuilder.BuildSliceRows(
+            Sources.Select(s => (s.SliceName, s.HasData, s.IsStale, s.LastUpdatedUtc)), now);
+
+        try
+        {
+            _stravaConnected = await StravaTokens.HasTokensAsync();
+            var sync = await StravaSync.GetAsync();
+            _stravaLastSync = sync.LastSuccessfulSyncUtc is { } last
+                ? StatusViewBuilder.RelativeLabel(last, now)
+                : "noch nie";
+            _stravaError = sync.LastError;
+            _detailsLabel = sync.DetailsBackfilledUtc is { } details
+                ? $"erledigt ({StatusViewBuilder.RelativeLabel(details, now)})"
+                : "ausstehend";
+
+            _runCount = await Runs.CountAsync();
+            var missing = (await Runs.GetIdsMissingStreamsAsync(int.MaxValue)).Count;
+            _streamsLabel = $"{_runCount - missing}/{_runCount} geladen";
+        }
+        catch (Exception ex)
+        {
+            _stravaError = ex.Message;
+        }
+
+        try
+        {
+            _whoopConnected = await WhoopTokens.HasTokensAsync();
+            _whoopDailyLabel = StatusViewBuilder.HistoryDepthLabel(
+                await WhoopMetrics.GetOldestDateAsync(), today);
+            var oldestWorkout = await WhoopWorkouts.GetOldestStartUtcAsync();
+            _whoopWorkoutLabel = StatusViewBuilder.HistoryDepthLabel(
+                oldestWorkout is { } start
+                    ? DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(start, BerlinTz).DateTime)
+                    : null,
+                today);
+        }
+        catch (Exception ex)
+        {
+            _whoopDailyLabel = $"Fehler: {ex.Message}";
+        }
+
+        _system = await HostMetrics.GetAsync();
+
+        try
+        {
+            var report = await Health.CheckHealthAsync(r => r.Tags.Contains("ready"));
+            _dbLabel = report.Status == HealthStatus.Healthy
+                ? $"erreichbar ({(int)report.TotalDuration.TotalMilliseconds} ms)"
+                : report.Status.ToString();
+        }
+        catch (Exception ex)
+        {
+            _dbLabel = $"Fehler: {ex.Message}";
+        }
+
+        _loading = false;
+    }
+}

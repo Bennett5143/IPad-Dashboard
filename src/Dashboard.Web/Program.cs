@@ -7,6 +7,7 @@ using Dashboard.Infrastructure.Habits;
 using Dashboard.Infrastructure.Hvv;
 using Dashboard.Infrastructure.Quotes;
 using Dashboard.Infrastructure.Seeding;
+using Dashboard.Infrastructure.Status;
 using Dashboard.Infrastructure.Strava;
 using Dashboard.Infrastructure.Time;
 using Dashboard.Infrastructure.Weather;
@@ -172,6 +173,16 @@ try
     // Habits
     builder.Services.AddScoped<IHabitEntryRepository, HabitEntryRepository>();
     builder.Services.AddScoped<HabitTrackingService>();
+
+    // Status (Phase 13.1): dieselben State-Singletons zusätzlich als Status-Quellen
+    // registrieren; Host-Metriken nur unter Linux (Raspberry Pi), sonst bewusst leer.
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WeatherState>());
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<FootballState>());
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<HvvState>());
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WhoopState>());
+    builder.Services.AddSingleton<ISystemMetricsProvider>(OperatingSystem.IsLinux()
+        ? new LinuxSystemMetricsProvider()
+        : new NullSystemMetricsProvider());
 
     var app = builder.Build();
 
