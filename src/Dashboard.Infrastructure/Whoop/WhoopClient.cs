@@ -58,7 +58,12 @@ public sealed class WhoopClient : IWhoopProvider
                 Strain: r.Score?.Strain,
                 Kilojoule: r.Score?.Kilojoule,
                 AverageHeartRate: RoundToInt(r.Score?.AverageHeartRate),
-                MaxHeartRate: RoundToInt(r.Score?.MaxHeartRate)))
+                MaxHeartRate: RoundToInt(r.Score?.MaxHeartRate),
+                Zones: r.Score?.ZoneDurations is { } zones
+                    ? new WhoopZoneTimes(
+                        zones.ZoneZero, zones.ZoneOne, zones.ZoneTwo,
+                        zones.ZoneThree, zones.ZoneFour, zones.ZoneFive)
+                    : null))
             .ToList();
     }
 

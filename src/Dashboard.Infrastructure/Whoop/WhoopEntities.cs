@@ -17,6 +17,31 @@ internal sealed class WhoopProcessedWorkoutEntity
 }
 
 /// <summary>
+/// Persistiertes WHOOP-Workout (FA-9.12), Schlüssel = WHOOP-UUID. Spalten spiegeln
+/// <see cref="Dashboard.Domain.Whoop.WhoopWorkout"/> inkl. flachgelegter HF-Zonen-Zeiten.
+/// </summary>
+internal sealed class WhoopWorkoutEntity
+{
+    public string Id { get; set; } = string.Empty;
+    public string Sport { get; set; } = string.Empty;
+    public DateTimeOffset StartUtc { get; set; }
+    public DateTimeOffset EndUtc { get; set; }
+    public double? DistanceMeters { get; set; }
+    public double HighIntensityShare { get; set; }
+    public double? Strain { get; set; }
+    public double? Kilojoule { get; set; }
+    public int? AverageHeartRate { get; set; }
+    public int? MaxHeartRate { get; set; }
+    public long? Zone0Milli { get; set; }
+    public long? Zone1Milli { get; set; }
+    public long? Zone2Milli { get; set; }
+    public long? Zone3Milli { get; set; }
+    public long? Zone4Milli { get; set; }
+    public long? Zone5Milli { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
+/// <summary>
 /// Persistierte WHOOP-Tageswerte (FA-9.10), ein Datensatz pro Berliner Kalendertag.
 /// Spalten spiegeln <see cref="Dashboard.Domain.Whoop.WhoopDailyMetric"/>; alles nullable,
 /// weil WHOOP einzelne Werte erst später (oder nie) liefert.

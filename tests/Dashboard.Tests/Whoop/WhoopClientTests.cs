@@ -135,4 +135,21 @@ public class WhoopClientTests
         Assert.Equal(152, workout.AverageHeartRate); // 151.6 gerundet
         Assert.Equal(178, workout.MaxHeartRate);
     }
+
+    [Fact]
+    public async Task GetWorkoutsAsync_MapsZoneTimes()
+    {
+        var from = new DateTimeOffset(2026, 6, 11, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 6, 11, 23, 59, 0, TimeSpan.Zero);
+
+        var workout = Assert.Single(await Create().GetWorkoutsAsync(from, to));
+
+        Assert.NotNull(workout.Zones);
+        Assert.Equal(0, workout.Zones!.Zone0Milli);
+        Assert.Equal(600000, workout.Zones.Zone1Milli);
+        Assert.Equal(900000, workout.Zones.Zone2Milli);
+        Assert.Equal(300000, workout.Zones.Zone3Milli);
+        Assert.Equal(120000, workout.Zones.Zone4Milli);
+        Assert.Equal(60000, workout.Zones.Zone5Milli);
+    }
 }

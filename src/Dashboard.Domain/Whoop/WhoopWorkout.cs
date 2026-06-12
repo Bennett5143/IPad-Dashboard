@@ -7,7 +7,7 @@ namespace Dashboard.Domain.Whoop;
 /// </summary>
 /// <remarks>
 /// Die Belastungsfelder (ab FA-9.12) sind optional, damit bestehende Aufrufer unverändert
-/// bleiben; sie definieren zugleich das Zielschema der späteren Workout-Persistenz und der
+/// bleiben; sie definieren zugleich das Zielschema der Workout-Persistenz und der
 /// Tageszeit-Auswertungen (FA-10.01).
 /// </remarks>
 public sealed record WhoopWorkout(
@@ -20,7 +20,17 @@ public sealed record WhoopWorkout(
     double? Strain = null,
     double? Kilojoule = null,
     int? AverageHeartRate = null,
-    int? MaxHeartRate = null)
+    int? MaxHeartRate = null,
+    WhoopZoneTimes? Zones = null)
 {
     public TimeSpan Duration => EndUtc - StartUtc;
 }
+
+/// <summary>Zeit (ms) je HF-Zone 0–5 eines Workouts – Grundlage für „Zeit in Zonen"-Auswertungen.</summary>
+public sealed record WhoopZoneTimes(
+    long Zone0Milli,
+    long Zone1Milli,
+    long Zone2Milli,
+    long Zone3Milli,
+    long Zone4Milli,
+    long Zone5Milli);

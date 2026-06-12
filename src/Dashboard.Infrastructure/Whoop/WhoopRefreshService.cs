@@ -26,9 +26,11 @@ public sealed class WhoopRefreshService : BackgroundService
     private readonly ILogger<WhoopRefreshService> _logger;
 
     // Backfill-Fortschritt bewusst nur in-memory: Nach einem Neustart beginnt er wieder beim
-    // ältesten gespeicherten Tag — der Upsert ist idempotent, es kostet höchstens erneute Abrufe.
+    // ältesten gespeicherten Stand — der Upsert ist idempotent, es kostet höchstens erneute Abrufe.
     private DateTimeOffset? _backfillCursor;
     private bool _backfillExhausted;
+    private DateTimeOffset? _workoutBackfillCursor;
+    private bool _workoutBackfillExhausted;
 
     public WhoopRefreshService(
         IServiceScopeFactory scopeFactory,
@@ -110,6 +112,16 @@ public sealed class WhoopRefreshService : BackgroundService
             {
                 _logger.LogWarning(ex, "WHOOP: Persistieren der Tageswerte fehlgeschlagen.");
             }
+
+            // Workouts persistieren (FA-9.12) – Grundlage der Tageszeit-Auswertungen.
+            try
+            {
+                await PersistWorkoutsAsync(scope.ServiceProvider, provider, ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "WHOOP: Persistieren der Workouts fehlgeschlagen.");
+            }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -168,6 +180,54 @@ public sealed class WhoopRefreshService : BackgroundService
         _backfillCursor = window.FromUtc;
         _logger.LogInformation(
             "WHOOP: Historien-Backfill – {Count} Tag(e) im Fenster ab {From:yyyy-MM-dd} übernommen.",
+            older.Count, window.FromUtc);
+    }
+
+    /// <summary>
+    /// Hält die Workout-Tabelle aktuell — gleiches Schema wie <see cref="PersistHistoryAsync"/>:
+    /// jüngstes Fenster (Scores werden nachträglich finalisiert) plus höchstens ein
+    /// Backfill-Fenster rückwärts pro Zyklus.
+    /// </summary>
+    private async Task PersistWorkoutsAsync(
+        IServiceProvider services, IWhoopProvider provider, CancellationToken ct)
+    {
+        var workoutStore = services.GetRequiredService<IWhoopWorkoutStore>();
+        var now = services.GetRequiredService<IClock>().UtcNow;
+
+        var recent = await provider.GetWorkoutsAsync(now.AddDays(-RecentWindowDays), now, ct);
+        await workoutStore.UpsertAsync(recent, ct);
+
+        if (_workoutBackfillExhausted)
+        {
+            return;
+        }
+
+        if (_workoutBackfillCursor is null)
+        {
+            var oldest = await workoutStore.GetOldestStartUtcAsync(ct);
+            if (oldest is null)
+            {
+                return; // Store noch leer (keine Workouts im jüngsten Fenster) – später erneut versuchen
+            }
+            _workoutBackfillCursor = oldest.Value;
+        }
+
+        var window = WhoopBackfillPlanner.NextWindow(
+            now, _workoutBackfillCursor.Value, _options.BackfillDays, BackfillWindowDays);
+        if (window is null)
+        {
+            _workoutBackfillExhausted = true;
+            _logger.LogInformation(
+                "WHOOP: Workout-Backfill abgeschlossen (Tiefe {Days} Tage erreicht).",
+                _options.BackfillDays);
+            return;
+        }
+
+        var older = await provider.GetWorkoutsAsync(window.FromUtc, window.ToUtc, ct);
+        await workoutStore.UpsertAsync(older, ct);
+        _workoutBackfillCursor = window.FromUtc;
+        _logger.LogInformation(
+            "WHOOP: Workout-Backfill – {Count} Workout(s) im Fenster ab {From:yyyy-MM-dd} übernommen.",
             older.Count, window.FromUtc);
     }
 }

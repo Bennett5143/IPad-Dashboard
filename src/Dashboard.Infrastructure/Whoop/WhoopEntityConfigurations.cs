@@ -33,3 +33,15 @@ internal sealed class WhoopDailyMetricEntityConfiguration : IEntityTypeConfigura
         builder.HasKey(e => e.Date); // ein Datensatz pro Kalendertag (Berlin)
     }
 }
+
+internal sealed class WhoopWorkoutEntityConfiguration : IEntityTypeConfiguration<WhoopWorkoutEntity>
+{
+    public void Configure(EntityTypeBuilder<WhoopWorkoutEntity> builder)
+    {
+        builder.ToTable("WhoopWorkouts");
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).HasMaxLength(64);      // WHOOP-Workout-UUID
+        builder.Property(e => e.Sport).HasMaxLength(128);
+        builder.HasIndex(e => e.StartUtc);                 // Bereichs-Abfragen der Auswertungen
+    }
+}
