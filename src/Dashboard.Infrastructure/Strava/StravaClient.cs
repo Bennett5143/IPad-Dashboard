@@ -138,5 +138,11 @@ public sealed class StravaClient : IStravaActivityProvider
         activity.StartDate,
         activity.Distance,
         TimeSpan.FromSeconds(activity.MovingTime),
-        PolylineDecoder.Decode(activity.Map?.SummaryPolyline));
+        PolylineDecoder.Decode(activity.Map?.SummaryPolyline),
+        ElevationGainMeters: activity.TotalElevationGain,
+        AverageHeartRate: RoundToInt(activity.AverageHeartrate),
+        MaxHeartRate: RoundToInt(activity.MaxHeartrate));
+
+    private static int? RoundToInt(double? value) =>
+        value is { } v ? (int)Math.Round(v) : null;
 }

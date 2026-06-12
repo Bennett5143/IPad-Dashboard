@@ -4,7 +4,8 @@ namespace Dashboard.Domain.Running;
 public sealed record SyncSnapshot(
     DateTimeOffset? LastSuccessfulSyncUtc,
     DateTimeOffset? LastAttemptUtc,
-    string? LastError);
+    string? LastError,
+    DateTimeOffset? DetailsBackfilledUtc = null);
 
 /// <summary>UI-Sicht auf den Gesamtzustand: verbunden + Sync-Stand.</summary>
 public sealed record RunningSyncStatus(

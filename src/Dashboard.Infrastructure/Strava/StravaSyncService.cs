@@ -72,6 +72,7 @@ public sealed class StravaSyncService : BackgroundService
             await syncState.RecordSuccessAsync(_clock.UtcNow, ct);
             _logger.LogInformation("Strava: {Count} Läufe synchronisiert (ab {After:o}).", runs.Count, after);
 
+            await BackfillDetailsAsync(provider, repository, syncState, ct);
             await BackfillStreamsAsync(provider, repository, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -82,6 +83,40 @@ public sealed class StravaSyncService : BackgroundService
         {
             _logger.LogError(ex, "Strava: Sync fehlgeschlagen – letzter Stand bleibt erhalten.");
             await syncState.RecordFailureAsync(ex.Message, _clock.UtcNow, ct);
+        }
+    }
+
+    // Einmaliger Voll-Re-Sync der Aktivitätsmetriken (FA-8.14): Höhenmeter und Ø-/Max-HF
+    // stehen in der Listen-Antwort (~1 Request je 200 Läufe), Bestandszeilen bekommen sie
+    // über einen kompletten Listen-Durchlauf. Routen sind geschützt – Apply überschreibt sie
+    // nur, solange keine Streams geladen sind. Läuft vor dem Stream-Backfill (1–3 Calls vs.
+    // bis zu 20). Darf den eigentlichen Lauf-Sync nicht gefährden.
+    private async Task BackfillDetailsAsync(
+        IStravaActivityProvider provider, IRunRepository repository,
+        ISyncStateStore syncState, CancellationToken ct)
+    {
+        try
+        {
+            var state = await syncState.GetAsync(ct);
+            if (state.DetailsBackfilledUtc is not null)
+            {
+                return;
+            }
+
+            var all = await provider.GetActivitiesAsync(null, ct);
+            await repository.UpsertAsync(all, ct);
+            await syncState.MarkDetailsBackfilledAsync(_clock.UtcNow, ct);
+            _logger.LogInformation(
+                "Strava: Aktivitätsmetriken per Voll-Re-Sync für {Count} Läufe nachgezogen.", all.Count);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex, "Strava: Voll-Re-Sync der Aktivitätsmetriken fehlgeschlagen – nächster Zyklus versucht es erneut.");
         }
     }
 

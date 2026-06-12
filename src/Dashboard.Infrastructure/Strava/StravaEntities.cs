@@ -13,6 +13,12 @@ internal sealed class RunActivityEntity
     public int MovingTimeSeconds { get; set; }
     public LineString? Route { get; set; }
 
+    // Aktivitätsmetriken aus der Listen-Antwort (FA-8.14); fehlen bei Läufen ohne
+    // Höhenprofil/HF-Messung.
+    public double? ElevationGainMeters { get; set; }
+    public int? AverageHeartRate { get; set; }
+    public int? MaxHeartRate { get; set; }
+
     // Pro-Punkt-Streams (index-aligned mit Route.Coordinates), erst nach dem Backfill befüllt.
     public bool StreamsFetched { get; set; }
     public int[]? TimeOffsetsSeconds { get; set; }
@@ -36,4 +42,7 @@ internal sealed class SyncStateEntity
     public DateTimeOffset? LastSuccessfulSyncUtc { get; set; }
     public DateTimeOffset? LastAttemptUtc { get; set; }
     public string? LastError { get; set; }
+
+    /// <summary>Wann der einmalige Voll-Re-Sync der Aktivitätsmetriken lief (FA-8.14); <c>null</c> = steht aus.</summary>
+    public DateTimeOffset? DetailsBackfilledUtc { get; set; }
 }
