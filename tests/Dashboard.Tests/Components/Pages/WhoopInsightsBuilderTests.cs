@@ -224,6 +224,48 @@ public class WhoopInsightsBuilderTests
     }
 
     [Fact]
+    public void BuildTrainingLoad_FormatsRatioZoneAndSparkline()
+    {
+        // 90 Tage konstanter Strain 10 → ACWR ≈ 1, Zone „ausgewogen".
+        var metrics = Enumerable.Range(0, 90)
+            .Select(i => new WhoopDailyMetric(
+                new DateOnly(2026, 1, 1).AddDays(i), null, null, null, null, null, 10.0))
+            .ToList();
+
+        var view = WhoopInsightsBuilder.BuildTrainingLoad(metrics);
+
+        Assert.NotNull(view);
+        Assert.Equal("ausgewogen", view!.ZoneLabel);
+        Assert.Equal("load-ok", view.ZoneCss);
+        Assert.Null(view.ConfidenceHint);                 // alle 7 Akut-Tage mit Daten
+        Assert.Equal(90, view.Sparkline.Count);
+        Assert.Contains("Form-Heuristik", view.MethodHint, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildTrainingLoad_NullDuringWarmup_HintOnThinAcuteWindow()
+    {
+        // Nur 10 Tage Historie → chronische EWMA im Warmlauf.
+        var warmup = Enumerable.Range(0, 10)
+            .Select(i => new WhoopDailyMetric(
+                new DateOnly(2026, 1, 1).AddDays(i), null, null, null, null, null, 10.0))
+            .ToList();
+        Assert.Null(WhoopInsightsBuilder.BuildTrainingLoad(warmup));
+
+        // Dünn besetztes Akut-Fenster: nach 50 lückenlosen Tagen nur noch Tag 52 und 56
+        // mit Strain → im 7-Tage-Fenster bis zum letzten Datenpunkt liegen 2 Tage.
+        var thin = Enumerable.Range(0, 57)
+            .Select(i => new WhoopDailyMetric(
+                new DateOnly(2026, 1, 1).AddDays(i), null, null, null, null, null,
+                i < 50 || i is 52 or 56 ? 10.0 : null))
+            .ToList();
+        var view = WhoopInsightsBuilder.BuildTrainingLoad(thin);
+
+        Assert.NotNull(view);
+        Assert.Contains("Nur 2 von 7 Tagen", view!.ConfidenceHint, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void BuildTimeOfDayMatrix_MapsCountsToIntensities()
     {
         // 01.06.2026 = Montag, 05:00 UTC = früh.
