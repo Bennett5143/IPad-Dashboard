@@ -17,7 +17,10 @@ internal sealed record StravaActivityDto(
     [property: JsonPropertyName("distance")] double Distance,
     [property: JsonPropertyName("moving_time")] int MovingTime,
     [property: JsonPropertyName("start_date")] DateTimeOffset StartDate,
-    [property: JsonPropertyName("map")] StravaMapDto? Map);
+    [property: JsonPropertyName("map")] StravaMapDto? Map,
+    [property: JsonPropertyName("total_elevation_gain")] double? TotalElevationGain = null,
+    [property: JsonPropertyName("average_heartrate")] double? AverageHeartrate = null,
+    [property: JsonPropertyName("max_heartrate")] double? MaxHeartrate = null);
 
 internal sealed record StravaMapDto(
     [property: JsonPropertyName("summary_polyline")] string? SummaryPolyline);

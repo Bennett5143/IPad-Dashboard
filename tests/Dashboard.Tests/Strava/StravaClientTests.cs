@@ -8,7 +8,7 @@ namespace Dashboard.Tests.Strava;
 public class StravaClientTests
 {
     private const string RunJson =
-        """{"id":111,"name":"Morgenlauf","type":"Run","sport_type":"Run","distance":5000.0,"moving_time":1500,"start_date":"2026-06-01T06:30:00Z","map":{"summary_polyline":"_p~iF~ps|U_ulLnnqC_mqNvxq`@"}}""";
+        """{"id":111,"name":"Morgenlauf","type":"Run","sport_type":"Run","distance":5000.0,"moving_time":1500,"start_date":"2026-06-01T06:30:00Z","total_elevation_gain":42.5,"average_heartrate":151.6,"max_heartrate":178.0,"map":{"summary_polyline":"_p~iF~ps|U_ulLnnqC_mqNvxq`@"}}""";
 
     private const string RideJson =
         """{"id":222,"name":"Radtour","type":"Ride","sport_type":"Ride","distance":20000,"moving_time":3600,"start_date":"2026-06-02T06:30:00Z","map":{"summary_polyline":""}}""";
@@ -59,6 +59,24 @@ public class StravaClientTests
         Assert.Equal(3, runs[0].Track.Count); // Polyline dekodiert
         Assert.Equal(333, runs[1].Id);
         Assert.Equal("TrailRun", runs[1].Type);
+    }
+
+    [Fact]
+    public async Task GetActivitiesAsync_MapsElevationAndHeartRates()
+    {
+        var handler = new StubHttpMessageHandler(_ => StubHttpMessageHandler.Json($"[{RunJson}]"));
+
+        var run = (await Client(handler).GetActivitiesAsync(null)).Single(r => r.Id == 111);
+
+        Assert.Equal(42.5, run.ElevationGainMeters);
+        Assert.Equal(152, run.AverageHeartRate); // 151.6 gerundet
+        Assert.Equal(178, run.MaxHeartRate);
+
+        // Trail-Fixture ohne die Felder → bleiben leer.
+        var trailHandler = new StubHttpMessageHandler(_ => StubHttpMessageHandler.Json($"[{TrailJson}]"));
+        var trail = (await Client(trailHandler).GetActivitiesAsync(null)).Single();
+        Assert.Null(trail.ElevationGainMeters);
+        Assert.Null(trail.AverageHeartRate);
     }
 
     [Fact]
