@@ -22,7 +22,9 @@ public sealed class SyncStateStore : ISyncStateStore
 
         return entity is null
             ? new SyncSnapshot(null, null, null)
-            : new SyncSnapshot(entity.LastSuccessfulSyncUtc, entity.LastAttemptUtc, entity.LastError);
+            : new SyncSnapshot(
+                entity.LastSuccessfulSyncUtc, entity.LastAttemptUtc, entity.LastError,
+                entity.DetailsBackfilledUtc);
     }
 
     public Task RecordSuccessAsync(DateTimeOffset whenUtc, CancellationToken ct = default) =>
@@ -39,6 +41,9 @@ public sealed class SyncStateStore : ISyncStateStore
             e.LastAttemptUtc = whenUtc;
             e.LastError = error;
         }, ct);
+
+    public Task MarkDetailsBackfilledAsync(DateTimeOffset whenUtc, CancellationToken ct = default) =>
+        UpdateAsync(e => e.DetailsBackfilledUtc = whenUtc, ct);
 
     private async Task UpdateAsync(Action<SyncStateEntity> mutate, CancellationToken ct)
     {

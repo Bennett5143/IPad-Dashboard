@@ -121,6 +121,9 @@ public sealed class RunRepository : IRunRepository
         entity.StartUtc = run.StartUtc;
         entity.DistanceMeters = run.DistanceMeters;
         entity.MovingTimeSeconds = (int)run.MovingTime.TotalSeconds;
+        entity.ElevationGainMeters = run.ElevationGainMeters;
+        entity.AverageHeartRate = run.AverageHeartRate;
+        entity.MaxHeartRate = run.MaxHeartRate;
 
         // Solange noch keine vollaufgelösten Streams da sind, die Summary-Polyline verwenden;
         // nach dem Stream-Backfill die feinere Route nicht durch die grobe Polyline überschreiben.
@@ -155,6 +158,9 @@ public sealed class RunRepository : IRunRepository
 
         return new Run(
             entity.Id, entity.Name, entity.Type, entity.StartUtc,
-            entity.DistanceMeters, TimeSpan.FromSeconds(entity.MovingTimeSeconds), track, streams);
+            entity.DistanceMeters, TimeSpan.FromSeconds(entity.MovingTimeSeconds), track, streams,
+            ElevationGainMeters: entity.ElevationGainMeters,
+            AverageHeartRate: entity.AverageHeartRate,
+            MaxHeartRate: entity.MaxHeartRate);
     }
 }
