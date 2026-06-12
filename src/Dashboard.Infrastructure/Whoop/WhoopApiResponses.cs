@@ -29,6 +29,10 @@ internal sealed class WhoopRecoveryScore
     [JsonPropertyName("recovery_score")] public double RecoveryScore { get; init; }
     [JsonPropertyName("resting_heart_rate")] public double RestingHeartRate { get; init; }
     [JsonPropertyName("hrv_rmssd_milli")] public double HrvRmssdMilli { get; init; }
+
+    // Nur mit WHOOP-4.0-Band vorhanden, daher nullable.
+    [JsonPropertyName("spo2_percentage")] public double? Spo2Percentage { get; init; }
+    [JsonPropertyName("skin_temp_celsius")] public double? SkinTempCelsius { get; init; }
 }
 
 internal sealed class WhoopSleepRecord
@@ -43,6 +47,7 @@ internal sealed class WhoopSleepRecord
 internal sealed class WhoopSleepScore
 {
     [JsonPropertyName("sleep_performance_percentage")] public double SleepPerformancePercentage { get; init; }
+    [JsonPropertyName("respiratory_rate")] public double? RespiratoryRate { get; init; }
     [JsonPropertyName("stage_summary")] public WhoopSleepStageSummary? StageSummary { get; init; }
 }
 
@@ -51,6 +56,7 @@ internal sealed class WhoopSleepStageSummary
     [JsonPropertyName("total_light_sleep_time_milli")] public long LightMilli { get; init; }
     [JsonPropertyName("total_slow_wave_sleep_time_milli")] public long SlowWaveMilli { get; init; }
     [JsonPropertyName("total_rem_sleep_time_milli")] public long RemMilli { get; init; }
+    [JsonPropertyName("total_awake_time_milli")] public long? AwakeMilli { get; init; }
 }
 
 internal sealed class WhoopCycleRecord

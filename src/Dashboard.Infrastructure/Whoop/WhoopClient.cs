@@ -79,6 +79,8 @@ public sealed class WhoopClient : IWhoopProvider
                 builder.RecoveryScore = (int)Math.Round(score.RecoveryScore);
                 builder.Hrv = score.HrvRmssdMilli;
                 builder.Rhr = (int)Math.Round(score.RestingHeartRate);
+                builder.Spo2 = score.Spo2Percentage;
+                builder.SkinTemp = score.SkinTempCelsius;
             }
         }
 
@@ -89,6 +91,13 @@ public sealed class WhoopClient : IWhoopProvider
                 var builder = GetOrAdd(byDate, BerlinDate(s.End));
                 builder.SleepHours = (stages.LightMilli + stages.SlowWaveMilli + stages.RemMilli) / 3_600_000.0;
                 builder.SleepPerformance = (int)Math.Round(score.SleepPerformancePercentage);
+                builder.LightHours = stages.LightMilli / 3_600_000.0;
+                builder.DeepHours = stages.SlowWaveMilli / 3_600_000.0;
+                builder.RemHours = stages.RemMilli / 3_600_000.0;
+                builder.AwakeHours = stages.AwakeMilli is { } awake ? awake / 3_600_000.0 : null;
+                builder.SleepStart = s.Start;
+                builder.SleepEnd = s.End;
+                builder.RespiratoryRate = score.RespiratoryRate;
             }
         }
 
@@ -208,8 +217,26 @@ public sealed class WhoopClient : IWhoopProvider
         public double? SleepHours;
         public int? SleepPerformance;
         public double? DayStrain;
+        public double? LightHours;
+        public double? DeepHours;
+        public double? RemHours;
+        public double? AwakeHours;
+        public DateTimeOffset? SleepStart;
+        public DateTimeOffset? SleepEnd;
+        public double? RespiratoryRate;
+        public double? Spo2;
+        public double? SkinTemp;
 
-        public WhoopDailyMetric Build() =>
-            new(date, RecoveryScore, Hrv, Rhr, SleepHours, SleepPerformance, DayStrain);
+        public WhoopDailyMetric Build() => new(
+            date, RecoveryScore, Hrv, Rhr, SleepHours, SleepPerformance, DayStrain,
+            LightSleepHours: LightHours,
+            DeepSleepHours: DeepHours,
+            RemSleepHours: RemHours,
+            AwakeHours: AwakeHours,
+            SleepStartUtc: SleepStart,
+            SleepEndUtc: SleepEnd,
+            RespiratoryRate: RespiratoryRate,
+            Spo2Percentage: Spo2,
+            SkinTempCelsius: SkinTemp);
     }
 }
