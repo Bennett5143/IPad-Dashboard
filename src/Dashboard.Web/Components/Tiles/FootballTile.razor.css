@@ -132,6 +132,82 @@
     color: var(--color-fg-primary);
 }
 
+/* Wochen-Kalender (FA-4.05) */
+.football-week-link {
+    align-self: flex-start;
+    margin-top: var(--space-1);
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--color-accent);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+}
+
+.week-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.week-day {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.week-day-label {
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.week-day.is-today .week-day-label {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-semibold);
+}
+
+.week-empty {
+    color: var(--color-fg-muted);
+}
+
+.week-matches {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.week-matches li {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    gap: var(--space-2);
+    align-items: baseline;
+    font-size: var(--font-size-sm);
+}
+
+.week-time {
+    color: var(--color-fg-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.week-vs {
+    color: var(--color-fg-muted);
+}
+
+.week-comp {
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-xs, 0.7rem);
+    text-align: right;
+}
+
 .football-label {
     margin-top: var(--space-1);
     font-size: var(--font-size-sm);

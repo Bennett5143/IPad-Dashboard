@@ -64,6 +64,8 @@
                     </section>
                 }
 
+                <button class="football-week-link" @onclick="OpenWeek">📅 Diese Woche</button>
+
                 @if (_isStale && _snapshot is not null)
                 {
                     <small class="football-stale">Stand @FootballFormatter.UpdatedAt(_snapshot.RetrievedAtUtc) — Aktualisierung fehlgeschlagen</small>
@@ -72,6 +74,50 @@
         </div>
     </ChildContent>
 </Tile>
+
+@if (_week is not null)
+{
+    <div class="table-overlay" @onclick="() => _week = null">
+        <div class="table-modal" @onclick:stopPropagation="true">
+            <header class="table-modal-head">
+                <h3>Spiele · diese Woche</h3>
+                <button class="table-close" @onclick="() => _week = null" aria-label="Schließen">✕</button>
+            </header>
+            @if (!FootballWeekBuilder.HasMatches(_week))
+            {
+                <p class="football-unavailable">Diese Woche keine Spiele.</p>
+            }
+            else
+            {
+                <ul class="week-list">
+                    @foreach (var day in _week)
+                    {
+                        <li class="week-day @(day.IsToday ? "is-today" : null)">
+                            <span class="week-day-label">@day.Label</span>
+                            @if (day.Entries.Count == 0)
+                            {
+                                <span class="week-empty">—</span>
+                            }
+                            else
+                            {
+                                <ul class="week-matches">
+                                    @foreach (var entry in day.Entries)
+                                    {
+                                        <li>
+                                            <span class="week-time">@(entry.IsFinished ? entry.Result : entry.Time)</span>
+                                            <span class="week-match">@entry.TeamName <span class="week-vs">@entry.Venue</span> @entry.Opponent</span>
+                                            <span class="week-comp">@FootballFormatter.Competition(entry.CompetitionCode)</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+}
 
 @if (_openTable is { Table: { Count: > 0 } table } team)
 {
@@ -120,6 +166,15 @@
     private FootballSnapshot? _snapshot;
     private bool _isStale;
     private FootballTeamSnapshot? _openTable;
+    private IReadOnlyList<FootballWeekDay>? _week;
+
+    private void OpenWeek()
+    {
+        if (_snapshot is not null)
+        {
+            _week = FootballWeekBuilder.Build(_snapshot);
+        }
+    }
 
     protected override void OnInitialized()
     {
