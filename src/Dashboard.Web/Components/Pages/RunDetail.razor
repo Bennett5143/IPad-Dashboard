@@ -35,6 +35,22 @@
             <div><dt>Höhenmeter</dt><dd>@_header.Elevation</dd></div>
         </dl>
 
+        @if (_bestEfforts.Count > 0)
+        {
+            <section class="run-efforts">
+                <h2>Bestzeiten in diesem Lauf</h2>
+                <div class="effort-chips">
+                    @foreach (var effort in _bestEfforts)
+                    {
+                        <div class="effort-chip">
+                            <span class="effort-distance">@effort.Distance</span>
+                            <span class="effort-time">@effort.Time</span>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
         @if (_profile is null || _profile.IsEmpty)
         {
             <p class="runs-msg">Kein Verlaufsprofil verfügbar – für diesen Lauf wurden noch keine Streams geladen.</p>
@@ -68,6 +84,7 @@
     private RunDetailHeader? _header;
     private RunProfile? _profile;
     private RouteClusterInfo? _cluster;
+    private IReadOnlyList<BestEffortRow> _bestEfforts = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,6 +97,7 @@
 
         _header = RunViewBuilder.BuildDetailHeader(run);
         _profile = RunProfileBuilder.Build(run);
+        _bestEfforts = RunViewBuilder.BuildBestEfforts(BestEffortsCalculator.Compute(run));
         _cluster = await RouteClusters.GetClusterForRunAsync(Id);
     }
 
