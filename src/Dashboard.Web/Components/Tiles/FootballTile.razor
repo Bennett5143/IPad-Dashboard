@@ -18,7 +18,17 @@
                     <section class="football-team">
                         <header>
                             <h3>@team.TeamName</h3>
-                            <span class="football-position" title="Tabellenplatz">🏆 @FootballFormatter.Position(team.Standing)</span>
+                            @if (team.Table is { Count: > 0 })
+                            {
+                                <button class="football-position is-button" title="Ligatabelle anzeigen"
+                                        @onclick="() => _openTable = team">
+                                    🏆 @FootballFormatter.Position(team.Standing)
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="football-position" title="Tabellenplatz">🏆 @FootballFormatter.Position(team.Standing)</span>
+                            }
                         </header>
 
                         @if (team.RecentResults.Count > 0)
@@ -63,11 +73,53 @@
     </ChildContent>
 </Tile>
 
+@if (_openTable is { Table: { Count: > 0 } table } team)
+{
+    <div class="table-overlay" @onclick="() => _openTable = null">
+        <div class="table-modal" @onclick:stopPropagation="true">
+            <header class="table-modal-head">
+                <h3>@team.TeamName · Tabelle</h3>
+                <button class="table-close" @onclick="() => _openTable = null" aria-label="Schließen">✕</button>
+            </header>
+            <table class="league-table">
+                <thead>
+                    <tr>
+                        <th class="num">#</th>
+                        <th>Verein</th>
+                        <th class="num">Sp</th>
+                        <th class="num">S</th>
+                        <th class="num">U</th>
+                        <th class="num">N</th>
+                        <th class="num">Diff</th>
+                        <th class="num">Pkt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in table)
+                    {
+                        <tr class="@(row.IsOwnTeam ? "is-own" : null)">
+                            <td class="num">@row.Position</td>
+                            <td>@(row.ShortCode ?? row.TeamName)</td>
+                            <td class="num">@row.PlayedGames</td>
+                            <td class="num">@row.Won</td>
+                            <td class="num">@row.Draw</td>
+                            <td class="num">@row.Lost</td>
+                            <td class="num">@(row.GoalDifference > 0 ? "+" : "")@row.GoalDifference</td>
+                            <td class="num pts">@row.Points</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public string? CssClass { get; set; }
 
     private FootballSnapshot? _snapshot;
     private bool _isStale;
+    private FootballTeamSnapshot? _openTable;
 
     protected override void OnInitialized()
     {
