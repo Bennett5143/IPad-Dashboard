@@ -8,7 +8,7 @@ public class OpenWeatherMapClientTests
     private static readonly DateTimeOffset NowUtc = new(2026, 6, 10, 12, 0, 0, TimeSpan.Zero);
 
     private const string CurrentJson =
-        """{"main":{"temp":17.4,"feels_like":16.8,"humidity":72},"wind":{"speed":3.5},"weather":[{"id":800,"description":"klarer himmel"}]}""";
+        """{"main":{"temp":17.4,"feels_like":16.8,"humidity":72},"wind":{"speed":3.5,"deg":200,"gust":7.2},"sys":{"sunrise":1749528000,"sunset":1749590400},"weather":[{"id":800,"description":"klarer himmel"}]}""";
 
     private static string ForecastJson()
     {
@@ -49,8 +49,19 @@ public class OpenWeatherMapClientTests
         Assert.Equal(16.8, snapshot.Current.FeelsLike);
         Assert.Equal(72, snapshot.Current.Humidity);
         Assert.Equal(3.5, snapshot.Current.WindSpeedMs);
+        Assert.Equal(200, snapshot.Current.WindDirectionDeg);
+        Assert.Equal(7.2, snapshot.Current.WindGustMs);
         Assert.Equal(WeatherCondition.Clear, snapshot.Current.Condition);
         Assert.Equal("Klarer himmel", snapshot.Current.Description); // erster Buchstabe großgeschrieben
+    }
+
+    [Fact]
+    public async Task GetWeatherAsync_MapsSunriseSunsetAsUtc()
+    {
+        var snapshot = await CreateClient().GetWeatherAsync();
+
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1749528000), snapshot.Current.SunriseUtc);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1749590400), snapshot.Current.SunsetUtc);
     }
 
     [Fact]

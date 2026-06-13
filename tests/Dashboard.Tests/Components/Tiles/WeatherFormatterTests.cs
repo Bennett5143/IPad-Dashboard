@@ -50,4 +50,36 @@ public class WeatherFormatterTests
 
         Assert.Equal("14:00", WeatherFormatter.UpdatedAt(utc));
     }
+
+    [Theory]
+    [InlineData(0, "N")]
+    [InlineData(45, "NO")]
+    [InlineData(90, "O")]
+    [InlineData(200, "S")]      // 200/45 = 4,4 → S
+    [InlineData(350, "N")]      // wrap-around
+    public void WindDirection_MapsToCompassSector(int degrees, string expected)
+    {
+        Assert.Equal(expected, WeatherFormatter.WindDirection(degrees));
+    }
+
+    [Fact]
+    public void WindDirection_NullWithoutDegrees()
+    {
+        Assert.Null(WeatherFormatter.WindDirection(null));
+    }
+
+    [Fact]
+    public void Sun_ConvertsUtcToBerlin_OrDash()
+    {
+        // 04:00 UTC → 06:00 Berlin (CEST)
+        Assert.Equal("06:00", WeatherFormatter.Sun(new DateTimeOffset(2026, 6, 10, 4, 0, 0, TimeSpan.Zero)));
+        Assert.Equal("–", WeatherFormatter.Sun(null));
+    }
+
+    [Fact]
+    public void Gust_FormatsKmhOrDash()
+    {
+        Assert.Equal("26 km/h", WeatherFormatter.Gust(7.2)); // 7,2 m/s → 25,9 → 26
+        Assert.Equal("–", WeatherFormatter.Gust(null));
+    }
 }

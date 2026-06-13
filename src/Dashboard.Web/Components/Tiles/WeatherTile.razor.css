@@ -54,6 +54,11 @@
     margin-right: 0.15rem;
 }
 
+.weather-meta .meta-sub {
+    color: var(--color-fg-muted);
+    margin-left: 0.3rem;
+}
+
 /* --- Stündlich --- */
 .weather-hourly {
     list-style: none;

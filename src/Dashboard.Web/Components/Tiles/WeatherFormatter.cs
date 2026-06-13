@@ -46,6 +46,29 @@ public static class WeatherFormatter
         return $"{kmh.ToString("0", German)} km/h";
     }
 
+    /// <summary>Windrichtung (Grad → 8-Sektoren-Kompass); <c>null</c> ohne Richtung.</summary>
+    public static string? WindDirection(int? degrees)
+    {
+        if (degrees is not { } deg)
+        {
+            return null;
+        }
+
+        string[] sectors = ["N", "NO", "O", "SO", "S", "SW", "W", "NW"];
+        var index = (int)Math.Round((deg % 360) / 45.0, MidpointRounding.AwayFromZero) % 8;
+        return sectors[index];
+    }
+
+    /// <summary>Böen-Geschwindigkeit in km/h; <c>–</c> ohne Wert.</summary>
+    public static string Gust(double? metersPerSecond) =>
+        metersPerSecond is { } ms ? Wind(ms) : "–";
+
+    /// <summary>Sonnenauf-/untergangszeit (Berlin, HH:mm); <c>–</c> ohne Wert.</summary>
+    public static string Sun(DateTimeOffset? utc) =>
+        utc is { } time
+            ? TimeZoneInfo.ConvertTime(time, BerlinTz).ToString("HH:mm", CultureInfo.InvariantCulture)
+            : "–";
+
     public static string UpdatedAt(DateTimeOffset retrievedAtUtc) =>
         TimeZoneInfo.ConvertTime(retrievedAtUtc, BerlinTz)
             .ToString("HH:mm", CultureInfo.InvariantCulture);

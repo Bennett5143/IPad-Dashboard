@@ -51,7 +51,11 @@ public sealed class OpenWeatherMapClient : IWeatherProvider
             response.Main.Humidity,
             response.Wind?.Speed ?? 0d,
             OpenWeatherConditionMapper.Map(weather?.Id ?? 0),
-            Capitalize(weather?.Description));
+            Capitalize(weather?.Description),
+            WindDirectionDeg: response.Wind?.Deg,
+            WindGustMs: response.Wind?.Gust,
+            SunriseUtc: response.Sys?.Sunrise is { } sunrise ? DateTimeOffset.FromUnixTimeSeconds(sunrise) : null,
+            SunsetUtc: response.Sys?.Sunset is { } sunset ? DateTimeOffset.FromUnixTimeSeconds(sunset) : null);
     }
 
     private async Task<IReadOnlyList<ForecastStep>> GetForecastAsync(CancellationToken ct)
