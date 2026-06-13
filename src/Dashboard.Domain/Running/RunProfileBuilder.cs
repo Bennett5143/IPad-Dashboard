@@ -60,7 +60,7 @@ public static class RunProfileBuilder
             double segDist = 0, segTime = 0;
             for (var s = lo; s < hi; s++)
             {
-                segDist += Haversine(track[s], track[s + 1]);
+                segDist += GeoMath.HaversineMeters(track[s], track[s + 1]);
                 if (times is not null)
                 {
                     segTime += Math.Max(0, times[s + 1] - times[s]);
@@ -89,17 +89,5 @@ public static class RunProfileBuilder
         }
 
         return count == 0 ? 0 : sum / count;
-    }
-
-    private static double Haversine(GeoPoint a, GeoPoint b)
-    {
-        const double r = 6_371_000, rad = Math.PI / 180;
-        var dLat = (b.Latitude - a.Latitude) * rad;
-        var dLng = (b.Longitude - a.Longitude) * rad;
-        var la1 = a.Latitude * rad;
-        var la2 = b.Latitude * rad;
-        var h = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
-            + Math.Cos(la1) * Math.Cos(la2) * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
-        return 2 * r * Math.Asin(Math.Min(1, Math.Sqrt(h)));
     }
 }
