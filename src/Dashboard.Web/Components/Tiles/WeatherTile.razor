@@ -25,8 +25,18 @@
                             <span><span class="meta-label">Gefühlt</span> @WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</span>
                             <span><span class="meta-label">Min/Max</span> @WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
                             <span><span class="meta-label">Regen</span> @WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
-                            <span><span class="meta-label">Wind</span> @WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</span>
+                            <span>
+                                <span class="meta-label">Wind</span> @WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)@WindDirectionSuffix
+                                @if (_snapshot.Current.WindGustMs is not null)
+                                {
+                                    <span class="meta-sub">Böen @WeatherFormatter.Gust(_snapshot.Current.WindGustMs)</span>
+                                }
+                            </span>
                             <span><span class="meta-label">Luftf.</span> @WeatherFormatter.Humidity(_snapshot.Current.Humidity)</span>
+                            @if (_snapshot.Current.SunriseUtc is not null || _snapshot.Current.SunsetUtc is not null)
+                            {
+                                <span><span class="meta-label">Sonne</span> 🌅 @WeatherFormatter.Sun(_snapshot.Current.SunriseUtc) · 🌇 @WeatherFormatter.Sun(_snapshot.Current.SunsetUtc)</span>
+                            }
                         </div>
                     </div>
                 }
@@ -124,4 +134,9 @@
         WeatherVariant.Tomorrow => _snapshot?.Tomorrow is { } tomorrow ? WeatherFormatter.Emoji(tomorrow.Condition) : "⛅",
         _ => "🕒"
     };
+
+    private string WindDirectionSuffix =>
+        _snapshot?.Current.WindDirectionDeg is not null
+            ? " " + WeatherFormatter.WindDirection(_snapshot.Current.WindDirectionDeg)
+            : string.Empty;
 }
