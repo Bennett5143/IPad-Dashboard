@@ -109,9 +109,15 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Einstieg in die Lauf-Heatmap aus dem Habit-Bereich (FA-8.04) */
-.habits-heatmap {
+/* Einstieg in Lauf-Heatmap (FA-8.04) und Habit-Verlauf aus dem Habit-Bereich */
+.habits-links {
     margin-top: auto;
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.habits-heatmap {
     color: var(--color-accent);
     text-decoration: none;
     font-size: var(--font-size-sm);

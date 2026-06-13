@@ -1,4 +1,3 @@
-using Dashboard.Domain.Enums;
 using Dashboard.Web.Components.Pages;
 
 namespace Dashboard.Tests.Components.Pages;

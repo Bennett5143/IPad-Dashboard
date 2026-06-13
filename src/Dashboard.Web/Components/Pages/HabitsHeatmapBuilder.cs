@@ -1,7 +1,5 @@
 using System.Globalization;
 
-using Dashboard.Domain.Habits;
-
 namespace Dashboard.Web.Components.Pages;
 
 /// <summary>Eine Zelle der Jahres-Heatmap (Position im Grid + Intensitäts-Bucket).</summary>

@@ -1,0 +1,106 @@
+@page "/habits"
+@layout MainLayout
+@rendermode InteractiveServer
+@inject IHabitEntryRepository HabitRepo
+@inject IClock Clock
+
+<PageTitle>Habit-Verlauf</PageTitle>
+
+<div class="habits-page">
+    <header class="habits-header">
+        <h1>Habit-Verlauf</h1>
+        <a class="habits-back" href="/">← Dashboard</a>
+    </header>
+
+    <div class="habit-tabs" role="group" aria-label="Habit">
+        <button class="@(_kind is null ? "active" : null)" @onclick="() => Select(null)">Alle</button>
+        @foreach (var kind in _kinds)
+        {
+            <button class="@(_kind == kind ? "active" : null)" @onclick="() => Select(kind)">
+                @HabitsHeatmapBuilder.Label(kind)
+            </button>
+        }
+    </div>
+
+    @if (_view is not null)
+    {
+        <div class="habit-summary">
+            <div class="stat"><span class="stat-value">@_view.YearTotal</span><span class="stat-label">@(_year) gesamt</span></div>
+            <div class="stat"><span class="stat-value">@_view.CurrentWeek</span><span class="stat-label">diese Woche</span></div>
+        </div>
+
+        <div class="heat-scroll">
+            <div class="heat-months">
+                @foreach (var month in _view.Months)
+                {
+                    <span class="heat-month" style="grid-column: @(month.Week + 1)">@month.Label</span>
+                }
+            </div>
+            <div class="heat-grid">
+                @foreach (var cell in _view.Cells)
+                {
+                    <span class="heat-cell lvl-@cell.Bucket"
+                          style="grid-column: @(cell.Week + 1); grid-row: @(cell.Weekday + 1)"
+                          title="@cell.Title"></span>
+                }
+            </div>
+        </div>
+
+        <div class="heat-legend">
+            <span>weniger</span>
+            <span class="heat-cell lvl-0"></span>
+            <span class="heat-cell lvl-1"></span>
+            <span class="heat-cell lvl-2"></span>
+            <span class="heat-cell lvl-3"></span>
+            <span class="heat-cell lvl-4"></span>
+            <span>mehr</span>
+        </div>
+
+        <section class="weeks">
+            <h2>Letzte 12 Wochen</h2>
+            <div class="week-bars">
+                @foreach (var bar in _view.WeeklyBars)
+                {
+                    <div class="week-bar" title="Woche ab @bar.Label: @bar.Count">
+                        <div class="week-bar-track">
+                            <div class="week-bar-fill"
+                                 style="height: @(bar.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                        </div>
+                        <span class="week-bar-count">@bar.Count</span>
+                        <span class="week-bar-label">@bar.Label</span>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private readonly HabitKind[] _kinds = Enum.GetValues<HabitKind>();
+    private HabitKind? _kind;
+    private int _year;
+    private IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>> _done =
+        new Dictionary<HabitKind, IReadOnlySet<DateOnly>>();
+    private HabitHeatmapView? _view;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(Clock.UtcNow, BerlinTz).DateTime);
+        _year = today.Year;
+        var from = today.AddDays(-HabitsHeatmapBuilder.Weeks * 7);
+        _done = await HabitRepo.GetEntryDatesAsync(from, today);
+        Rebuild(today);
+    }
+
+    private void Select(HabitKind? kind)
+    {
+        _kind = kind;
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(Clock.UtcNow, BerlinTz).DateTime);
+        Rebuild(today);
+    }
+
+    private void Rebuild(DateOnly today) => _view = HabitsHeatmapBuilder.Build(_done, _kind, today);
+}
