@@ -2,6 +2,7 @@
 @layout MainLayout
 @rendermode InteractiveServer
 @inject IRunRepository RunRepository
+@inject IRouteClusterStore RouteClusters
 @inject IStravaTokenStore TokenStore
 @inject IClock Clock
 @inject NavigationManager Nav
@@ -69,6 +70,36 @@
             </section>
         }
 
+        @if (_clusters.Count > 0)
+        {
+            <section class="routes">
+                <h2>Standard-Runden</h2>
+                <table class="runs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Runde</th>
+                            <th scope="col" class="num">Läufe</th>
+                            <th scope="col" class="num">Ø Distanz</th>
+                            <th scope="col" class="num">Ø Pace</th>
+                            <th scope="col" class="num">Bestzeit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cluster in _clusters)
+                        {
+                            <tr>
+                                <td class="run-name">@cluster.Name</td>
+                                <td class="num">@cluster.Members</td>
+                                <td class="num">@cluster.Distance</td>
+                                <td class="num">@cluster.Pace</td>
+                                <td class="num">@cluster.BestTime</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+
         <section class="runs-list-section">
             <div class="runs-controls" role="group" aria-label="Zeitraum">
                 <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRange(RunTimeRange.FourWeeks)">4 Wochen</button>
@@ -111,6 +142,7 @@
     private IReadOnlyList<Run> _allRuns = [];
     private IReadOnlyList<RunListRow> _rows = [];
     private RunReviewView? _review;
+    private IReadOnlyList<RouteClusterRow> _clusters = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -125,6 +157,7 @@
         _allRuns = await RunRepository.GetRunSummariesAsync(null);
         var years = RunReviewCalculator.AvailableYears(_allRuns);
         _review = years.Count > 0 ? RunReviewViewBuilder.Build(_allRuns, years[0]) : null;
+        _clusters = RunViewBuilder.BuildRouteClusters(await RouteClusters.GetSummariesAsync());
         ApplyRange();
     }
 

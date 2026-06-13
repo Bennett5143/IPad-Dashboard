@@ -52,4 +52,29 @@ public class RunViewBuilderTests
     {
         Assert.Equal("30:00 min", RunViewBuilder.BuildDetailHeader(Run(minutes: 30)).Duration);
     }
+
+    [Fact]
+    public void BuildRouteClusters_FormatsSummaries()
+    {
+        var row = Assert.Single(RunViewBuilder.BuildRouteClusters(
+        [
+            new RouteClusterSummary(1, "Runde 1", 7, 5.2, 5.5, TimeSpan.FromMinutes(26.5)),
+        ]));
+
+        Assert.Equal("Runde 1", row.Name);
+        Assert.Equal("7×", row.Members);
+        Assert.Equal("5,2 km", row.Distance);
+        Assert.Equal("5:30 /km", row.Pace);    // 5,5 min/km
+        Assert.Equal("26:30 min", row.BestTime);
+    }
+
+    [Fact]
+    public void BuildRouteClusters_HandlesMissingPace()
+    {
+        var row = Assert.Single(RunViewBuilder.BuildRouteClusters(
+            [new RouteClusterSummary(2, "Runde 2", 1, 4.0, null, null)]));
+
+        Assert.Equal("–", row.Pace);
+        Assert.Equal("–", row.BestTime);
+    }
 }

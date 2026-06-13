@@ -16,6 +16,18 @@ internal sealed class RunActivityEntityConfiguration : IEntityTypeConfiguration<
         builder.Property(e => e.StreamsFetched).HasDefaultValue(false);
         builder.HasIndex(e => e.StartUtc);
         builder.HasIndex(e => e.StreamsFetched);
+        builder.HasIndex(e => e.RouteMatchedUtc); // ungeordnete Läufe für die Routen-Erkennung finden
+        builder.HasIndex(e => e.RouteClusterId);
+    }
+}
+
+internal sealed class RouteClusterEntityConfiguration : IEntityTypeConfiguration<RouteClusterEntity>
+{
+    public void Configure(EntityTypeBuilder<RouteClusterEntity> builder)
+    {
+        builder.ToTable("RouteClusters");
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Name).HasMaxLength(80);
     }
 }
 

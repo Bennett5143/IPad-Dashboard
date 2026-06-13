@@ -31,6 +31,19 @@
 .run-subtitle {
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.run-route-badge {
+    padding: 1px var(--space-2);
+    border-radius: 999px;
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-accent);
+    font-size: var(--font-size-xs, 0.75rem);
 }
 
 .run-stats {
