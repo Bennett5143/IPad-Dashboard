@@ -27,6 +27,37 @@ public class HeatmapPayloadBuilderTests
     }
 
     [Fact]
+    public void Build_AddsPreformattedRunInfo_FromFullMetrics()
+    {
+        var run = new Run(
+            42, "Morgenlauf", "Run", Start, 5000, TimeSpan.FromMinutes(30),
+            Enumerable.Range(0, 3).Select(i => new GeoPoint(53.55 + i * 0.001, 9.99)).ToList(),
+            AverageHeartRate: 148);
+
+        var info = Assert.Single(HeatmapPayloadBuilder.Build([run])).Info;
+
+        Assert.Equal("Morgenlauf", info.Name);
+        Assert.Equal("01.06.2026", info.Date);
+        Assert.Equal("5,0 km", info.Distance);
+        Assert.Equal("6:00 /km", info.Pace);          // 30 min / 5 km
+        Assert.Equal("Ø 148 bpm", info.HeartRate);
+    }
+
+    [Fact]
+    public void Build_RunInfo_FallsBackWithoutNameOrHeartRate()
+    {
+        var run = new Run(
+            7, "  ", "Run", Start, 4000, TimeSpan.FromMinutes(22),
+            Enumerable.Range(0, 3).Select(i => new GeoPoint(53.55 + i * 0.001, 9.99)).ToList());
+
+        var info = Assert.Single(HeatmapPayloadBuilder.Build([run])).Info;
+
+        Assert.Equal("Lauf", info.Name);              // leerer Name → Fallback
+        Assert.Equal("5:30 /km", info.Pace);          // 22 min / 4 km
+        Assert.Null(info.HeartRate);
+    }
+
+    [Fact]
     public void Build_SkipsRunsWithFewerThanTwoPoints()
     {
         Assert.Empty(HeatmapPayloadBuilder.Build([MakeRun(1)]));
