@@ -21,76 +21,135 @@
     {
         <p class="runs-msg">Noch nicht mit Strava verbunden – <a href="/strava/connect">jetzt verbinden</a>.</p>
     }
-    else if (_rows.Count == 0)
+    else if (_allRuns.Count == 0)
     {
         <p class="runs-msg">Noch keine Läufe synchronisiert.</p>
     }
     else
     {
-        <div class="runs-controls" role="group" aria-label="Zeitraum">
-            <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
-            <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
-            <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
-        </div>
+        @if (_review is not null)
+        {
+            <section class="review">
+                <div class="review-head">
+                    <h2>Jahresrückblick</h2>
+                    <div class="year-buttons" role="group" aria-label="Jahr">
+                        @foreach (var year in _review.AvailableYears)
+                        {
+                            <button class="@(year == _review.Year ? "active" : null)" @onclick="() => SetYear(year)">@year</button>
+                        }
+                    </div>
+                </div>
 
-        <table class="runs-table">
-            <thead>
-                <tr>
-                    <th scope="col">Datum</th>
-                    <th scope="col">Lauf</th>
-                    <th scope="col" class="num">Distanz</th>
-                    <th scope="col" class="num">Pace</th>
-                    <th scope="col" class="num">Ø HF</th>
-                    <th scope="col" class="num">Höhe</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in _rows)
-                {
-                    <tr @onclick="() => Open(row.Id)" class="runs-row">
-                        <td>@row.Date</td>
-                        <td class="run-name">@row.Name</td>
-                        <td class="num">@row.Distance</td>
-                        <td class="num">@row.Pace</td>
-                        <td class="num">@row.HeartRate</td>
-                        <td class="num">@row.Elevation</td>
+                <dl class="review-stats">
+                    <div><dt>Läufe</dt><dd>@_review.RunCount</dd></div>
+                    <div><dt>Distanz</dt><dd>@_review.TotalKm</dd></div>
+                    <div><dt>Höhenmeter</dt><dd>@_review.TotalElevation</dd></div>
+                    <div><dt>Zeit</dt><dd>@_review.TotalTime</dd></div>
+                    <div><dt>Eddington</dt><dd>@_review.Eddington</dd></div>
+                </dl>
+
+                <div class="review-bars" role="img" aria-label="Kilometer pro Monat">
+                    @foreach (var month in _review.Months)
+                    {
+                        <div class="review-bar" title="@month.Label: @month.Km km">
+                            <div class="review-bar-track">
+                                <div class="review-bar-fill"
+                                     style="height: @(month.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                            </div>
+                            <span class="review-bar-label">@month.Label</span>
+                        </div>
+                    }
+                </div>
+
+                <dl class="review-records">
+                    <div><dt>Längster Lauf</dt><dd>@_review.LongestRun</dd></div>
+                    <div><dt>Schnellste Ø-Pace</dt><dd>@_review.FastestPace</dd></div>
+                    <div><dt>Stärkster Monat</dt><dd>@_review.BiggestMonth</dd></div>
+                </dl>
+            </section>
+        }
+
+        <section class="runs-list-section">
+            <div class="runs-controls" role="group" aria-label="Zeitraum">
+                <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRange(RunTimeRange.FourWeeks)">4 Wochen</button>
+                <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRange(RunTimeRange.TwelveMonths)">12 Monate</button>
+                <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRange(RunTimeRange.All)">Alle</button>
+            </div>
+
+            <table class="runs-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Datum</th>
+                        <th scope="col">Lauf</th>
+                        <th scope="col" class="num">Distanz</th>
+                        <th scope="col" class="num">Pace</th>
+                        <th scope="col" class="num">Ø HF</th>
+                        <th scope="col" class="num">Höhe</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var row in _rows)
+                    {
+                        <tr @onclick="() => Open(row.Id)" class="runs-row">
+                            <td>@row.Date</td>
+                            <td class="run-name">@row.Name</td>
+                            <td class="num">@row.Distance</td>
+                            <td class="num">@row.Pace</td>
+                            <td class="num">@row.HeartRate</td>
+                            <td class="num">@row.Elevation</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
     }
 </div>
 
 @code {
     private bool _connected;
     private RunTimeRange _range = RunTimeRange.TwelveMonths;
+    private IReadOnlyList<Run> _allRuns = [];
     private IReadOnlyList<RunListRow> _rows = [];
+    private RunReviewView? _review;
 
     protected override async Task OnInitializedAsync()
     {
         _connected = await TokenStore.HasTokensAsync();
-        if (_connected)
-        {
-            await LoadAsync();
-        }
-    }
-
-    private async Task LoadAsync()
-    {
-        // Projektion ohne Geometrie – die Liste braucht nur Metriken.
-        var runs = await RunRepository.GetRunSummariesAsync(_range.CutoffUtc(Clock.UtcNow));
-        _rows = RunViewBuilder.BuildList(runs);
-    }
-
-    private async Task SetRangeAsync(RunTimeRange range)
-    {
-        if (range == _range)
+        if (!_connected)
         {
             return;
         }
 
-        _range = range;
-        await LoadAsync();
+        // Einmal alle Läufe (Projektion ohne Geometrie) – Liste filtert in-memory, der
+        // Rückblick braucht ohnehin alle Jahre.
+        _allRuns = await RunRepository.GetRunSummariesAsync(null);
+        var years = RunReviewCalculator.AvailableYears(_allRuns);
+        _review = years.Count > 0 ? RunReviewViewBuilder.Build(_allRuns, years[0]) : null;
+        ApplyRange();
+    }
+
+    private void ApplyRange()
+    {
+        var cutoff = _range.CutoffUtc(Clock.UtcNow);
+        var filtered = cutoff is { } since ? _allRuns.Where(r => r.StartUtc >= since).ToList() : _allRuns;
+        _rows = RunViewBuilder.BuildList(filtered);
+    }
+
+    private void SetRange(RunTimeRange range)
+    {
+        if (range != _range)
+        {
+            _range = range;
+            ApplyRange();
+        }
+    }
+
+    private void SetYear(int year)
+    {
+        if (_review is not null && year != _review.Year)
+        {
+            _review = RunReviewViewBuilder.Build(_allRuns, year);
+        }
     }
 
     private void Open(long id) => Nav.NavigateTo($"/runs/{id}");

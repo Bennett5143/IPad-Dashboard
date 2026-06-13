@@ -95,3 +95,132 @@
 .run-name {
     color: var(--color-fg-primary);
 }
+
+/* ---- Jahresrückblick ---- */
+.review {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--glass-sheen), var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow);
+}
+
+.review-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.review-head h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+}
+
+.year-buttons {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.year-buttons button {
+    padding: 2px var(--space-3);
+    border-radius: 999px;
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.year-buttons button.active {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+    color: #04101a;
+    font-weight: var(--font-weight-semibold);
+}
+
+.review-stats,
+.review-records {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+}
+
+.review-stats div,
+.review-records div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.review-stats dt,
+.review-records dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.review-stats dd,
+.review-records dd {
+    margin: 0;
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-fg-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.review-records dd {
+    font-size: var(--font-size-md, 1rem);
+}
+
+.review-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    height: 110px;
+}
+
+.review-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    height: 100%;
+}
+
+.review-bar-track {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-sm, 6px);
+    overflow: hidden;
+}
+
+.review-bar-fill {
+    width: 100%;
+    min-height: 2px;
+    background: linear-gradient(180deg, var(--color-accent), var(--color-accent-2));
+}
+
+.review-bar-label {
+    font-size: var(--font-size-xs, 0.7rem);
+    color: var(--color-fg-muted);
+}
+
+.runs-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
