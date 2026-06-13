@@ -135,8 +135,54 @@
     box-shadow: var(--glow-accent);
 }
 
+/* Lauf-Popup (Tap auf eine Route) – an das dunkle HUD-Theme angepasst.
+   Leaflet rendert ins Karten-Pane innerhalb der Komponente, daher ::deep. */
+::deep .run-popup-wrap .leaflet-popup-content-wrapper {
+    background: var(--color-surface-raised);
+    color: var(--color-fg-primary);
+    border: 1px solid var(--glass-rim);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+}
+
+::deep .run-popup-wrap .leaflet-popup-tip {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--glass-rim);
+}
+
+::deep .run-popup-wrap .leaflet-popup-content {
+    margin: var(--space-3) var(--space-4);
+}
+
+::deep .run-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+::deep .run-popup strong {
+    font-family: var(--font-family-display);
+    color: var(--color-fg-primary);
+}
+
+::deep .run-popup-date {
+    color: var(--color-fg-muted);
+}
+
+::deep .run-popup-more {
+    margin-top: 2px;
+    color: var(--color-accent);
+    font-size: var(--font-size-sm);
+}
+
 .heatmap-legend {
     color: var(--color-fg-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.heatmap-hint {
+    color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
 }
 

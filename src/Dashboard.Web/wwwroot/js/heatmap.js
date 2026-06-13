@@ -236,6 +236,62 @@ function strokePath(ctx, pts, at) {
     ctx.stroke();
 }
 
+// ---- Tap auf einen Lauf -------------------------------------------------
+// Das Canvas-Overlay hat pointerEvents:none, daher kommt der Klick auf der Karten-Ebene an.
+// Treffer-Test gegen die (projizierten) Lauf-Segmente mit fingerfreundlicher Pixel-Schwelle.
+
+const TAP_THRESHOLD_PX = 15;
+
+function distToSegment(p, a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy;
+    let t = len2 > 0 ? ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2 : 0;
+    t = clamp(t, 0, 1);
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function runsNearPoint(map, point, runs) {
+    const hits = [];
+    for (const run of runs) {
+        const pts = run.pts;
+        let hit = false;
+        for (let i = 0; i < pts.length - 1 && !hit; i++) {
+            const a = map.latLngToContainerPoint(pts[i]);
+            const b = map.latLngToContainerPoint(pts[i + 1]);
+            if (distToSegment(point, a, b) <= TAP_THRESHOLD_PX) hit = true;
+        }
+        if (hit) hits.push(run);
+    }
+    return hits; // Reihenfolge wie geliefert (neueste zuerst)
+}
+
+function runPopupHtml(run, extraCount) {
+    const info = run.info || {};
+    const hr = info.heartRate ? ` · ${escapeHtml(info.heartRate)}` : '';
+    const more = extraCount > 0
+        ? `<span class="run-popup-more">+${extraCount} weitere(r) Lauf hier</span>` : '';
+    return `<div class="run-popup">`
+        + `<strong>${escapeHtml(info.name || 'Lauf')}</strong>`
+        + `<span class="run-popup-date">${escapeHtml(info.date || '')}</span>`
+        + `<span>${escapeHtml(info.distance || '')} · ${escapeHtml(info.pace || '')}${hr}</span>`
+        + `${more}</div>`;
+}
+
+function showRunPopup(map, e, runs) {
+    const hits = runsNearPoint(map, e.containerPoint, runs);
+    if (!hits.length) return;
+    // Empfehlung der Roadmap: jüngster Treffer (= erster, da neueste zuerst geliefert) + „+n weitere".
+    L.popup({ className: 'run-popup-wrap', closeButton: true })
+        .setLatLng(e.latlng)
+        .setContent(runPopupHtml(hits[0], hits.length - 1))
+        .openOn(map);
+}
+
 // ---- Öffentliche API ----------------------------------------------------
 
 export async function render(elementId, runs, layer) {
@@ -259,6 +315,9 @@ export async function render(elementId, runs, layer) {
     const data = Array.isArray(runs) ? runs.filter(r => r && Array.isArray(r.pts) && r.pts.length > 1) : [];
     const overlay = new HeatCanvasLayer(data, layer || 'heat').addTo(map);
     element._heat = { map, overlay, runs: data };
+
+    // Einmal binden – der Handler liest element._heat.runs, überlebt also Ebenen-Wechsel.
+    map.on('click', e => showRunPopup(map, e, element._heat.runs));
 
     const bounds = L.latLngBounds([]);
     for (const run of data) {

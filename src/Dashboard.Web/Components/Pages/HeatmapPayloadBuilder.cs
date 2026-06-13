@@ -1,19 +1,31 @@
+using System.Globalization;
+
 namespace Dashboard.Web.Components.Pages;
+
+/// <summary>Anzeige-fertige Eckdaten eines Laufs fürs Heatmap-Popup (server-seitig formatiert).</summary>
+public sealed record HeatmapRunInfo(string Name, string Date, string Distance, string Pace, string? HeartRate);
 
 /// <summary>
 /// Ein Lauf als JS-Nutzlast für die Heatmap. Property-Namen werden vom JS-Interop zu
-/// <c>pts/t/alt/hr</c> gecamelcased – so erwartet sie <c>heatmap.js</c>.
+/// <c>pts/t/alt/hr/info</c> gecamelcased – so erwartet sie <c>heatmap.js</c>.
 /// </summary>
-public sealed record HeatmapRunPayload(double[][] Pts, int[]? T, double[]? Alt, int[]? Hr);
+public sealed record HeatmapRunPayload(double[][] Pts, int[]? T, double[]? Alt, int[]? Hr, HeatmapRunInfo Info);
 
 /// <summary>
-/// Baut aus Läufen die (gedünnte) Heatmap-Nutzlast: pro Lauf Punkte + index-gleiche Streams.
-/// Reine, testbare Logik – das Dünnen hält die Übertragung über die Blazor-Verbindung klein.
+/// Baut aus Läufen die (gedünnte) Heatmap-Nutzlast: pro Lauf Punkte + index-gleiche Streams +
+/// vorberechnete Popup-Infos. Reine, testbare Logik – das Dünnen hält die Übertragung über die
+/// Blazor-Verbindung klein; die Popup-Werte stammen aus den vollen Lauf-Metriken, nicht aus den
+/// gedünnten Streams.
 /// </summary>
 public static class HeatmapPayloadBuilder
 {
     /// <summary>Max. Punkte pro Lauf in der Nutzlast (Streams werden index-gleich mitgedünnt).</summary>
     public const int DefaultMaxPoints = 250;
+
+    private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
+
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
     public static IReadOnlyList<HeatmapRunPayload> Build(
         IReadOnlyList<Run> runs, int maxPoints = DefaultMaxPoints) =>
@@ -45,6 +57,37 @@ public static class HeatmapPayloadBuilder
 
         return new HeatmapRunPayload(
             idx.Select(i => new[] { run.Track[i].Latitude, run.Track[i].Longitude }).ToArray(),
-            time, altitude, heartRate);
+            time, altitude, heartRate, BuildInfo(run));
+    }
+
+    private static HeatmapRunInfo BuildInfo(Run run)
+    {
+        var localDate = TimeZoneInfo.ConvertTime(run.StartUtc, BerlinTz);
+        return new HeatmapRunInfo(
+            string.IsNullOrWhiteSpace(run.Name) ? "Lauf" : run.Name,
+            localDate.ToString("dd.MM.yyyy", German),
+            $"{(run.DistanceMeters / 1000.0).ToString("0.0", German)} km",
+            FormatPace(run),
+            run.AverageHeartRate is { } hr ? $"Ø {hr} bpm" : null);
+    }
+
+    private static string FormatPace(Run run)
+    {
+        var km = run.DistanceMeters / 1000.0;
+        if (km <= 0 || run.MovingTime <= TimeSpan.Zero)
+        {
+            return "–";
+        }
+
+        var pace = run.MovingTime.TotalMinutes / km;
+        var minutes = (int)pace;
+        var seconds = (int)Math.Round((pace - minutes) * 60, MidpointRounding.AwayFromZero);
+        if (seconds == 60)
+        {
+            minutes++;
+            seconds = 0;
+        }
+
+        return $"{minutes}:{seconds:00} /km";
     }
 }
