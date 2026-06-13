@@ -1,0 +1,70 @@
+@* Erklärungs-Button (ℹ) + Popup für eine Metrik (FA-10.08). Sitzt im Kopf/Header der
+   jeweiligen Metrik; ein Tap öffnet ein Overlay mit Beschreibung, Lesehilfe, Achsen und
+   Methode. Das Popup verwendet das etablierte .dialog-backdrop/.dialog-Muster aus app.css. *@
+
+<button type="button" class="metric-info-btn @CssClass"
+        aria-haspopup="dialog" aria-label="@AriaLabel" title="@AriaLabel" @onclick="Open">i</button>
+
+@if (_open)
+{
+    <div class="dialog-backdrop" @onclick="Close">
+        <div class="dialog metric-dialog" role="dialog" aria-modal="true"
+             @onclick:stopPropagation="true">
+            <h3 class="dialog-title">@_explanation.Title</h3>
+            <p class="metric-dialog-summary">@_explanation.Summary</p>
+
+            <div class="metric-dialog-block">
+                <span class="metric-dialog-label">So liest du das</span>
+                <p>@_explanation.HowToRead</p>
+            </div>
+
+            @if (_explanation.XAxis is not null || _explanation.YAxis is not null)
+            {
+                <div class="metric-dialog-block">
+                    <span class="metric-dialog-label">Achsen</span>
+                    <ul class="metric-dialog-axes">
+                        @if (_explanation.XAxis is not null)
+                        {
+                            <li><span class="axis-tag">X</span> @_explanation.XAxis</li>
+                        }
+                        @if (_explanation.YAxis is not null)
+                        {
+                            <li><span class="axis-tag">Y</span> @_explanation.YAxis</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (_explanation.Method is not null)
+            {
+                <div class="metric-dialog-block">
+                    <span class="metric-dialog-label">Methode</span>
+                    <p>@_explanation.Method</p>
+                </div>
+            }
+
+            <div class="dialog-actions">
+                <button type="button" @onclick="Close">Schließen</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Welche Metrik erklärt wird – Schlüssel in den <see cref="MetricCatalog"/>.</summary>
+    [Parameter, EditorRequired] public MetricId Id { get; set; }
+
+    /// <summary>Zusätzliche CSS-Klassen für den Button (z. B. zur Positionierung).</summary>
+    [Parameter] public string? CssClass { get; set; }
+
+    private bool _open;
+    private MetricExplanation _explanation = default!;
+
+    private string AriaLabel => $"{_explanation.Title} – Erklärung anzeigen";
+
+    protected override void OnParametersSet() => _explanation = MetricCatalog.Get(Id);
+
+    private void Open() => _open = true;
+
+    private void Close() => _open = false;
+}

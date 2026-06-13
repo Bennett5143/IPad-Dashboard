@@ -1,0 +1,43 @@
+.chart-frame {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: var(--space-2);
+}
+
+/* Y-Achse: gedreht links neben der Kurve, vertikal zentriert. */
+.chart-y-label {
+    grid-column: 1;
+    grid-row: 1;
+    place-self: center;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.chart-area {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+}
+
+/* X-Achse: zentriert unter der Kurve (zweite Spalte, damit sie zur Kurve ausgerichtet ist). */
+.chart-x-label {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: var(--space-1);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+/* Start/Ende-Werte direkt unter der Kurve (z. B. min/max). */
+.chart-range {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
