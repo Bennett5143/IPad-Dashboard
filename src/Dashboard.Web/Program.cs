@@ -34,10 +34,16 @@ try
     // Die Datei ist gitignored; als Vorlage dient appsettings.Local.json.example.
     builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
+    // Ringpuffer der jüngsten Warnungen/Fehler für die Status-Seite (FA-11.03).
+    var recentLogBuffer = new RecentLogBuffer();
+    builder.Services.AddSingleton(recentLogBuffer);
+    builder.Services.AddSingleton<IRecentLogProvider>(recentLogBuffer);
+
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
-        .Enrich.FromLogContext());
+        .Enrich.FromLogContext()
+        .WriteTo.Sink(new RingBufferLogSink(recentLogBuffer)));
 
     // Add services to the container.
     builder.Services.AddRazorComponents()
