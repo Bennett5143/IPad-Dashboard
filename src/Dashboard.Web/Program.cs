@@ -127,6 +127,7 @@ try
     builder.Services.Configure<StravaOptions>(
         builder.Configuration.GetSection(StravaOptions.SectionName));
     builder.Services.AddScoped<IRunRepository, RunRepository>();
+    builder.Services.AddScoped<IRouteClusterStore, RouteClusterStore>();
     builder.Services.AddScoped<IStravaTokenStore, StravaTokenStore>();
     builder.Services.AddScoped<ISyncStateStore, SyncStateStore>();
     builder.Services.AddHttpClient<StravaTokenService>(http =>

@@ -24,6 +24,20 @@ internal sealed class RunActivityEntity
     public int[]? TimeOffsetsSeconds { get; set; }
     public double[]? AltitudesMeters { get; set; }
     public int[]? HeartRates { get; set; }
+
+    // Routen-Erkennung (FA-8.17): Cluster-Zuordnung; RouteMatchedUtc = bearbeitet (auch ohne Match).
+    public int? RouteClusterId { get; set; }
+    public DateTimeOffset? RouteMatchedUtc { get; set; }
+}
+
+/// <summary>Eine erkannte „Standard-Runde" (FA-8.17); Repräsentant ist der erste zugeordnete Lauf.</summary>
+internal sealed class RouteClusterEntity
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public long RepresentativeRunId { get; set; }
+    public double RepresentativeDistanceMeters { get; set; }
+    public DateTimeOffset CreatedUtc { get; set; }
 }
 
 /// <summary>Single-Row-Entity (Id = 1) mit dem aktuellen OAuth-Token-Satz.</summary>

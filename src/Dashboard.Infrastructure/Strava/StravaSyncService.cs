@@ -74,6 +74,7 @@ public sealed class StravaSyncService : BackgroundService
 
             await BackfillDetailsAsync(provider, repository, syncState, ct);
             await BackfillStreamsAsync(provider, repository, ct);
+            await ClusterRoutesAsync(scope, repository, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -163,6 +164,62 @@ public sealed class StravaSyncService : BackgroundService
         if (done > 0)
         {
             _logger.LogInformation("Strava: Streams für {Done} Läufe nachgeladen.", done);
+        }
+    }
+
+    // Routen-Erkennung (FA-8.17): noch nicht zugeordnete Läufe (älteste zuerst) gegen die
+    // Cluster-Repräsentanten matchen oder neuen Cluster eröffnen. Rein CPU-/DB-gebunden
+    // (kein API-Call), aber gedrosselt, damit der Pi pro Zyklus nicht zu lange rechnet.
+    private const int MaxRoutesPerCycle = 50;
+
+    private async Task ClusterRoutesAsync(IServiceScope scope, IRunRepository repository, CancellationToken ct)
+    {
+        try
+        {
+            var store = scope.ServiceProvider.GetRequiredService<IRouteClusterStore>();
+            var ids = await store.GetUnmatchedRunIdsAsync(MaxRoutesPerCycle, ct);
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            var created = 0;
+            var assigned = 0;
+            foreach (var id in ids)
+            {
+                var run = await repository.GetRunAsync(id, ct);
+                if (run is null || run.Track.Count < 2)
+                {
+                    await store.MarkUnclusterableAsync(id, _clock.UtcNow, ct);
+                    continue;
+                }
+
+                // Repräsentanten je Lauf neu laden – ein in dieser Runde neu eröffneter Cluster
+                // soll für spätere Läufe sofort als Kandidat zur Verfügung stehen.
+                var reps = await store.GetRepresentativesAsync(ct);
+                var match = RouteClusterer.FindBestCluster(run.DistanceMeters, run.Track, reps);
+                if (match is { } clusterId)
+                {
+                    await store.AssignAsync(id, clusterId, _clock.UtcNow, ct);
+                    assigned++;
+                }
+                else
+                {
+                    await store.CreateClusterAsync(id, run.DistanceMeters, _clock.UtcNow, ct);
+                    created++;
+                }
+            }
+
+            _logger.LogInformation(
+                "Strava: Routen-Erkennung – {Assigned} Läufe zugeordnet, {Created} neue Runden.", assigned, created);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Strava: Routen-Erkennung fehlgeschlagen – nächster Zyklus versucht es erneut.");
         }
     }
 }
