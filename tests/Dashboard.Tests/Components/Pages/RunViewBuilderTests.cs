@@ -77,4 +77,21 @@ public class RunViewBuilderTests
         Assert.Equal("–", row.Pace);
         Assert.Equal("–", row.BestTime);
     }
+
+    [Fact]
+    public void BuildBestEfforts_KeepsOnlyAchievedDistances()
+    {
+        var rows = RunViewBuilder.BuildBestEfforts(
+        [
+            new BestEffort(1000, TimeSpan.FromSeconds(255)),   // 4:15
+            new BestEffort(5000, TimeSpan.FromMinutes(24.5)),  // 24:30
+            new BestEffort(10000, null),                       // nicht gelaufen → raus
+        ]);
+
+        Assert.Equal(2, rows.Count);
+        Assert.Equal("1 km", rows[0].Distance);
+        Assert.Equal("4:15 min", rows[0].Time);
+        Assert.Equal("5 km", rows[1].Distance);
+        Assert.Equal("24:30 min", rows[1].Time);
+    }
 }

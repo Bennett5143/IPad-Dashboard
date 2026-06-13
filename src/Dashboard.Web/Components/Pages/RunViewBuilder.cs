@@ -14,6 +14,9 @@ public sealed record RunDetailHeader(
 public sealed record RouteClusterRow(
     string Name, string Members, string Distance, string Pace, string BestTime);
 
+/// <summary>Eine Bestzeit eines Laufs (z. B. „5 km – 24:30").</summary>
+public sealed record BestEffortRow(string Distance, string Time);
+
 /// <summary>
 /// Formatiert Läufe für Liste und Detailseite — reine, testbare Aufbereitung (Muster
 /// <see cref="WhoopInsightsBuilder"/>), getrennt vom Profil-Rechnen (<c>RunProfileBuilder</c>).
@@ -42,6 +45,15 @@ public static class RunViewBuilder
             $"{c.AverageDistanceKm.ToString("0.0", German)} km",
             c.AveragePaceMinPerKm is { } pace ? FormatPaceValue(pace) : "–",
             c.BestTime is { } best ? Duration(best) : "–")).ToList();
+
+    /// <summary>Nur die tatsächlich gelaufenen Bestzeiten (Distanzen ≥ Lauflänge entfallen).</summary>
+    public static IReadOnlyList<BestEffortRow> BuildBestEfforts(IReadOnlyList<BestEffort> efforts) =>
+        efforts
+            .Where(e => e.FastestTime is not null)
+            .Select(e => new BestEffortRow(
+                $"{(e.DistanceMeters / 1000.0).ToString("0.#", German)} km",
+                Duration(e.FastestTime!.Value)))
+            .ToList();
 
     public static RunDetailHeader BuildDetailHeader(Run run) => new(
         RunName(run),
