@@ -1,0 +1,190 @@
+.habits-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+}
+
+.habits-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.habits-header h1 {
+    font-family: var(--font-family-display);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-fg-primary);
+}
+
+.habits-back {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+}
+
+.habit-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.habit-tabs button {
+    padding: var(--space-2) var(--space-4);
+    border-radius: 999px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.habit-tabs button.active {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+    color: #04101a;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--glow-accent);
+}
+
+.habit-summary {
+    display: flex;
+    gap: var(--space-6);
+}
+
+.habit-summary .stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-fg-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+/* ---- Jahres-Heatmap ---- */
+.heat-scroll {
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+}
+
+.heat-months {
+    display: grid;
+    grid-template-columns: repeat(53, 13px);
+    gap: 2px;
+    margin-bottom: 2px;
+    font-size: var(--font-size-xs, 0.7rem);
+    color: var(--color-fg-muted);
+    min-width: max-content;
+}
+
+.heat-month {
+    grid-row: 1;
+    white-space: nowrap;
+}
+
+.heat-grid {
+    display: grid;
+    grid-template-columns: repeat(53, 13px);
+    grid-template-rows: repeat(7, 13px);
+    grid-auto-flow: column;
+    gap: 2px;
+    min-width: max-content;
+}
+
+.heat-cell {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    background: var(--color-surface-sunken);
+}
+
+.heat-cell.lvl-0 {
+    background: var(--color-surface-sunken);
+}
+
+.heat-cell.lvl-1 {
+    background: rgba(0, 212, 255, 0.25);
+}
+
+.heat-cell.lvl-2 {
+    background: rgba(0, 212, 255, 0.45);
+}
+
+.heat-cell.lvl-3 {
+    background: rgba(0, 212, 255, 0.7);
+}
+
+.heat-cell.lvl-4 {
+    background: var(--color-accent);
+    box-shadow: var(--glow-accent);
+}
+
+.heat-legend {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-xs, 0.7rem);
+    color: var(--color-fg-muted);
+}
+
+/* ---- Wochenbalken ---- */
+.weeks h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+    margin-bottom: var(--space-2);
+}
+
+.week-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    height: 120px;
+}
+
+.week-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    height: 100%;
+}
+
+.week-bar-track {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-sm, 6px);
+    overflow: hidden;
+}
+
+.week-bar-fill {
+    width: 100%;
+    min-height: 2px;
+    background: linear-gradient(180deg, var(--color-accent), var(--color-accent-2));
+}
+
+.week-bar-count {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.week-bar-label {
+    font-size: var(--font-size-xs, 0.7rem);
+    color: var(--color-fg-muted);
+}

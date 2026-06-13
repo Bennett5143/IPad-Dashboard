@@ -20,6 +20,14 @@ internal sealed class FakeHabitEntryRepository : IHabitEntryRepository
                 .GroupBy(e => e.Kind)
                 .ToDictionary(g => g.Key, g => g.Count()));
 
+    public Task<IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>>> GetEntryDatesAsync(
+        DateOnly from, DateOnly to, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>>>(
+            _entries
+                .Where(e => e.Date >= from && e.Date <= to)
+                .GroupBy(e => e.Kind)
+                .ToDictionary(g => g.Key, g => (IReadOnlySet<DateOnly>)g.Select(e => e.Date).ToHashSet()));
+
     public Task AddAsync(HabitEntry entry, CancellationToken ct = default)
     {
         if (_entries.Any(e => e.Date == entry.Date && e.Kind == entry.Kind))
