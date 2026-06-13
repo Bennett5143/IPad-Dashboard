@@ -28,7 +28,7 @@
         {
             <section class="review">
                 <div class="review-head">
-                    <h2>Jahresrückblick</h2>
+                    <h2 class="metric-heading">Jahresrückblick<MetricInfo Id="MetricId.RunYearReview" /></h2>
                     <div class="year-buttons" role="group" aria-label="Jahr">
                         @foreach (var year in _review.AvailableYears)
                         {
@@ -45,6 +45,7 @@
                     <div><dt>Eddington</dt><dd>@_review.Eddington</dd></div>
                 </dl>
 
+                <span class="axis-caption">Balkenhöhe = Kilometer pro Monat</span>
                 <div class="review-bars" role="img" aria-label="Kilometer pro Monat">
                     @foreach (var month in _review.Months)
                     {
@@ -69,7 +70,7 @@
         @if (_clusters.Count > 0)
         {
             <section class="routes">
-                <h2>Standard-Runden</h2>
+                <h2 class="metric-heading">Standard-Runden<MetricInfo Id="MetricId.RouteClusters" /></h2>
                 <table class="runs-table">
                     <thead>
                         <tr>
@@ -97,6 +98,7 @@
         }
 
         <section class="runs-list-section">
+            <h2 class="metric-heading">Alle Läufe<MetricInfo Id="MetricId.RunList" /></h2>
             <div class="runs-controls" role="group" aria-label="Zeitraum">
                 <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRange(RunTimeRange.FourWeeks)">4 Wochen</button>
                 <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRange(RunTimeRange.TwelveMonths)">12 Monate</button>

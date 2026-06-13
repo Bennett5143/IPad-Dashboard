@@ -40,4 +40,5 @@
     margin-top: var(--space-1);
     font-size: var(--font-size-sm);
     color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
 }
