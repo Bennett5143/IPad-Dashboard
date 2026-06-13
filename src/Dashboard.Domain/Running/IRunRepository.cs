@@ -15,6 +15,9 @@ public interface IRunRepository
     /// </summary>
     Task<IReadOnlyList<Run>> GetRunSummariesAsync(DateTimeOffset? sinceUtc, CancellationToken ct = default);
 
+    /// <summary>Ein einzelner Lauf (mit Track/Streams, sofern vorhanden); <c>null</c>, wenn unbekannt.</summary>
+    Task<Run?> GetRunAsync(long id, CancellationToken ct = default);
+
     /// <summary>Startzeit des jüngsten gespeicherten Laufs – Basis für den inkrementellen Sync.</summary>
     Task<DateTimeOffset?> GetLatestRunStartAsync(CancellationToken ct = default);
 

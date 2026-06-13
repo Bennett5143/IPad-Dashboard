@@ -102,6 +102,15 @@ public sealed class RunRepository : IRunRepository
             .ToList();
     }
 
+    public async Task<Run?> GetRunAsync(long id, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        var entity = await db.Set<RunActivityEntity>().AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
     public async Task<DateTimeOffset?> GetLatestRunStartAsync(CancellationToken ct = default)
     {
         await using var db = await _factory.CreateDbContextAsync(ct);
