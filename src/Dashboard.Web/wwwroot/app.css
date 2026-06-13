@@ -200,3 +200,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     box-shadow: var(--glow-accent);
 }
 .dialog-actions button:disabled { opacity: 0.6; cursor: default; }
+
+/* Auswertungs-Kopf: Titel(zeile) links, ℹ-Erklärungsbutton rechts (FA-10.08). Global, weil
+   die scoped Seiten-CSS den global benannten .metric-info-btn sonst nicht erreicht. */
+.metric-heading { display: flex; align-items: center; gap: var(--space-2); }
+.metric-heading > .metric-info-btn { margin-left: auto; }
+
+/* Kleine Achsen-/Bezugsbeschriftung an HTML-Diagrammen ohne Sparkline (FA-10.09). */
+.axis-caption { font-size: var(--font-size-sm); color: var(--color-fg-muted); }

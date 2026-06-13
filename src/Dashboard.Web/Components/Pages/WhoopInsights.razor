@@ -35,8 +35,11 @@
                     <div class="metric-head">
                         <span class="metric-title">@card.Title</span>
                         <span class="metric-current">@card.Current<span class="metric-unit">@card.Unit</span></span>
+                        <MetricInfo Id="CardMetric(card.CssClass)" />
                     </div>
-                    <Sparkline Values="card.Values" CssClass="@card.CssClass" />
+                    <ChartFrame XLabel="letzte 30 Tage">
+                        <Sparkline Values="card.Values" CssClass="@card.CssClass" />
+                    </ChartFrame>
                     <div class="metric-stats">
                         <span>Ø @card.Avg</span>
                         <span>min @card.Min</span>
@@ -49,13 +52,15 @@
         @if (_trainingLoad is not null)
         {
             <section class="load">
-                <h2>Trainingslast <span class="tod-window">ACWR · Tages-Strain</span></h2>
+                <h2 class="metric-heading">Trainingslast <span class="tod-window">ACWR · Tages-Strain</span><MetricInfo Id="MetricId.TrainingLoad" /></h2>
                 <article class="tod-card">
                     <div class="load-head">
                         <span class="load-ratio @_trainingLoad.ZoneCss">@_trainingLoad.RatioLabel</span>
                         <span class="load-zone @_trainingLoad.ZoneCss">@_trainingLoad.ZoneLabel</span>
                     </div>
-                    <Sparkline Values="_trainingLoad.Sparkline" CssClass="load" />
+                    <ChartFrame XLabel="letzte ~90 Tage" YLabel="ACWR-Verhältnis">
+                        <Sparkline Values="_trainingLoad.Sparkline" CssClass="load" />
+                    </ChartFrame>
                     @if (_trainingLoad.ConfidenceHint is not null)
                     {
                         <p class="load-confidence">@_trainingLoad.ConfidenceHint</p>
@@ -68,7 +73,7 @@
         @if (_fitnessCurve is not null)
         {
             <section class="load">
-                <h2>Aerobe Fitness <span class="tod-window">Monats-Ø · letzte 12 Monate</span></h2>
+                <h2 class="metric-heading">Aerobe Fitness <span class="tod-window">Monats-Ø · letzte 12 Monate</span><MetricInfo Id="MetricId.AerobicFitness" /></h2>
                 <article class="tod-card">
                     <div class="load-head">
                         <span class="fitness-current">@_fitnessCurve.CurrentLabel</span>
@@ -77,7 +82,9 @@
                             <span class="fitness-trend @_fitnessCurve.TrendCss">@_fitnessCurve.TrendLabel</span>
                         }
                     </div>
-                    <Sparkline Values="_fitnessCurve.Sparkline" CssClass="fitness" />
+                    <ChartFrame XLabel="letzte 12 Monate" YLabel="Herzschläge/km">
+                        <Sparkline Values="_fitnessCurve.Sparkline" CssClass="fitness" />
+                    </ChartFrame>
                     <p class="tod-hint">@_fitnessCurve.Hint</p>
                 </article>
             </section>
@@ -86,7 +93,7 @@
         @if (_recoveryDrivers is not null)
         {
             <section class="tod">
-                <h2>Recovery-Treiber <span class="tod-window">Korrelation · letzte 12 Monate</span></h2>
+                <h2 class="metric-heading">Recovery-Treiber <span class="tod-window">Korrelation · letzte 12 Monate</span><MetricInfo Id="MetricId.RecoveryDrivers" /></h2>
                 <article class="tod-card drivers-card">
                     <ul class="drv-rows">
                         @foreach (var row in _recoveryDrivers.Rows)
@@ -115,7 +122,9 @@
                                     <span class="tod-title">@scatter.Title</span>
                                     <span class="tod-hint">@scatter.AxisHint · n=@scatter.Count</span>
                                 </div>
-                                <Scatter Pairs="scatter.Pairs" CssClass="drivers" />
+                                <ChartFrame XLabel="@scatter.Title" YLabel="Recovery (%)">
+                                    <Scatter Pairs="scatter.Pairs" CssClass="drivers" />
+                                </ChartFrame>
                             </article>
                         }
                     </div>
@@ -126,7 +135,7 @@
         @if (_night is not null)
         {
             <section class="sleep">
-                <h2>Letzte Nacht <span class="sleep-date">@_night.DateLabel</span></h2>
+                <h2 class="metric-heading">Letzte Nacht <span class="sleep-date">@_night.DateLabel</span><MetricInfo Id="MetricId.SleepNight" /></h2>
                 <article class="sleep-card">
                     <div class="sleep-meta">
                         @if (_night.TimeRange is not null)
@@ -162,7 +171,7 @@
         }
 
         <section class="tod">
-            <h2>Tageszeit-Effektivität <span class="tod-window">letzte 12 Monate</span></h2>
+            <h2 class="metric-heading">Tageszeit-Effektivität <span class="tod-window">letzte 12 Monate</span><MetricInfo Id="MetricId.TimeOfDay" /></h2>
             @if (_todCards.Count == 0)
             {
                 <p class="insights-msg">
@@ -200,6 +209,7 @@
 
                 @if (_todMatrix is not null)
                 {
+                    <p class="tod-fact metric-heading">Trainings-Häufigkeit (Tageszeit × Wochentag)<MetricInfo Id="MetricId.TimeOfDayMatrix" /></p>
                     <table class="tod-matrix">
                         <thead>
                             <tr>
@@ -247,7 +257,7 @@
                 <div class="tod-grid">
                     <article class="tod-card">
                         <div class="tod-head">
-                            <span class="tod-title">Einschlafzeit → Recovery</span>
+                            <span class="tod-title metric-heading">Einschlafzeit → Recovery<MetricInfo Id="MetricId.SleepBedtime" /></span>
                             <span class="tod-hint">Ø Recovery am Folgetag je Einschlaf-Fenster</span>
                         </div>
                         <ul class="tod-rows">
@@ -269,7 +279,7 @@
 
                     <article class="tod-card">
                         <div class="tod-head">
-                            <span class="tod-title">Schlafdauer → Recovery</span>
+                            <span class="tod-title metric-heading">Schlafdauer → Recovery<MetricInfo Id="MetricId.SleepDuration" /></span>
                             <span class="tod-hint">Ø Recovery je Schlafdauer</span>
                         </div>
                         <ul class="tod-rows">
@@ -298,7 +308,7 @@
         </section>
 
         <section class="runs">
-            <h2>Läufe nach Recovery</h2>
+            <h2 class="metric-heading">Läufe nach Recovery<MetricInfo Id="MetricId.WhoopRuns" /></h2>
             @if (_runs.Count == 0)
             {
                 <p class="insights-msg">Keine Läufe im Zeitraum.</p>
@@ -326,6 +336,18 @@
 
     private static readonly TimeZoneInfo BerlinTz =
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    /// <summary>Bildet die stabile CssClass einer Metrik-Karte auf ihre Erklärungs-ID ab.</summary>
+    private static MetricId CardMetric(string cssClass) => cssClass switch
+    {
+        "recovery" => MetricId.WhoopRecovery,
+        "hrv" => MetricId.WhoopHrv,
+        "rhr" => MetricId.WhoopRestingHeartRate,
+        "sleep" => MetricId.WhoopSleep,
+        "strain" => MetricId.WhoopStrain,
+        "resp" => MetricId.WhoopRespiratoryRate,
+        _ => throw new ArgumentOutOfRangeException(nameof(cssClass), cssClass, "Unbekannte Metrik-Karte."),
+    };
 
     private bool _connected;
     private bool _loading = true;
