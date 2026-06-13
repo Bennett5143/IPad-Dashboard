@@ -46,6 +46,20 @@ public sealed class HabitEntryRepository : IHabitEntryRepository
             .ToDictionaryAsync(x => x.Kind, x => x.Count, ct);
     }
 
+    public async Task<IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>>> GetEntryDatesAsync(
+        DateOnly from, DateOnly to, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        var rows = await db.HabitEntries
+            .Where(e => e.Date >= from && e.Date <= to)
+            .Select(e => new { e.Kind, e.Date })
+            .ToListAsync(ct);
+
+        return rows
+            .GroupBy(r => r.Kind)
+            .ToDictionary(g => g.Key, g => (IReadOnlySet<DateOnly>)g.Select(r => r.Date).ToHashSet());
+    }
+
     public async Task AddAsync(HabitEntry entry, CancellationToken ct = default)
     {
         await using var db = await _factory.CreateDbContextAsync(ct);

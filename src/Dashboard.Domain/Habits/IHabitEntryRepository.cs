@@ -10,6 +10,13 @@ public interface IHabitEntryRepository
     Task<IReadOnlySet<HabitKind>> GetCompletedKindsAsync(DateOnly date, CancellationToken ct = default);
     Task<IReadOnlyDictionary<HabitKind, int>> CountByKindAsync(
         DateOnly from, DateOnly to, CancellationToken ct = default);
+
+    /// <summary>
+    /// Erledigte Tage je Habit im Bereich (beide Grenzen inklusiv) – Basis für Verlaufs-Heatmap
+    /// und Streaks (FA-3.08/3.09). Habits ohne Eintrag fehlen im Dictionary.
+    /// </summary>
+    Task<IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>>> GetEntryDatesAsync(
+        DateOnly from, DateOnly to, CancellationToken ct = default);
     Task AddAsync(HabitEntry entry, CancellationToken ct = default);
     Task RemoveAsync(HabitEntry entry, CancellationToken ct = default);
     Task<EmomWorkout?> GetEmomAsync(DateOnly date, CancellationToken ct = default);
