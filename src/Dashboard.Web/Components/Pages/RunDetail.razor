@@ -2,6 +2,7 @@
 @layout MainLayout
 @rendermode InteractiveServer
 @inject IRunRepository RunRepository
+@inject IRouteClusterStore RouteClusters
 @inject IClock Clock
 
 <PageTitle>@(_header?.Name ?? "Lauf")</PageTitle>
@@ -18,7 +19,13 @@
     else if (_header is not null)
     {
         <h1 class="run-title">@_header.Name</h1>
-        <p class="run-subtitle">@_header.Date</p>
+        <p class="run-subtitle">
+            @_header.Date
+            @if (_cluster is not null)
+            {
+                <span class="run-route-badge">@_cluster.Name</span>
+            }
+        </p>
 
         <dl class="run-stats">
             <div><dt>Distanz</dt><dd>@_header.Distance</dd></div>
@@ -60,6 +67,7 @@
     private bool _notFound;
     private RunDetailHeader? _header;
     private RunProfile? _profile;
+    private RouteClusterInfo? _cluster;
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,6 +80,7 @@
 
         _header = RunViewBuilder.BuildDetailHeader(run);
         _profile = RunProfileBuilder.Build(run);
+        _cluster = await RouteClusters.GetClusterForRunAsync(Id);
     }
 
     private RenderFragment ProfileBlock(string title, string css, string hint, IReadOnlyList<double?> values, bool invert) => __builder =>

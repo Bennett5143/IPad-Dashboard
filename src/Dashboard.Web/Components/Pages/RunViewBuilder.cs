@@ -10,6 +10,10 @@ public sealed record RunListRow(
 public sealed record RunDetailHeader(
     string Name, string Date, string Distance, string Duration, string Pace, string HeartRate, string Elevation);
 
+/// <summary>Eine Zeile der „Standard-Runden"-Übersicht (FA-8.17).</summary>
+public sealed record RouteClusterRow(
+    string Name, string Members, string Distance, string Pace, string BestTime);
+
 /// <summary>
 /// Formatiert Läufe für Liste und Detailseite — reine, testbare Aufbereitung (Muster
 /// <see cref="WhoopInsightsBuilder"/>), getrennt vom Profil-Rechnen (<c>RunProfileBuilder</c>).
@@ -30,6 +34,14 @@ public static class RunViewBuilder
             Pace(run),
             HeartRate(run),
             Elevation(run))).ToList();
+
+    public static IReadOnlyList<RouteClusterRow> BuildRouteClusters(IReadOnlyList<RouteClusterSummary> clusters) =>
+        clusters.Select(c => new RouteClusterRow(
+            c.Name,
+            $"{c.MemberCount}×",
+            $"{c.AverageDistanceKm.ToString("0.0", German)} km",
+            c.AveragePaceMinPerKm is { } pace ? FormatPaceValue(pace) : "–",
+            c.BestTime is { } best ? Duration(best) : "–")).ToList();
 
     public static RunDetailHeader BuildDetailHeader(Run run) => new(
         RunName(run),
@@ -54,14 +66,15 @@ public static class RunViewBuilder
     private static string Pace(Run run)
     {
         var km = run.DistanceMeters / 1000.0;
-        if (km <= 0 || run.MovingTime <= TimeSpan.Zero)
-        {
-            return "–";
-        }
+        return km <= 0 || run.MovingTime <= TimeSpan.Zero
+            ? "–"
+            : FormatPaceValue(run.MovingTime.TotalMinutes / km);
+    }
 
-        var pace = run.MovingTime.TotalMinutes / km;
-        var minutes = (int)pace;
-        var seconds = (int)Math.Round((pace - minutes) * 60, MidpointRounding.AwayFromZero);
+    private static string FormatPaceValue(double minPerKm)
+    {
+        var minutes = (int)minPerKm;
+        var seconds = (int)Math.Round((minPerKm - minutes) * 60, MidpointRounding.AwayFromZero);
         if (seconds == 60)
         {
             minutes++;
