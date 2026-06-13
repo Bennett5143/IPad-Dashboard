@@ -106,16 +106,21 @@ public sealed class FootballDataClient : IFootballProvider
             .Select(m => MapMatch(m, team.TeamId))
             .ToList();
 
-        return new FootballTeamSnapshot(team.Name, recent, upcoming, await GetStandingAsync(team, ct));
+        var table = await GetTableAsync(team, ct);
+        var standing = table.FirstOrDefault(r => r.IsOwnTeam) is { } own
+            ? new TablePosition(own.Position, own.PlayedGames, own.Points)
+            : null;
+
+        return new FootballTeamSnapshot(team.Name, recent, upcoming, standing, table);
     }
 
-    private async Task<TablePosition?> GetStandingAsync(FootballTeamConfig team, CancellationToken ct)
+    private async Task<IReadOnlyList<LeagueRow>> GetTableAsync(FootballTeamConfig team, CancellationToken ct)
     {
         try
         {
             var standings = await GetAsync<FdStandingsResponse>(
                 $"v4/competitions/{team.CompetitionCode}/standings", ct);
-            return ExtractStanding(standings, team.TeamId);
+            return ExtractTable(standings, team.TeamId);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -124,7 +129,7 @@ public sealed class FootballDataClient : IFootballProvider
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Fußball: Tabelle {Comp} für {Team} übersprungen.", team.CompetitionCode, team.Name);
-            return null;
+            return [];
         }
     }
 
@@ -160,11 +165,26 @@ public sealed class FootballDataClient : IFootballProvider
     private static string OpponentName(FdTeam team) =>
         !string.IsNullOrWhiteSpace(team.Name) ? team.Name : team.ShortName ?? string.Empty;
 
-    private static TablePosition? ExtractStanding(FdStandingsResponse standings, int teamId)
+    private static IReadOnlyList<LeagueRow> ExtractTable(FdStandingsResponse standings, int teamId)
     {
         var total = standings.Standings.FirstOrDefault(s => s.Type == "TOTAL");
-        var row = total?.Table.FirstOrDefault(t => t.Team.Id == teamId);
+        if (total is null)
+        {
+            return [];
+        }
 
-        return row is null ? null : new TablePosition(row.Position, row.PlayedGames, row.Points);
+        return total.Table
+            .Select(e => new LeagueRow(
+                e.Position,
+                OpponentName(e.Team),
+                e.Team.Tla,
+                e.PlayedGames,
+                e.Won,
+                e.Draw,
+                e.Lost,
+                e.GoalDifference,
+                e.Points,
+                IsOwnTeam: e.Team.Id == teamId))
+            .ToList();
     }
 }

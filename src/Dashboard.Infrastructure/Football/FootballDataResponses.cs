@@ -43,4 +43,8 @@ internal sealed record FdTableEntry(
     [property: JsonPropertyName("position")] int Position,
     [property: JsonPropertyName("team")] FdTeam Team,
     [property: JsonPropertyName("playedGames")] int PlayedGames,
+    [property: JsonPropertyName("won")] int Won,
+    [property: JsonPropertyName("draw")] int Draw,
+    [property: JsonPropertyName("lost")] int Lost,
+    [property: JsonPropertyName("goalDifference")] int GoalDifference,
     [property: JsonPropertyName("points")] int Points);
