@@ -22,15 +22,6 @@
     letter-spacing: 0.1em;
 }
 
-.status-back {
-    color: var(--color-fg-secondary);
-    text-decoration: none;
-}
-
-.status-back:hover {
-    text-decoration: underline;
-}
-
 .status-msg {
     color: var(--color-fg-muted);
 }

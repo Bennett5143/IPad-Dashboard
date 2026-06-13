@@ -21,15 +21,6 @@
     letter-spacing: 0.1em;
 }
 
-.insights-back {
-    color: var(--color-fg-secondary);
-    text-decoration: none;
-}
-
-.insights-back:hover {
-    text-decoration: underline;
-}
-
 .insights-msg {
     color: var(--color-fg-muted);
 }

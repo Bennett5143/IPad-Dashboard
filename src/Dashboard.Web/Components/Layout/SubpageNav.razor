@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Components.Routing
+
+@* Einheitliche Quer-Navigation der Unterseiten (im MainLayout, daher auf jeder Unterseite). *@
+<nav class="subnav">
+    <a class="subnav-home" href="/">← Dashboard</a>
+    <div class="subnav-links">
+        <NavLink href="/heatmap" Match="NavLinkMatch.Prefix">Heatmap</NavLink>
+        <NavLink href="/runs" Match="NavLinkMatch.Prefix">Läufe</NavLink>
+        <NavLink href="/habits" Match="NavLinkMatch.Prefix">Habits</NavLink>
+        <NavLink href="/whoop" Match="NavLinkMatch.Prefix">WHOOP</NavLink>
+        <NavLink href="/status" Match="NavLinkMatch.Prefix">Status</NavLink>
+    </div>
+</nav>

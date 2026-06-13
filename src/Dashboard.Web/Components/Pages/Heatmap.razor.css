@@ -17,23 +17,6 @@
     letter-spacing: 0.1em;
 }
 
-.heatmap-back {
-    color: var(--color-accent);
-    text-decoration: none;
-    font-size: var(--font-size-sm);
-}
-
-.heatmap-nav {
-    display: flex;
-    gap: var(--space-4);
-}
-
-.heatmap-nav a {
-    color: var(--color-accent);
-    text-decoration: none;
-    font-size: var(--font-size-sm);
-}
-
 .heatmap-connect {
     display: flex;
     flex-direction: column;

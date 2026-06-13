@@ -19,12 +19,6 @@
     color: var(--color-fg-primary);
 }
 
-.habits-back {
-    color: var(--color-accent);
-    text-decoration: none;
-    font-size: var(--font-size-sm);
-}
-
 .habit-tabs {
     display: flex;
     flex-wrap: wrap;
