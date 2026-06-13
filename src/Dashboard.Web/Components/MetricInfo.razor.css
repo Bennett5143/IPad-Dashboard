@@ -1,0 +1,89 @@
+/* ℹ-Trigger – sitzt inline im Kopf der jeweiligen Metrik. */
+.metric-info-btn {
+    flex: none;
+    inline-size: 1.6rem;
+    block-size: 1.6rem;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--glass-rim);
+    background: var(--color-surface-sunken);
+    color: var(--color-accent);
+    font-family: var(--font-family-display);
+    font-style: italic;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.metric-info-btn:hover,
+.metric-info-btn:focus-visible {
+    color: #04101a;
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+    box-shadow: var(--glow-accent);
+    outline: none;
+}
+
+/* Erklärungs-Popup (baut auf dem globalen .dialog-Muster auf). */
+.metric-dialog {
+    width: min(92vw, 460px);
+}
+
+.metric-dialog-summary {
+    margin: 0;
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+}
+
+.metric-dialog-block {
+    margin-top: var(--space-4);
+}
+
+.metric-dialog-block p {
+    margin: var(--space-1) 0 0;
+    color: var(--color-fg-secondary);
+    line-height: 1.5;
+}
+
+.metric-dialog-label {
+    font-family: var(--font-family-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.metric-dialog-axes {
+    list-style: none;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+}
+
+.metric-dialog-axes li {
+    color: var(--color-fg-secondary);
+    line-height: 1.4;
+}
+
+.axis-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    margin-right: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-accent);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
