@@ -37,6 +37,101 @@
     font-variant-numeric: tabular-nums;
 }
 
+.football-position.is-button {
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--glass-rim);
+    border-radius: 999px;
+    padding: 1px var(--space-2);
+}
+
+.football-position.is-button:hover {
+    color: var(--color-fg-primary);
+    border-color: var(--color-accent);
+}
+
+/* Ligatabelle als Tap-Overlay (FA-4.06) */
+.table-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background: rgba(2, 5, 12, 0.72);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.table-modal {
+    width: min(560px, 100%);
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow);
+}
+
+.table-modal-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.table-modal-head h3 {
+    font-family: var(--font-family-display);
+    color: var(--color-fg-primary);
+}
+
+.table-close {
+    background: transparent;
+    border: none;
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+}
+
+.league-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.league-table th {
+    text-align: left;
+    color: var(--color-fg-muted);
+    font-weight: var(--font-weight-normal, 400);
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.league-table th.num,
+.league-table td.num {
+    text-align: right;
+}
+
+.league-table td {
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-fg-secondary);
+}
+
+.league-table td.pts {
+    color: var(--color-fg-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.league-table tr.is-own td {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--color-fg-primary);
+}
+
 .football-label {
     margin-top: var(--space-1);
     font-size: var(--font-size-sm);

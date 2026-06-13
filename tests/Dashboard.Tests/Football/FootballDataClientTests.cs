@@ -41,8 +41,8 @@ public class FootballDataClientTests
           "standings": [
             { "type": "HOME", "table": [ { "position": 5, "team": { "id": 86, "name": "Real Madrid CF" }, "playedGames": 18, "points": 40 } ] },
             { "type": "TOTAL", "table": [
-              { "position": 2, "team": { "id": 81, "name": "FC Barcelona" }, "playedGames": 36, "points": 80 },
-              { "position": 1, "team": { "id": 86, "name": "Real Madrid CF" }, "playedGames": 36, "points": 85 }
+              { "position": 2, "team": { "id": 81, "name": "FC Barcelona", "tla": "BAR" }, "playedGames": 36, "won": 25, "draw": 5, "lost": 6, "goalDifference": 40, "points": 80 },
+              { "position": 1, "team": { "id": 86, "name": "Real Madrid CF", "tla": "RMA" }, "playedGames": 36, "won": 27, "draw": 4, "lost": 5, "goalDifference": 48, "points": 85 }
             ] }
           ]
         }
@@ -135,5 +135,20 @@ public class FootballDataClientTests
 
         Assert.Single(team.RecentResults);
         Assert.Single(team.Upcoming);
+    }
+
+    [Fact]
+    public async Task GetFootballAsync_MapsFullTable_AndMarksOwnTeam()
+    {
+        var team = (await CreateClient().GetFootballAsync()).Teams[0];
+
+        Assert.NotNull(team.Table);
+        Assert.Equal(2, team.Table!.Count);
+        var own = team.Table.Single(r => r.IsOwnTeam);
+        Assert.Equal("Real Madrid CF", own.TeamName);
+        Assert.Equal("RMA", own.ShortCode);
+        Assert.Equal(27, own.Won);
+        Assert.Equal(48, own.GoalDifference);
+        Assert.False(team.Table.Single(r => r.Position == 2).IsOwnTeam); // Barcelona
     }
 }
