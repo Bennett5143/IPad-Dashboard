@@ -9,6 +9,7 @@
 @inject IWhoopMetricStore WhoopMetrics
 @inject IWhoopWorkoutStore WhoopWorkouts
 @inject ISystemMetricsProvider HostMetrics
+@inject IRecentLogProvider RecentLogs
 @inject HealthCheckService Health
 @inject IClock Clock
 
@@ -96,6 +97,27 @@
                 <div><dt>PostgreSQL</dt><dd>@_dbLabel</dd></div>
             </dl>
         </section>
+
+        <section>
+            <h2>Letzte Warnungen &amp; Fehler</h2>
+            @if (_logs.Count == 0)
+            {
+                <p class="status-msg">Keine Warnungen seit dem Start.</p>
+            }
+            else
+            {
+                <ul class="status-log">
+                    @foreach (var entry in _logs)
+                    {
+                        <li>
+                            <span class="log-level @LevelCss(entry.Level)">@entry.Level</span>
+                            <span class="log-time">@RelativeTime(entry.TimestampUtc)</span>
+                            <span class="log-message">@entry.Message</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
     }
 </div>
 
@@ -116,11 +138,13 @@
     private string _whoopWorkoutLabel = "–";
     private Dashboard.Domain.Status.SystemMetrics? _system;
     private string _dbLabel = "–";
+    private IReadOnlyList<RecentLogEntry> _logs = [];
 
     protected override async Task OnInitializedAsync()
     {
         var now = Clock.UtcNow;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, BerlinTz).DateTime);
+        _logs = RecentLogs.Recent;
 
         _slices = StatusViewBuilder.BuildSliceRows(
             Sources.Select(s => (s.SliceName, s.HasData, s.IsStale, s.LastUpdatedUtc)), now);
@@ -179,4 +203,14 @@
 
         _loading = false;
     }
+
+    private string RelativeTime(DateTimeOffset whenUtc) =>
+        StatusViewBuilder.RelativeLabel(whenUtc, Clock.UtcNow);
+
+    private static string LevelCss(string level) => level switch
+    {
+        "Warning" => "log-warn",
+        "Error" or "Fatal" => "log-error",
+        _ => "log-info"
+    };
 }
