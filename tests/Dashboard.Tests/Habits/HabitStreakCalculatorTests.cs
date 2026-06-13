@@ -1,5 +1,3 @@
-using Dashboard.Domain.Habits;
-
 namespace Dashboard.Tests.Habits;
 
 public class HabitStreakCalculatorTests
