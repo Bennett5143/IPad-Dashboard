@@ -3,15 +3,23 @@
 [![CI](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml)
 
 Selbstgehostetes Dashboard für ein iPad 6th Gen, das auf einem
-Raspberry Pi 4 läuft. Anzeigt: Uhrzeit, Wetter, Habit-Tracker,
-Fußball-Ergebnisse, HVV-Abfahrten, Zitat des Tages.
+Raspberry Pi 4 läuft. Das Kiosk-Dashboard (`/`) zeigt: Uhrzeit, Wetter,
+Habit-Tracker, Fußball-Ergebnisse, HVV-Abfahrten, WHOOP-Recovery und das
+Zitat des Tages.
+
+Auf Unterseiten ist es zu einem **persönlichen Fitness-Daten-Hub** ausgebaut,
+der WHOOP- und Strava-Daten bündelt und Auswertungen baut, die keine einzelne
+App zeigt: Lauf-Heatmap (`/heatmap`), Lauf-Liste + Detailprofile (`/runs`),
+WHOOP-Insights mit Tageszeit-/Schlaf-/Trainingslast-Analysen (`/whoop`),
+Habit-Verlauf (`/habits`) und eine Status-/Observability-Seite (`/status`).
 
 ## Tech-Stack
 
 - C# / .NET 10 mit Blazor Server
-- Entity Framework Core (Npgsql Provider)
-- PostgreSQL 16
+- Entity Framework Core 10 (Npgsql Provider) + NetTopologySuite
+- PostgreSQL 16 mit **PostGIS** (Lauf-Tracks als `geometry(LineString,4326)`)
 - Serilog (Konsole + JSON-Dateien)
+- Leaflet (clientseitig) für die Heatmap, Inline-SVG für Charts
 - Docker / docker-compose
 - Hosting auf Raspberry Pi 4 (ARM64)
 
@@ -21,16 +29,20 @@ Fußball-Ergebnisse, HVV-Abfahrten, Zitat des Tages.
 src/
 ├── Dashboard.Web              # Blazor Server, Entrypoint, UI
 │   ├── Components/
-│   │   ├── Layout/            # KioskLayout (Dashboard), MainLayout (Admin)
-│   │   ├── Pages/             # Home.razor (/), Admin/Quotes.razor
+│   │   ├── Layout/            # KioskLayout (/), MainLayout (Unterseiten) + SubpageNav
+│   │   ├── Pages/             # Home (/), Heatmap (/heatmap), Runs (/runs) + RunDetail,
+│   │   │                      #   Habits (/habits), WhoopInsights (/whoop), Status (/status),
+│   │   │                      #   Admin/Quotes — je mit testbaren *Builder-Klassen
 │   │   ├── Tile.razor         # Container-Komponente mit Header/Body-Slot
 │   │   ├── TileBoundary.razor # ErrorBoundary-Wrapper pro Tile
-│   │   └── Tiles/             # Konkrete Tile-Implementierungen
-│   └── wwwroot/app.css        # Design-Tokens (CSS Custom Properties)
-├── Dashboard.Domain           # Entities, Value Objects, Enums
-└── Dashboard.Infrastructure   # DbContext, Seeder, externe API-Clients
+│   │   ├── Sparkline / Scatter# Inline-SVG-Charts
+│   │   └── Tiles/             # Konkrete Tile-Implementierungen + Formatter
+│   └── wwwroot/               # app.css (Design-Tokens), js/heatmap.js
+├── Dashboard.Domain           # reine Logik: Entities/ValueObjects/Enums, Ports (Interfaces),
+│                              #   Slice-Rechner (Whoop-/Running-/Habits-Analytics), Common, Status
+└── Dashboard.Infrastructure   # DbContext, Migrationen, Seeder, API-Clients, BackgroundServices, Stores
 tests/
-└── Dashboard.Tests            # xUnit
+└── Dashboard.Tests            # xUnit (Domänenlogik + Clients via Stub-HttpHandler + FakeClock)
 ```
 
 Cross-cutting MSBuild-Properties werden zentral via `Directory.Build.props`
@@ -41,7 +53,13 @@ Management). Beide liegen im Repo-Root.
 
 Das Dashboard nutzt zwei Layouts: `KioskLayout` für die Dashboard-Page (`/`)
 – Vollbild ohne Navigation, optimiert für den Kiosk-Modus – und `MainLayout`
-für den Admin-Bereich (`/admin/*`) mit Sidebar und Top-Row.
+für alle Unterseiten (`/heatmap`, `/runs`, `/habits`, `/whoop`, `/status`,
+`/admin/*`), die sich eine gemeinsame `SubpageNav` (Quer-Navigation) teilen
+und scrollen dürfen.
+
+Optik: dunkles „Liquid Glass HUD" (No-Scroll-Layout für das iPad). Die
+Hauptansicht ist bewusst auf 1024×768 fixiert; die Kacheln schrumpfen/clippen
+statt zu scrollen.
 
 Jede Kachel auf dem Dashboard ist mit einer `TileBoundary` umschlossen. Eine
 crashende Tile (z.B. weil eine externe API nicht erreichbar ist) zeigt damit
@@ -56,14 +74,24 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 
 ## Status
 
-🚧 In Entwicklung
-- ✅ Phase 1: Lokale Dev-Umgebung (DB, EF Core, Docker, Seeding)
-- ✅ Phase 2: CI-Pipeline, Code-Coverage, Branch Protection, Dependabot
-- ✅ Phase 3: Dashboard-Skelett (Layouts, Tile-Komposition, Error-Isolation, Routing)
-- 🚧 Phase 4: Features
-  - ✅ Uhrzeit & Datum, Zitat des Tages, Wetter (OpenWeatherMap), Fußball (football-data.org), HVV-Abfahrtsmonitor
-  - ⬜ Habit-Tracker
-- 🟡 Phase 7: Lauf-Heatmap vorgezogen implementiert (Strava-OAuth-Sync, PostGIS, Leaflet)
+- ✅ **Phasen 0–3:** Repo, Dev-Umgebung, CI/Coverage/Branch-Protection/Dependabot, Dashboard-Skelett
+- ✅ **Phase 4 – Features:** Uhrzeit & Datum, Zitat des Tages, Habit-Tracker (inkl. Backfill/EMOM),
+  Wetter (OpenWeatherMap), Fußball (football-data.org), HVV-Abfahrtsmonitor
+- ✅ **Phase 7 – Lauf-Heatmap:** Strava-OAuth-Sync, PostGIS, Leaflet, Layer (Pace/Höhe/Richtung/HF)
+- ✅ **Phase 8 – WHOOP:** Recovery-Kachel, Habit-Auto-Fill, Insights-Seite
+- ✅ **Redesign:** dunkles „Liquid Glass HUD", No-Scroll-iPad-Layout, generisches `ObservableState<T>`
+- ✅ **Fitness-Daten-Hub (Phasen 9–14):**
+  - Daten-Fundament: WHOOP-Historie/-Workouts + Strava-Metriken persistiert (Backfills)
+  - Analytics auf `/whoop`: Tageszeit-Effektivität, Schlafenszeiten, Trainingslast (ACWR),
+    aerobe Fitness-Kurve, Recovery-Treiber
+  - Lauf-Vertiefung: klickbare Heatmap, `/runs` Liste + Detailprofile, Year in Review,
+    Routen-Erkennung, Best Efforts
+  - Habits: `/habits`-Jahres-Heatmap + Streaks · Observability: `/status` + Log-Ringpuffer
+  - Quick-Wins: Liga-Tabelle & Wochenkalender auf Tap, Wetter-Extras, Quer-Navigation
+- ⬜ **Offen:** Container/Pi-Deployment (Phase 5) & Kiosk-Hardening (Phase 6); Kachel-Redesign (Phase 14.1)
+
+> Anforderungen, Phasenplan und detaillierte Feature-Roadmap werden außerhalb des Repos
+> in einem Obsidian-Vault gepflegt.
 
 ## Setup
 
@@ -237,6 +265,26 @@ Verbindung zeigt `/heatmap` einen „Mit Strava verbinden"-Hinweis.
 
 > Hinweis: Die Heatmap lädt Leaflet und OSM-Kartenkacheln über das Internet
 > (CDN/Tile-Server) – im reinen Offline-Kiosk müsste man diese vendoren.
+
+### WHOOP (Phase 8)
+
+Recovery/Schlaf/Strain via offizieller WHOOP-API (v2, OAuth2, kostenlos). Client-ID/Secret
+als User Secrets:
+
+```bash
+cd src/Dashboard.Web
+dotnet user-secrets set "Whoop:ClientId" "<client-id>"
+dotnet user-secrets set "Whoop:ClientSecret" "<client-secret>"
+```
+
+Verbinden über `/whoop/connect` (Redirect-URI muss `https` sein → `https`-Profil). Ein
+`WhoopRefreshService` pollt periodisch, hakt passende Habits automatisch ab und
+persistiert Tageswerte + Workouts (Tabellen `WhoopDailyMetrics`/`WhoopWorkouts`) für die
+Auswertungen auf `/whoop`. `appsettings.json` → Sektion `Whoop` (u. a. `BackfillDays`,
+Default 365). Ohne Token bleibt die Kachel im „nicht verbunden"-Zustand.
+
+> Die WHOOP-Developer-API liefert **kein GPS** (Heatmap bleibt Strava-Sache) und **keine
+> Schritte**; Gewicht nur als aktueller App-Wert ohne Historie.
 
 ### Secrets-Management
 
