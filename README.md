@@ -72,6 +72,12 @@ Globale Design-Tokens (Farben, Spacing-Scale, Typografie) liegen als CSS
 Custom Properties in `wwwroot/app.css`. Komponenten-spezifisches Styling
 nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 
+Die Auswertungen auf den Unterseiten sind selbsterklärend: jede Metrik trägt
+einen ℹ-Button (`MetricInfo`), der ein Erklärungs-Popup öffnet (was wird gezeigt,
+wie ist es zu lesen, Achsen, Methode); die Texte stehen zentral und testbar im
+`MetricCatalog`. Diagramme (Sparkline/Scatter) bekommen über `ChartFrame`
+Achsenbeschriftungen.
+
 ## Status
 
 - ✅ **Phasen 0–3:** Repo, Dev-Umgebung, CI/Coverage/Branch-Protection/Dependabot, Dashboard-Skelett
@@ -88,6 +94,7 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
     Routen-Erkennung, Best Efforts
   - Habits: `/habits`-Jahres-Heatmap + Streaks · Observability: `/status` + Log-Ringpuffer
   - Quick-Wins: Liga-Tabelle & Wochenkalender auf Tap, Wetter-Extras, Quer-Navigation
+  - Erklärbare Metriken: jede Auswertung mit ℹ-Erklärungs-Popup + Achsenbeschriftung an den Diagrammen
 - ⬜ **Offen:** Container/Pi-Deployment (Phase 5) & Kiosk-Hardening (Phase 6); Kachel-Redesign (Phase 14.1)
 
 > Anforderungen, Phasenplan und detaillierte Feature-Roadmap werden außerhalb des Repos
