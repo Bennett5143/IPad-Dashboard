@@ -1,5 +1,3 @@
-using Dashboard.Web.Components.Tiles;
-
 namespace Dashboard.Tests.Components.Tiles;
 
 public class FootballWeekBuilderTests
