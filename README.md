@@ -72,11 +72,13 @@ Globale Design-Tokens (Farben, Spacing-Scale, Typografie) liegen als CSS
 Custom Properties in `wwwroot/app.css`. Komponenten-spezifisches Styling
 nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 
-Die Auswertungen auf den Unterseiten sind selbsterklärend: jede Metrik trägt
-einen ℹ-Button (`MetricInfo`), der ein Erklärungs-Popup öffnet (was wird gezeigt,
-wie ist es zu lesen, Achsen, Methode); die Texte stehen zentral und testbar im
-`MetricCatalog`. Diagramme (Sparkline/Scatter) bekommen über `ChartFrame`
-Achsenbeschriftungen.
+Die Auswertungen auf den Unterseiten sind selbsterklärend: jede (nicht triviale)
+Statistik ist als Ganzes antippbar (`Components/Explainable.razor`) und öffnet ein
+zentriertes Popup mit der Statistik in groß plus sachlicher Erklärung (was man sieht,
+Grundlage, wofür, Achsen). Die Texte stehen zentral und testbar im `MetricCatalog`;
+das große Diagramm im Popup bekommt über `ChartFrame` X/Y-Achsen. Das Overlay wird
+bewusst außerhalb der Karte gerendert, da deren `backdrop-filter` sonst die
+Zentrierung eines `position:fixed`-Overlays bricht.
 
 ## Status
 
@@ -91,10 +93,10 @@ Achsenbeschriftungen.
   - Analytics auf `/whoop`: Tageszeit-Effektivität, Schlafenszeiten, Trainingslast (ACWR),
     aerobe Fitness-Kurve, Recovery-Treiber
   - Lauf-Vertiefung: klickbare Heatmap, `/runs` Liste + Detailprofile, Year in Review,
-    Routen-Erkennung, Best Efforts
+    Routen-Erkennung (Runde antippbar → auf der Heatmap ansehbar), Best Efforts
   - Habits: `/habits`-Jahres-Heatmap + Streaks · Observability: `/status` + Log-Ringpuffer
   - Quick-Wins: Liga-Tabelle & Wochenkalender auf Tap, Wetter-Extras, Quer-Navigation
-  - Erklärbare Metriken: jede Auswertung mit ℹ-Erklärungs-Popup + Achsenbeschriftung an den Diagrammen
+  - Erklärbare Metriken: Statistik antippen → Popup mit großer Ansicht, Achsen und sachlicher Erklärung
 - ⬜ **Offen:** Container/Pi-Deployment (Phase 5) & Kiosk-Hardening (Phase 6); Kachel-Redesign (Phase 14.1)
 
 > Anforderungen, Phasenplan und detaillierte Feature-Roadmap werden außerhalb des Repos
