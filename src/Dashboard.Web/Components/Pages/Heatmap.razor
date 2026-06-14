@@ -138,7 +138,9 @@
 
     private async Task RenderMapAsync()
     {
-        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js");
+        // Versions-Query bricht den Browser-Cache: ohne sie lädt nach einem Update weiter die
+        // alte heatmap.js (ein normales Reload nutzt den Cache). Bei JS-Änderungen hochzählen.
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js?v=2");
 
         // Pro Lauf Punkte + (sofern vorhanden) Streams; die JS verbindet sie zu Linien und
         // färbt je nach Ebene segmentweise ein.
