@@ -190,18 +190,33 @@ function defineLayer() {
         },
         onAdd(map) {
             this._map = map;
-            const canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-zoom-hide');
+            // Bei aktiver Zoom-Animation als „leaflet-zoom-animated" markieren und auf zoomanim
+            // reagieren, damit das Canvas WÄHREND des Zoomens mitskaliert. Sonst „schwebt" die
+            // Strecke (Canvas-Overlay) auf Touch-Geräten und springt erst beim Loslassen zurück.
+            const animated = map.options.zoomAnimation && L.Browser.any3d;
+            const canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-layer leaflet-zoom-' + (animated ? 'animated' : 'hide'));
             canvas.style.position = 'absolute';
             canvas.style.pointerEvents = 'none';
             this._canvas = canvas;
             map.getPanes().overlayPane.appendChild(canvas);
-            map.on('moveend zoomend resize', this._reset, this);
+            map.on('moveend resize', this._reset, this);
+            if (animated) {
+                map.on('zoomanim', this._animateZoom, this);
+            }
             this._reset();
             return this;
         },
         onRemove(map) {
-            map.off('moveend zoomend resize', this._reset, this);
+            map.off('moveend resize', this._reset, this);
+            map.off('zoomanim', this._animateZoom, this);
             L.DomUtil.remove(this._canvas);
+        },
+        _animateZoom(e) {
+            // Canvas per CSS-Transform mit der Zoom-Animation mitziehen (Muster wie Leaflet.heat
+            // / Leaflets eigener Canvas-Renderer). _reset (auf moveend) zeichnet danach scharf neu.
+            const scale = this._map.getZoomScale(e.zoom);
+            const offset = this._map._getCenterOffset(e.center)._multiplyBy(-scale).subtract(this._map._getMapPanePos());
+            L.DomUtil.setTransform(this._canvas, offset, scale);
         },
         _reset() {
             const size = this._map.getSize();
