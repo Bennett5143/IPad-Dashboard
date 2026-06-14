@@ -354,10 +354,27 @@ export async function render(elementId, runs, layer) {
     const map = L.map(element, { preferCanvas: true }).setView([53.55, 9.99], 11); // Default: Hamburg
     // Lokaler Kachel-Proxy (siehe /tiles-Endpoint): das offline iPad bekommt die Karte vom
     // LAN-Server, der sie online lädt + cached. Keine externe CDN-Abhängigkeit mehr.
-    L.tileLayer('/tiles/{z}/{x}/{y}.png', {
+    const baseLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png', {
         maxZoom: 20,
         attribution: '© OpenStreetMap, © CARTO'
-    }).addTo(map);
+    });
+
+    // Beim ersten Schwung scheitern manche Kacheln (Anbieter drosselt) → gezielt und gestaffelt
+    // erneut anfragen, damit sich die Lücken OHNE manuelles Neuladen von selbst füllen. Der
+    // ?r=-Parameter umgeht den Negativ-Cache des Browsers; der Proxy ignoriert ihn.
+    baseLayer.on('tileerror', e => {
+        const img = e.tile;
+        const attempt = (img._retry || 0) + 1;
+        if (attempt > 4 || !e.coords) {
+            return;
+        }
+        img._retry = attempt;
+        setTimeout(() => {
+            img.src = `/tiles/${e.coords.z}/${e.coords.x}/${e.coords.y}.png?r=${attempt}`;
+        }, 700 * attempt);
+    });
+
+    baseLayer.addTo(map);
 
     const data = Array.isArray(runs) ? runs.filter(r => r && Array.isArray(r.pts) && r.pts.length > 1) : [];
     const overlay = new HeatCanvasLayer(data, layer || 'heat').addTo(map);
