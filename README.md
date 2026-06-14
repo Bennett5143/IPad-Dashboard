@@ -249,6 +249,13 @@ GPS-Tracks der Läufe werden via offizieller Strava-API (OAuth2) in die lokale
 DB synchronisiert und als PostGIS-`geometry(LineString,4326)` gespeichert; die
 Heatmap unter `/heatmap` rendert sie clientseitig mit Leaflet.
 
+Da das Kiosk-iPad bewusst offline (nur LAN) betrieben wird, ist **Leaflet selbst
+gehostet** (`wwwroot/lib/leaflet/`) und die Karten-Kacheln laufen über einen
+**server-seitigen Proxy mit Platten-Cache** (Endpoint `/tiles/{z}/{x}/{y}.png`,
+`Infrastructure/Tiles/TileProvider`, Sektion `Tiles`) — das iPad spricht nur mit
+dem LAN-Server, der die Kacheln online nachlädt und cached. Eine Runde auf `/runs`
+ist antippbar und öffnet die Heatmap gefiltert auf diese Route (`/heatmap?cluster=N`).
+
 **Voraussetzung DB:** PostGIS — `docker-compose.yml` nutzt dafür das
 `imresamu/postgis`-Image (Multi-Arch-Fork mit amd64 **und** arm64) statt
 `postgres:alpine`. Das offizielle `postgis/postgis`-Image hat kein
