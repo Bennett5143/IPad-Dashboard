@@ -327,6 +327,8 @@ try
         var bytes = await tiles.GetTileAsync(z, x, y, ct);
         if (bytes is null)
         {
+            // Fehlversuch NICHT cachen → der nächste Map-Load fragt die Kachel erneut an.
+            context.Response.Headers.CacheControl = "no-store";
             return Results.NotFound();
         }
 

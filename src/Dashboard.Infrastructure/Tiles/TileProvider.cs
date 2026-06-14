@@ -1,3 +1,5 @@
+using System.Net;
+
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,6 +13,13 @@ namespace Dashboard.Infrastructure.Tiles;
 /// </summary>
 public sealed class TileProvider
 {
+    private const int MaxAttempts = 3;
+
+    // Begrenzt die GLEICHZEITIGEN Upstream-Abrufe über alle Anfragen hinweg (TileProvider ist
+    // transient, daher statisch). Beim ersten Laden fragt der Browser Dutzende Kacheln auf einmal
+    // an – ohne Drossel lehnt der Anbieter (CARTO) einen Teil ab → schwarze Lücken in der Karte.
+    private static readonly SemaphoreSlim UpstreamGate = new(6);
+
     private readonly HttpClient _http;
     private readonly TileOptions _options;
     private readonly ILogger<TileProvider> _logger;
@@ -64,25 +73,52 @@ public sealed class TileProvider
             .Replace("{x}", x.ToString())
             .Replace("{y}", y.ToString());
 
+        await UpstreamGate.WaitAsync(ct);
         try
         {
-            using var response = await _http.GetAsync(url, ct);
-            if (!response.IsSuccessStatusCode)
+            // Inzwischen von einer parallelen Anfrage gecacht?
+            if (File.Exists(path))
             {
-                // Unkritisch: Leaflet lässt eine fehlende Kachel einfach weg. Daher nur Debug,
-                // nicht als Warnung in den Status-Ringpuffer.
-                _logger.LogDebug("Kachel {Z}/{X}/{Y}: Upstream antwortete {Status}", z, x, y, (int)response.StatusCode);
-                return null;
+                return await File.ReadAllBytesAsync(path, ct);
             }
 
-            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
-            await WriteCacheAsync(path, bytes, ct);
-            return bytes;
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            _logger.LogDebug(ex, "Kachel {Z}/{X}/{Y}: Abruf fehlgeschlagen", z, x, y);
+            for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+            {
+                try
+                {
+                    using var response = await _http.GetAsync(url, ct);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+                        await WriteCacheAsync(path, bytes, ct);
+                        return bytes;
+                    }
+
+                    // 404 o. ä. ändert sich nicht – nur bei Drosselung (429) oder Serverfehler (5xx)
+                    // lohnt ein erneuter Versuch.
+                    if (response.StatusCode != HttpStatusCode.TooManyRequests && (int)response.StatusCode < 500)
+                    {
+                        _logger.LogDebug("Kachel {Z}/{X}/{Y}: Upstream antwortete {Status}", z, x, y, (int)response.StatusCode);
+                        return null;
+                    }
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+                {
+                    if (ct.IsCancellationRequested || attempt == MaxAttempts)
+                    {
+                        _logger.LogDebug(ex, "Kachel {Z}/{X}/{Y}: Abruf fehlgeschlagen", z, x, y);
+                        return null;
+                    }
+                }
+
+                await Task.Delay(150 * attempt, ct); // kleiner Backoff vor dem nächsten Versuch
+            }
+
             return null;
+        }
+        finally
+        {
+            UpstreamGate.Release();
         }
     }
 
