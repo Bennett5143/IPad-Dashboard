@@ -69,7 +69,9 @@ public sealed class TileProvider
             using var response = await _http.GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Kachel {Z}/{X}/{Y}: Upstream antwortete {Status}", z, x, y, (int)response.StatusCode);
+                // Unkritisch: Leaflet lässt eine fehlende Kachel einfach weg. Daher nur Debug,
+                // nicht als Warnung in den Status-Ringpuffer.
+                _logger.LogDebug("Kachel {Z}/{X}/{Y}: Upstream antwortete {Status}", z, x, y, (int)response.StatusCode);
                 return null;
             }
 
@@ -79,7 +81,7 @@ public sealed class TileProvider
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            _logger.LogWarning(ex, "Kachel {Z}/{X}/{Y}: Abruf fehlgeschlagen", z, x, y);
+            _logger.LogDebug(ex, "Kachel {Z}/{X}/{Y}: Abruf fehlgeschlagen", z, x, y);
             return null;
         }
     }

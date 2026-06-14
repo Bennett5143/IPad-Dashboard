@@ -100,20 +100,9 @@
     {
         if (firstRender && _connected)
         {
+            // Der JS-Aufbau wartet selbst auf die Container-Größe (waitForSize), daher genügt
+            // ein einziger Render – kein Zweit-Aufbau mehr (der ließ die Karte sichtbar zucken).
             await RenderMapAsync();
-
-            // Sicherheitsnetz: Der erste Aufbau kann je nach Layout-/Stylesheet-Timing eine leere
-            // Karte erzeugen – erst ein zweiter Render rendert zuverlässig (wie ein Zeitraum-Klick).
-            // Daher nach kurzer Verzögerung einmal neu aufbauen.
-            await Task.Delay(300);
-            try
-            {
-                await RenderMapAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-                // Nutzer hat die Seite inzwischen verlassen – nichts zu tun.
-            }
         }
     }
 
@@ -153,7 +142,7 @@
     {
         // Versions-Query bricht den Browser-Cache: ohne sie lädt nach einem Update weiter die
         // alte heatmap.js (ein normales Reload nutzt den Cache). Bei JS-Änderungen hochzählen.
-        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js?v=5");
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js?v=6");
 
         // Pro Lauf Punkte + (sofern vorhanden) Streams; die JS verbindet sie zu Linien und
         // färbt je nach Ebene segmentweise ein.

@@ -356,22 +356,17 @@ export async function render(elementId, runs, layer) {
         for (const point of run.pts) bounds.extend(point);
     }
 
-    // Bei In-App-Navigation hat der Container beim Init evtl. noch nicht die endgültige Größe –
-    // Leaflet zeigt dann eine leere/schwarze Karte mit nicht geladenen Kacheln. Nach dem Layout
-    // neu vermessen (invalidateSize) und einpassen; mehrfach, um Timing-Fenster abzudecken.
-    const fit = () => {
-        map.invalidateSize();
-        if (bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [24, 24] });
-        }
-    };
-    fit();
-    requestAnimationFrame(fit);
+    // Der Container hat dank waitForSize bereits seine Größe → genau EINMAL einpassen,
+    // damit die Karte nicht nachzuckt.
+    map.invalidateSize();
+    if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [24, 24] });
+    }
 
-    // Container-Größe kann sich nach dem Init noch ändern (spät angewandtes CSS, Layout nach
-    // Navigation) – dann die Karte zuverlässig neu vermessen + einpassen.
+    // Spätere Größenänderungen (Orientierung/Layout) nur neu vermessen – den Ausschnitt
+    // bewusst NICHT neu einpassen, sonst springt die Karte.
     if (window.ResizeObserver) {
-        const ro = new ResizeObserver(() => fit());
+        const ro = new ResizeObserver(() => map.invalidateSize());
         ro.observe(element);
         element._heat.ro = ro;
     }
