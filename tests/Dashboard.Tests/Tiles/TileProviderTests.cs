@@ -87,4 +87,20 @@ public class TileProviderTests
 
         Assert.Null(result);
     }
+
+    [Fact]
+    public void CountTiles_WholeWorldAtZoom0_IsOne()
+    {
+        Assert.Equal(1, TileProvider.CountTiles(-85, -180, 85, 180, 0, 0));
+    }
+
+    [Fact]
+    public void CountTiles_GrowsWithZoom_AndIsAtLeastOne()
+    {
+        var coarse = TileProvider.CountTiles(53.4, 9.9, 53.6, 10.1, 2, 2);
+        var fine = TileProvider.CountTiles(53.4, 9.9, 53.6, 10.1, 10, 10);
+
+        Assert.True(coarse >= 1);
+        Assert.True(fine > coarse);
+    }
 }

@@ -199,6 +199,7 @@ try
         .Get<TileOptions>() ?? new TileOptions();
 
     builder.Services.Configure<TileOptions>(builder.Configuration.GetSection(TileOptions.SectionName));
+    builder.Services.Configure<MapOptions>(builder.Configuration.GetSection(MapOptions.SectionName));
     builder.Services.AddHttpClient<TileProvider>(http =>
     {
         http.Timeout = TimeSpan.FromSeconds(15);
@@ -334,6 +335,41 @@ try
 
         context.Response.Headers.CacheControl = "public, max-age=2592000"; // 30 Tage im Client-Cache
         return Results.File(bytes, "image/png");
+    });
+
+    // Cache vorwärmen: lädt ein Gebiet (Bounding-Box × Zoomstufen) einmalig gedrosselt in den
+    // Cache, damit die Karte danach auch offline lückenlos und sofort ist. Läuft im Hintergrund;
+    // Fortschritt im Server-Log. Mengen-Schranke gegen versehentlich riesige Anfragen.
+    app.MapGet("/tiles/warm", (
+        double minLat, double minLng, double maxLat, double maxLng, int minZoom, int maxZoom,
+        IServiceScopeFactory scopeFactory, ILoggerFactory loggerFactory) =>
+    {
+        if (minZoom < 0 || maxZoom > 19 || minZoom > maxZoom || minLat >= maxLat || minLng >= maxLng)
+        {
+            return Results.BadRequest("Ungültige Parameter (Zoom 0–19, minZoom ≤ maxZoom, min < max).");
+        }
+
+        var count = TileProvider.CountTiles(minLat, minLng, maxLat, maxLng, minZoom, maxZoom);
+        if (count > 200_000)
+        {
+            return Results.BadRequest($"Zu viele Kacheln ({count:N0}). Kleinere Fläche oder weniger Zoom wählen.");
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var provider = scope.ServiceProvider.GetRequiredService<TileProvider>();
+                await provider.WarmAsync(minLat, minLng, maxLat, maxLng, minZoom, maxZoom, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                loggerFactory.CreateLogger("TileWarm").LogWarning(ex, "Tile-Warmup abgebrochen.");
+            }
+        });
+
+        return Results.Ok($"Warmup gestartet: ~{count:N0} Kacheln. Fortschritt im Server-Log.");
     });
 
     // Configure the HTTP request pipeline.

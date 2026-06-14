@@ -336,7 +336,7 @@ function showRunPopup(map, e, runs) {
 
 // ---- Öffentliche API ----------------------------------------------------
 
-export async function render(elementId, runs, layer) {
+export async function render(elementId, runs, layer, focus) {
     await ensureLeaflet();
     defineLayer();
 
@@ -390,10 +390,13 @@ export async function render(elementId, runs, layer) {
 
     // Bei In-App-Navigation hat der Container beim Init evtl. noch nicht die endgültige Größe –
     // Leaflet zeigt dann eine leere/schwarze Karte mit nicht geladenen Kacheln. Nach dem Layout
-    // neu vermessen (invalidateSize) und einpassen; mehrfach, um Timing-Fenster abzudecken.
+    // neu vermessen (invalidateSize) und Ausschnitt setzen; mehrfach, um Timing-Fenster abzudecken.
+    // Mit focus (Gesamt-Ansicht) auf den Heimat-Standort zentrieren statt über alle Läufe zu passen.
     const fit = () => {
         map.invalidateSize();
-        if (bounds.isValid()) {
+        if (focus) {
+            map.setView([focus.lat, focus.lng], focus.zoom);
+        } else if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [24, 24] });
         }
     };

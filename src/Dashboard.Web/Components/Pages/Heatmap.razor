@@ -9,6 +9,7 @@
 @inject IClock Clock
 @inject IJSRuntime JS
 @inject NavigationManager Nav
+@inject Microsoft.Extensions.Options.IOptions<MapOptions> MapView
 
 <PageTitle>Lauf-Heatmap</PageTitle>
 
@@ -153,12 +154,19 @@
     {
         // Versions-Query bricht den Browser-Cache: ohne sie lädt nach einem Update weiter die
         // alte heatmap.js (ein normales Reload nutzt den Cache). Bei JS-Änderungen hochzählen.
-        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js?v=11");
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js?v=12");
 
         // Pro Lauf Punkte + (sofern vorhanden) Streams; die JS verbindet sie zu Linien und
         // färbt je nach Ebene segmentweise ein.
         var runs = HeatmapPayloadBuilder.Build(_runs);
-        await _module.InvokeVoidAsync("render", MapElementId, runs, _layer);
+
+        // Gesamt-Ansicht auf den Heimat-Standort zentrieren (sonst zerren entfernte Läufe die
+        // Karte auf halb Europa). Bei einer einzelnen Runde stattdessen auf deren Läufe passen
+        // (fitBounds in der JS), daher dort kein Fokus.
+        var focus = Cluster is null
+            ? new { lat = MapView.Value.Latitude, lng = MapView.Value.Longitude, zoom = MapView.Value.Zoom }
+            : null;
+        await _module.InvokeVoidAsync("render", MapElementId, runs, _layer, focus);
     }
 
     private async Task SetLayerAsync(string layer)

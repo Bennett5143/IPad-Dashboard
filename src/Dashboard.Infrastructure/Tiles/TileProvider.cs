@@ -132,6 +132,86 @@ public sealed class TileProvider
         }
     }
 
+    /// <summary>Liegt die Kachel bereits im Platten-Cache?</summary>
+    public bool IsCached(int z, int x, int y) =>
+        File.Exists(Path.Combine(_cacheRoot, z.ToString(), x.ToString(), $"{y}.png"));
+
+    /// <summary>
+    /// Lädt alle Kacheln einer Bounding-Box über die Zoomstufen einmalig in den Cache – gedrosselt
+    /// (eine nach der anderen mit kleiner Pause), um den Anbieter nicht zu überlasten. Bereits
+    /// gecachte Kacheln werden übersprungen. Gibt die Zahl NEU geladener Kacheln zurück.
+    /// </summary>
+    public async Task<int> WarmAsync(
+        double minLat, double minLng, double maxLat, double maxLng, int minZoom, int maxZoom, CancellationToken ct)
+    {
+        var queued = CountTiles(minLat, minLng, maxLat, maxLng, minZoom, maxZoom);
+        _logger.LogInformation("Tile-Warmup gestartet: ~{Count} Kacheln (Zoom {Min}–{Max}).", queued, minZoom, maxZoom);
+
+        var checkedCount = 0;
+        var fetched = 0;
+        for (var z = minZoom; z <= maxZoom; z++)
+        {
+            var max = (1 << z) - 1;
+            var xMin = Math.Clamp(LonToTileX(minLng, z), 0, max);
+            var xMax = Math.Clamp(LonToTileX(maxLng, z), 0, max);
+            var yMin = Math.Clamp(LatToTileY(maxLat, z), 0, max); // Nord = kleinere y
+            var yMax = Math.Clamp(LatToTileY(minLat, z), 0, max);
+
+            for (var x = xMin; x <= xMax; x++)
+            {
+                for (var y = yMin; y <= yMax; y++)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    checkedCount++;
+                    if (IsCached(z, x, y))
+                    {
+                        continue;
+                    }
+
+                    await GetTileAsync(z, x, y, ct);
+                    fetched++;
+                    await Task.Delay(120, ct); // höflich zum Anbieter – kein Massen-Burst
+
+                    if (fetched % 250 == 0)
+                    {
+                        _logger.LogInformation(
+                            "Tile-Warmup: {Fetched} neu geladen ({Checked}/{Queued} geprüft).", fetched, checkedCount, queued);
+                    }
+                }
+            }
+        }
+
+        _logger.LogInformation("Tile-Warmup fertig: {Checked} Kacheln geprüft, {Fetched} neu geladen.", checkedCount, fetched);
+        return fetched;
+    }
+
+    /// <summary>Zahl der Kacheln einer Bounding-Box über die Zoomstufen (für die Mengen-Schranke).</summary>
+    public static long CountTiles(double minLat, double minLng, double maxLat, double maxLng, int minZoom, int maxZoom)
+    {
+        long total = 0;
+        for (var z = minZoom; z <= maxZoom; z++)
+        {
+            var max = (1 << z) - 1;
+            var xMin = Math.Clamp(LonToTileX(minLng, z), 0, max);
+            var xMax = Math.Clamp(LonToTileX(maxLng, z), 0, max);
+            var yMin = Math.Clamp(LatToTileY(maxLat, z), 0, max);
+            var yMax = Math.Clamp(LatToTileY(minLat, z), 0, max);
+            total += (long)(xMax - xMin + 1) * (yMax - yMin + 1);
+        }
+
+        return total;
+    }
+
+    private static int LonToTileX(double lon, int z) =>
+        (int)Math.Floor((lon + 180.0) / 360.0 * (1 << z));
+
+    private static int LatToTileY(double lat, int z)
+    {
+        var rad = lat * Math.PI / 180.0;
+        var y = (1.0 - Math.Log(Math.Tan(rad) + 1.0 / Math.Cos(rad)) / Math.PI) / 2.0 * (1 << z);
+        return (int)Math.Floor(y);
+    }
+
     private static async Task WriteCacheAsync(string path, byte[] bytes, CancellationToken ct)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
