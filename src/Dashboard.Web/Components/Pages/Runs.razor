@@ -189,7 +189,9 @@
 
     private void Open(long id) => Nav.NavigateTo($"/runs/{id}");
 
-    private void OpenCluster(int clusterId) => Nav.NavigateTo($"/heatmap?cluster={clusterId}");
+    // Voller Seitenaufruf statt interaktiver Navigation: Leaflet rendert sonst nach In-App-Nav
+    // eine leere/schwarze Karte (Container beim Init noch nicht endgültig vermessen).
+    private void OpenCluster(int clusterId) => Nav.NavigateTo($"/heatmap?cluster={clusterId}", forceLoad: true);
 
     private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
 }

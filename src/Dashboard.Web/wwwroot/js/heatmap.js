@@ -323,9 +323,19 @@ export async function render(elementId, runs, layer) {
     for (const run of data) {
         for (const point of run.pts) bounds.extend(point);
     }
-    if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [24, 24] });
-    }
+
+    // Bei In-App-Navigation hat der Container beim Init evtl. noch nicht die endgültige Größe –
+    // Leaflet zeigt dann eine leere/schwarze Karte mit nicht geladenen Kacheln. Nach dem Layout
+    // neu vermessen (invalidateSize) und einpassen; mehrfach, um Timing-Fenster abzudecken.
+    const fit = () => {
+        map.invalidateSize();
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [24, 24] });
+        }
+    };
+    fit();
+    requestAnimationFrame(fit);
+    setTimeout(fit, 200);
 }
 
 export function setLayer(elementId, layer) {
