@@ -23,13 +23,18 @@ function loadScript(src) {
 }
 
 function addStylesheet(href) {
-    if (document.querySelector(`link[href="${href}"]`)) {
-        return;
-    }
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
+    return new Promise(resolve => {
+        if (document.querySelector(`link[href="${href}"]`)) {
+            resolve();
+            return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = () => resolve();
+        link.onerror = () => resolve(); // CSS-Fehler nicht den Map-Aufbau blockieren lassen
+        document.head.appendChild(link);
+    });
 }
 
 function ensureLeaflet() {
@@ -39,8 +44,13 @@ function ensureLeaflet() {
     if (leafletLoader) {
         return leafletLoader;
     }
-    addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-    leafletLoader = loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+    // WICHTIG: auch auf das CSS warten – sonst rendert der erste Aufbau ohne Leaflet-Styles
+    // eine kaputte/schwarze Karte (Panes/Kacheln nicht positioniert), die erst ein zweiter
+    // Render heilt.
+    leafletLoader = Promise.all([
+        addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),
+        loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+    ]);
     return leafletLoader;
 }
 
@@ -302,6 +312,7 @@ export async function render(elementId, runs, layer) {
     if (!element) return;
 
     if (element._heat?.map) {
+        element._heat.ro?.disconnect();
         element._heat.map.remove();
     }
 
@@ -335,7 +346,14 @@ export async function render(elementId, runs, layer) {
     };
     fit();
     requestAnimationFrame(fit);
-    setTimeout(fit, 200);
+
+    // Container-Größe kann sich nach dem Init noch ändern (spät angewandtes CSS, Layout nach
+    // Navigation) – dann die Karte zuverlässig neu vermessen + einpassen.
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => fit());
+        ro.observe(element);
+        element._heat.ro = ro;
+    }
 }
 
 export function setLayer(elementId, layer) {
@@ -350,6 +368,7 @@ export function setLayer(elementId, layer) {
 export function dispose(elementId) {
     const element = document.getElementById(elementId);
     if (element && element._heat?.map) {
+        element._heat.ro?.disconnect();
         element._heat.map.remove();
         element._heat = null;
     }
