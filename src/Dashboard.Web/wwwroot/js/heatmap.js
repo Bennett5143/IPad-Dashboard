@@ -54,31 +54,18 @@ function ensureLeaflet() {
     return leafletLoader;
 }
 
-// Wartet, bis der Container eine STABILE (über zwei Frames unveränderte) Größe hat. Das scoped
-// CSS (height:70vh) und das Layout greifen u. U. erst einige Frames nach dem ersten Render –
-// baut man Leaflet zu früh (0×0 oder Zwischengröße), bleibt die Karte schwarz oder muss später
-// neu eingepasst werden (sichtbares Springen). Erst bei stabiler Größe bauen.
-function waitForStableSize(element) {
+// Wartet, bis der Container tatsächlich Maße hat. Das scoped CSS (height:70vh) greift u. U.
+// minimal nach dem ersten Render – Leaflet auf einem 0×0-Container erzeugt eine schwarze Karte,
+// die invalidateSize nicht zuverlässig heilt. Also erst bei echter Größe die Karte bauen.
+function waitForSize(element) {
     return new Promise(resolve => {
-        let lastHeight = -1;
-        let stableFrames = 0;
         let tries = 0;
         const check = () => {
-            const height = element.clientHeight;
-            if (height > 0 && element.clientWidth > 0 && height === lastHeight) {
-                if (++stableFrames >= 2) {
-                    resolve();
-                    return;
-                }
-            } else {
-                stableFrames = 0;
-            }
-            lastHeight = height;
-            if (++tries > 120) {
+            if ((element.clientWidth > 0 && element.clientHeight > 0) || tries++ > 60) {
                 resolve();
-                return;
+            } else {
+                requestAnimationFrame(check);
             }
-            requestAnimationFrame(check);
         };
         check();
     });
@@ -341,19 +328,15 @@ export async function render(elementId, runs, layer) {
     const element = document.getElementById(elementId);
     if (!element) return;
 
-    // Erst bauen, wenn der Container eine stabile Größe hat – sonst schwarze/leere Karte.
-    await waitForStableSize(element);
+    // Erst bauen, wenn der Container Maße hat – sonst schwarze Karte beim ersten Render.
+    await waitForSize(element);
 
     if (element._heat?.map) {
         element._heat.ro?.disconnect();
         element._heat.map.remove();
     }
 
-    // Bewusst OHNE Zwischen-setView: die Karte bekommt ihren ersten Ausschnitt direkt aus den
-    // Lauf-Grenzen (fitBounds), zeigt also nie kurz die weite Hamburg-Default-Ansicht → kein
-    // Aufblitzen/Springen.
-    const map = L.map(element, { preferCanvas: true });
-
+    const map = L.map(element, { preferCanvas: true }).setView([53.55, 9.99], 11); // Default: Hamburg
     // Lokaler Kachel-Proxy (siehe /tiles-Endpoint): das offline iPad bekommt die Karte vom
     // LAN-Server, der sie online lädt + cached. Keine externe CDN-Abhängigkeit mehr.
     L.tileLayer('/tiles/{z}/{x}/{y}.png', {
@@ -373,22 +356,22 @@ export async function render(elementId, runs, layer) {
         for (const point of run.pts) bounds.extend(point);
     }
 
-    // EINMAL den Ausschnitt setzen (kein erneutes fit später → kein Springen).
-    if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [24, 24] });
-    } else {
-        map.setView([53.55, 9.99], 11); // Fallback: Hamburg, falls keine Läufe
-    }
+    // Bei In-App-Navigation hat der Container beim Init evtl. noch nicht die endgültige Größe –
+    // Leaflet zeigt dann eine leere/schwarze Karte mit nicht geladenen Kacheln. Nach dem Layout
+    // neu vermessen (invalidateSize) und einpassen; mehrfach, um Timing-Fenster abzudecken.
+    const fit = () => {
+        map.invalidateSize();
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [24, 24] });
+        }
+    };
+    fit();
+    requestAnimationFrame(fit);
 
-    // Sanfte Nudges: nur neu VERMESSEN (kein erneutes fitBounds, kein Neu-Aufbau → kein Springen),
-    // damit die Kacheln auch bei spätem Tile-Load/Layout sicher und zügig gezeichnet werden.
-    map.invalidateSize();
-    requestAnimationFrame(() => map.invalidateSize());
-    // Nur stupsen, wenn die Karte noch aktiv ist (Seite evtl. inzwischen verlassen).
-    setTimeout(() => { if (element._heat?.map === map) map.invalidateSize(); }, 300);
-
+    // Container-Größe kann sich nach dem Init noch ändern (spät angewandtes CSS, Layout nach
+    // Navigation) – dann die Karte zuverlässig neu vermessen + einpassen.
     if (window.ResizeObserver) {
-        const ro = new ResizeObserver(() => map.invalidateSize());
+        const ro = new ResizeObserver(() => fit());
         ro.observe(element);
         element._heat.ro = ro;
     }
