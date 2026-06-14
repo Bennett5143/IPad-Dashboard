@@ -132,8 +132,7 @@
     color: var(--color-fg-muted);
 }
 
-/* ---- Jahres-Heatmap / Wochenbalken Überschriften ---- */
-.heat-title,
+/* ---- Wochenbalken ---- */
 .weeks h2 {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);

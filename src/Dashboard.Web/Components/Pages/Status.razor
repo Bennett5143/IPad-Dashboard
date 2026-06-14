@@ -27,7 +27,7 @@
     else
     {
         <section>
-            <h2 class="metric-heading">Datenquellen<MetricInfo Id="MetricId.StatusSources" /></h2>
+            <h2>Datenquellen</h2>
             <ul class="status-list">
                 @foreach (var row in _slices)
                 {
@@ -42,7 +42,7 @@
         </section>
 
         <section>
-            <h2 class="metric-heading">Strava<MetricInfo Id="MetricId.StatusStrava" /></h2>
+            <h2>Strava</h2>
             <dl class="status-facts">
                 <div><dt>Verbindung</dt><dd>@(_stravaConnected ? "verbunden" : "nicht verbunden")</dd></div>
                 <div><dt>Letzter Sync</dt><dd>@_stravaLastSync</dd></div>
@@ -57,7 +57,7 @@
         </section>
 
         <section>
-            <h2 class="metric-heading">WHOOP<MetricInfo Id="MetricId.StatusWhoop" /></h2>
+            <h2>WHOOP</h2>
             <dl class="status-facts">
                 <div><dt>Verbindung</dt><dd>@(_whoopConnected ? "verbunden" : "nicht verbunden")</dd></div>
                 <div><dt>Tageswerte</dt><dd>@_whoopDailyLabel</dd></div>
@@ -66,7 +66,7 @@
         </section>
 
         <section>
-            <h2 class="metric-heading">System<MetricInfo Id="MetricId.StatusSystem" /></h2>
+            <h2>System</h2>
             @if (_system is null)
             {
                 <p class="status-msg">Host-Metriken sind nur unter Linux (Raspberry Pi) verfügbar.</p>

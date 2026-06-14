@@ -4,6 +4,10 @@ namespace Dashboard.Web.Components.Metrics;
 /// Stabile Kennung jeder erklärbaren Metrik/Visualisierung (FA-10.08). Jeder Wert hat genau
 /// einen Eintrag im <see cref="MetricCatalog"/> – per Test abgesichert. Neue Auswertung →
 /// Wert hier ergänzen und Erklärung im Katalog hinterlegen.
+///
+/// Bewusst NICHT erklärt (selbsterklärend, kein Popup): Lauf-Liste, „Läufe nach Recovery",
+/// Wochen-Balken, /status-Fakten. Standard-Runden werden direkt antippbar (→ Heatmap) statt
+/// per Popup erklärt.
 /// </summary>
 public enum MetricId
 {
@@ -24,12 +28,9 @@ public enum MetricId
     TimeOfDayMatrix,
     SleepBedtime,
     SleepDuration,
-    WhoopRuns,
 
     // /runs
     RunYearReview,
-    RouteClusters,
-    RunList,
 
     // /runs/{id}
     RunPaceProfile,
@@ -39,12 +40,5 @@ public enum MetricId
 
     // /habits
     HabitHeatmap,
-    HabitWeeklyBars,
     HabitStreaks,
-
-    // /status
-    StatusSources,
-    StatusStrava,
-    StatusWhoop,
-    StatusSystem,
 }

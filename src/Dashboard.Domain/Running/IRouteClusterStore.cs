@@ -39,4 +39,7 @@ public interface IRouteClusterStore
 
     /// <summary>Runde eines Laufs; <c>null</c>, wenn (noch) keiner zugeordnet.</summary>
     Task<RouteClusterInfo?> GetClusterForRunAsync(long runId, CancellationToken ct = default);
+
+    /// <summary>Lauf-Ids einer Runde – für die nach Runde gefilterte Heatmap-Ansicht.</summary>
+    Task<IReadOnlyList<long>> GetRunIdsForClusterAsync(int clusterId, CancellationToken ct = default);
 }

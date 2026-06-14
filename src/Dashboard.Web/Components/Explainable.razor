@@ -1,0 +1,92 @@
+@* Klickbare Statistik mit Erklärungs-Popup (FA-10.08/10.09). Die ganze Fläche ist anklickbar;
+   ein Tap öffnet ein zentriertes Overlay mit der Statistik (groß, via Detail) und einer
+   sachlichen Erklärung.
+
+   Wichtig: Das Overlay wird als fixiertes GESCHWISTER der Inhalts-Box gerendert (nicht darin).
+   Die Karten haben backdrop-filter, was eine darin enthaltene position:fixed-Box einsperren und
+   verschieben würde – außerhalb der Karte zentriert das Overlay korrekt auf dem Viewport. *@
+
+<div class="explainable @CssClass" role="button" tabindex="0"
+     aria-haspopup="dialog" aria-label="@AriaLabel"
+     @onclick="Open" @onkeydown="OnKeyDown">
+    @ChildContent
+</div>
+
+@if (_open)
+{
+    <div class="dialog-backdrop" @onclick="Close">
+        <div class="dialog metric-dialog" role="dialog" aria-modal="true" @onclick:stopPropagation="true">
+            <div class="metric-dialog-head">
+                <h3 class="dialog-title">@_x.Title</h3>
+                <button type="button" class="metric-dialog-close" @onclick="Close" aria-label="Schließen">✕</button>
+            </div>
+
+            @if (Detail is not null)
+            {
+                <div class="metric-dialog-stat">@Detail</div>
+            }
+
+            <p class="metric-dialog-summary">@_x.Summary</p>
+
+            <div class="metric-dialog-block">
+                <span class="metric-dialog-label">Grundlage</span>
+                <p>@_x.Basis</p>
+            </div>
+
+            <div class="metric-dialog-block">
+                <span class="metric-dialog-label">Wofür</span>
+                <p>@_x.Use</p>
+            </div>
+
+            @if (_x.XAxis is not null || _x.YAxis is not null)
+            {
+                <div class="metric-dialog-block">
+                    <span class="metric-dialog-label">Achsen</span>
+                    <ul class="metric-dialog-axes">
+                        @if (_x.XAxis is not null)
+                        {
+                            <li><span class="axis-tag">X</span> @_x.XAxis</li>
+                        }
+                        @if (_x.YAxis is not null)
+                        {
+                            <li><span class="axis-tag">Y</span> @_x.YAxis</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Welche Metrik erklärt wird – Schlüssel in den <see cref="MetricCatalog"/>.</summary>
+    [Parameter, EditorRequired] public MetricId Id { get; set; }
+
+    /// <summary>Die klickbare Inline-Statistik (Karte/Diagramm).</summary>
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optionale große Darstellung der Statistik fürs Popup (i. d. R. ein Diagramm mit Achsen).</summary>
+    [Parameter] public RenderFragment? Detail { get; set; }
+
+    /// <summary>Zusätzliche CSS-Klassen für die klickbare Hülle.</summary>
+    [Parameter] public string? CssClass { get; set; }
+
+    private bool _open;
+    private MetricExplanation _x = default!;
+
+    private string AriaLabel => $"{_x.Title} – Erklärung anzeigen";
+
+    protected override void OnParametersSet() => _x = MetricCatalog.Get(Id);
+
+    private void Open() => _open = true;
+
+    private void Close() => _open = false;
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            _open = true;
+        }
+    }
+}

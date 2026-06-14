@@ -184,3 +184,24 @@
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
 }
+
+/* Runden-Ansicht: Banner statt Zeitraum-Buttons (FA-8.17 / Runde antippbar). */
+.cluster-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-secondary);
+}
+
+.cluster-reset {
+    padding: var(--space-2) var(--space-4);
+    border-radius: 999px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-accent);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}

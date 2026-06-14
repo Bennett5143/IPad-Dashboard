@@ -28,21 +28,25 @@
             <div class="stat"><span class="stat-value">@_view.CurrentWeek</span><span class="stat-label">diese Woche</span></div>
             @if (_kind is { } selected)
             {
+                <Explainable Id="MetricId.HabitStreaks"><ChildContent>
                 <div class="stat">
                     <span class="stat-value">@_weeklyStreak.Current</span>
-                    <span class="stat-label">Wochen-Serie · Rekord @_weeklyStreak.Longest <MetricInfo Id="MetricId.HabitStreaks" /></span>
+                    <span class="stat-label">Wochen-Serie · Rekord @_weeklyStreak.Longest</span>
                 </div>
+                </ChildContent></Explainable>
             }
             else
             {
+                <Explainable Id="MetricId.HabitStreaks"><ChildContent>
                 <div class="stat">
                     <span class="stat-value">@_dailyStreak.Current</span>
-                    <span class="stat-label">Tage-Serie · Rekord @_dailyStreak.Longest <MetricInfo Id="MetricId.HabitStreaks" /></span>
+                    <span class="stat-label">Tage-Serie · Rekord @_dailyStreak.Longest</span>
                 </div>
+                </ChildContent></Explainable>
             }
         </div>
 
-        <h2 class="heat-title metric-heading">Jahres-Heatmap<MetricInfo Id="MetricId.HabitHeatmap" /></h2>
+        <Explainable Id="MetricId.HabitHeatmap"><ChildContent>
         <div class="heat-scroll">
             <div class="heat-months">
                 @foreach (var month in _view.Months)
@@ -69,10 +73,10 @@
             <span class="heat-cell lvl-4"></span>
             <span>mehr</span>
         </div>
+        </ChildContent></Explainable>
 
         <section class="weeks">
-            <h2 class="metric-heading">Letzte 12 Wochen<MetricInfo Id="MetricId.HabitWeeklyBars" /></h2>
-            <span class="axis-caption">Balkenhöhe = Einträge pro Woche</span>
+            <h2>Letzte 12 Wochen</h2>
             <div class="week-bars">
                 @foreach (var bar in _view.WeeklyBars)
                 {

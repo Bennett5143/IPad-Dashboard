@@ -145,12 +145,8 @@
 
 .run-profile-head {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.run-profile-head .run-profile-title {
-    margin-right: auto;
+    justify-content: space-between;
+    align-items: baseline;
 }
 
 .run-profile-title {
@@ -163,6 +159,14 @@
 .run-profile-hint {
     font-size: var(--font-size-sm);
     color: var(--color-fg-muted);
+}
+
+.run-profile-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
 }
 
 ::deep .sparkline {

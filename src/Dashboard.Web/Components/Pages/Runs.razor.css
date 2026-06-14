@@ -214,12 +214,6 @@
     gap: var(--space-3);
 }
 
-.runs-list-section h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-}
-
 .routes {
     display: flex;
     flex-direction: column;
@@ -230,4 +224,11 @@
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-fg-primary);
+}
+
+.routes-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    max-width: 70ch;
+    margin: 0;
 }

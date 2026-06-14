@@ -38,7 +38,8 @@
         @if (_bestEfforts.Count > 0)
         {
             <section class="run-efforts">
-                <h2 class="metric-heading">Bestzeiten in diesem Lauf<MetricInfo Id="MetricId.RunBestEfforts" /></h2>
+                <h2>Bestzeiten in diesem Lauf</h2>
+                <Explainable Id="MetricId.RunBestEfforts"><ChildContent>
                 <div class="effort-chips">
                     @foreach (var effort in _bestEfforts)
                     {
@@ -48,6 +49,7 @@
                         </div>
                     }
                 </div>
+                </ChildContent></Explainable>
             </section>
         }
 
@@ -107,20 +109,31 @@
     {
         var present = values.Where(v => v is not null).Select(v => v!.Value).ToList();
         var (min, max) = present.Count > 0 ? (present.Min(), present.Max()) : (0, 0);
+        var rangeStart = Format(invert ? max : min, css);
+        var rangeEnd = Format(invert ? min : max, css);
 
         <text>
-            <article class="run-profile">
-                <div class="run-profile-head">
-                    <span class="run-profile-title">@title</span>
-                    <span class="run-profile-hint">@hint</span>
-                    <MetricInfo Id="metricId" />
-                </div>
-                <ChartFrame XLabel="Distanz (Lauf-Verlauf)" YLabel="@yLabel"
-                            RangeStart="@Format(invert ? max : min, css)"
-                            RangeEnd="@Format(invert ? min : max, css)">
-                    <Sparkline Values="values" CssClass="@($"profile-{css}")" />
-                </ChartFrame>
-            </article>
+            <Explainable Id="metricId">
+                <ChildContent>
+                    <article class="run-profile">
+                        <div class="run-profile-head">
+                            <span class="run-profile-title">@title</span>
+                            <span class="run-profile-hint">@hint</span>
+                        </div>
+                        <Sparkline Values="values" CssClass="@($"profile-{css}")" />
+                        <div class="run-profile-range">
+                            <span>@rangeStart</span>
+                            <span>@rangeEnd</span>
+                        </div>
+                    </article>
+                </ChildContent>
+                <Detail>
+                    <ChartFrame XLabel="Distanz (Lauf-Verlauf)" YLabel="@yLabel"
+                                RangeStart="@rangeStart" RangeEnd="@rangeEnd">
+                        <Sparkline Values="values" CssClass="@($"profile-{css}")" />
+                    </ChartFrame>
+                </Detail>
+            </Explainable>
         </text>;
     };
 

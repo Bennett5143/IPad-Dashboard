@@ -10,9 +10,9 @@ public sealed record RunListRow(
 public sealed record RunDetailHeader(
     string Name, string Date, string Distance, string Duration, string Pace, string HeartRate, string Elevation);
 
-/// <summary>Eine Zeile der „Standard-Runden"-Übersicht (FA-8.17).</summary>
+/// <summary>Eine Zeile der „Standard-Runden"-Übersicht (FA-8.17). <see cref="Id"/> verlinkt auf die Heatmap.</summary>
 public sealed record RouteClusterRow(
-    string Name, string Members, string Distance, string Pace, string BestTime);
+    int Id, string Name, string Members, string Distance, string Pace, string BestTime);
 
 /// <summary>Eine Bestzeit eines Laufs (z. B. „5 km – 24:30").</summary>
 public sealed record BestEffortRow(string Distance, string Time);
@@ -40,6 +40,7 @@ public static class RunViewBuilder
 
     public static IReadOnlyList<RouteClusterRow> BuildRouteClusters(IReadOnlyList<RouteClusterSummary> clusters) =>
         clusters.Select(c => new RouteClusterRow(
+            c.Id,
             c.Name,
             $"{c.MemberCount}×",
             $"{c.AverageDistanceKm.ToString("0.0", German)} km",

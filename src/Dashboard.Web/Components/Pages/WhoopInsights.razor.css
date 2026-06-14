@@ -50,12 +50,8 @@
 
 .metric-head {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.metric-head .metric-title {
-    margin-right: auto;
+    justify-content: space-between;
+    align-items: baseline;
 }
 
 .metric-title {
@@ -565,4 +561,14 @@
 .run-detail {
     color: var(--color-fg-primary);
     font-variant-numeric: tabular-nums;
+}
+
+/* Klickbare Hülle (Explainable) an die Kartenbreite der jeweiligen Sektion koppeln,
+   damit der Klickbereich die Karte umschließt statt die volle Sektionsbreite. */
+.load > .explainable {
+    max-width: 420px;
+}
+
+.tod > .explainable {
+    max-width: 560px;
 }

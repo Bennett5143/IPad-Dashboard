@@ -15,12 +15,12 @@ public class MetricCatalogTests
 
         Assert.False(string.IsNullOrWhiteSpace(explanation.Title), $"Titel fehlt für {id}");
         Assert.False(string.IsNullOrWhiteSpace(explanation.Summary), $"Beschreibung fehlt für {id}");
-        Assert.False(string.IsNullOrWhiteSpace(explanation.HowToRead), $"Lesehilfe fehlt für {id}");
+        Assert.False(string.IsNullOrWhiteSpace(explanation.Basis), $"Grundlage fehlt für {id}");
+        Assert.False(string.IsNullOrWhiteSpace(explanation.Use), $"Wofür-Text fehlt für {id}");
 
-        // Optionale Felder dürfen, wenn gesetzt, nicht nur aus Leerraum bestehen.
+        // Optionale Achsen dürfen, wenn gesetzt, nicht nur aus Leerraum bestehen.
         Assert.True(explanation.XAxis is null || explanation.XAxis.Trim().Length > 0, $"Leere X-Achse für {id}");
         Assert.True(explanation.YAxis is null || explanation.YAxis.Trim().Length > 0, $"Leere Y-Achse für {id}");
-        Assert.True(explanation.Method is null || explanation.Method.Trim().Length > 0, $"Leere Methode für {id}");
     }
 
     [Fact]
