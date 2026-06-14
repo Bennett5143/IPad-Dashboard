@@ -54,6 +54,23 @@ function ensureLeaflet() {
     return leafletLoader;
 }
 
+// Wartet, bis der Container tatsächlich Maße hat. Das scoped CSS (height:70vh) greift u. U.
+// minimal nach dem ersten Render – Leaflet auf einem 0×0-Container erzeugt eine schwarze Karte,
+// die invalidateSize nicht zuverlässig heilt. Also erst bei echter Größe die Karte bauen.
+function waitForSize(element) {
+    return new Promise(resolve => {
+        let tries = 0;
+        const check = () => {
+            if ((element.clientWidth > 0 && element.clientHeight > 0) || tries++ > 60) {
+                resolve();
+            } else {
+                requestAnimationFrame(check);
+            }
+        };
+        check();
+    });
+}
+
 // ---- Geometrie / Farben -------------------------------------------------
 
 function haversine(a, b) {
@@ -310,6 +327,9 @@ export async function render(elementId, runs, layer) {
 
     const element = document.getElementById(elementId);
     if (!element) return;
+
+    // Erst bauen, wenn der Container Maße hat – sonst schwarze Karte beim ersten Render.
+    await waitForSize(element);
 
     if (element._heat?.map) {
         element._heat.ro?.disconnect();
