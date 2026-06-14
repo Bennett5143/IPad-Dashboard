@@ -101,6 +101,19 @@
         if (firstRender && _connected)
         {
             await RenderMapAsync();
+
+            // Sicherheitsnetz: Der erste Aufbau kann je nach Layout-/Stylesheet-Timing eine leere
+            // Karte erzeugen – erst ein zweiter Render rendert zuverlässig (wie ein Zeitraum-Klick).
+            // Daher nach kurzer Verzögerung einmal neu aufbauen.
+            await Task.Delay(300);
+            try
+            {
+                await RenderMapAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Nutzer hat die Seite inzwischen verlassen – nichts zu tun.
+            }
         }
     }
 
