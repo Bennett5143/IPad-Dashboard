@@ -44,12 +44,12 @@ function ensureLeaflet() {
     if (leafletLoader) {
         return leafletLoader;
     }
-    // WICHTIG: auch auf das CSS warten – sonst rendert der erste Aufbau ohne Leaflet-Styles
-    // eine kaputte/schwarze Karte (Panes/Kacheln nicht positioniert), die erst ein zweiter
-    // Render heilt.
+    // Leaflet wird lokal ausgeliefert (wwwroot/lib/leaflet), NICHT vom CDN – sonst rendert die
+    // Karte z. B. auf dem Kiosk-iPad gar nicht, wenn unpkg/CDN nicht erreichbar oder geblockt ist.
+    // WICHTIG: auch auf das CSS warten – ohne Leaflet-Styles bleibt der erste Aufbau schwarz.
     leafletLoader = Promise.all([
-        addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),
-        loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+        addStylesheet('/lib/leaflet/leaflet.css'),
+        loadScript('/lib/leaflet/leaflet.js')
     ]);
     return leafletLoader;
 }
