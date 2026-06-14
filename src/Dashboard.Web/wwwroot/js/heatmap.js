@@ -355,8 +355,8 @@ export async function render(elementId, runs, layer) {
     // Lokaler Kachel-Proxy (siehe /tiles-Endpoint): das offline iPad bekommt die Karte vom
     // LAN-Server, der sie online lädt + cached. Keine externe CDN-Abhängigkeit mehr.
     const baseLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png', {
-        maxZoom: 20,
-        attribution: '© OpenStreetMap, © CARTO'
+        maxZoom: 19, // OSM-Kacheln gibt es bis Zoom 19
+        attribution: '© OpenStreetMap'
     });
 
     // Beim ersten Schwung scheitern manche Kacheln (Anbieter drosselt) → gezielt und gestaffelt

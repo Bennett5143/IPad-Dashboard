@@ -102,7 +102,13 @@
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-md);
-    background: var(--color-surface-base); /* dunkler Grund, passend zur dark-Basiskarte */
+    background: var(--color-surface-base); /* dunkler Grund, passend zur dunklen Karte */
+}
+
+/* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Wirkt nur auf die Basiskarte-Kacheln –
+   die Lauf-Routen liegen auf einem eigenen Canvas (.heat-canvas) und bleiben unverändert. */
+::deep .leaflet-tile {
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 
 .layer-buttons {

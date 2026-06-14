@@ -1,4 +1,6 @@
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,9 +36,17 @@ public sealed class TileProvider
         _http = http;
         _options = options.Value;
         _logger = logger;
-        _cacheRoot = Path.IsPathRooted(_options.CacheDirectory)
+
+        var baseDir = Path.IsPathRooted(_options.CacheDirectory)
             ? _options.CacheDirectory
             : Path.Combine(environment.ContentRootPath, _options.CacheDirectory);
+
+        // Pro Anbieter (URL-Vorlage) ein eigenes Unterverzeichnis: So mischt ein Anbieter-Wechsel
+        // (z. B. CARTO → OSM) nicht alte mit neuen Kacheln, und ein Zurückwechseln nutzt den alten
+        // Cache weiter – ohne manuelles Löschen.
+        var providerKey = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(_options.UrlTemplate)))[..8];
+        _cacheRoot = Path.Combine(baseDir, providerKey);
     }
 
     /// <summary>Plausibilitätsprüfung der Slippy-Map-Koordinaten (Schutz gegen Unsinns-Anfragen).</summary>

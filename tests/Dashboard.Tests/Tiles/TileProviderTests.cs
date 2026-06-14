@@ -67,7 +67,7 @@ public class TileProviderTests
             Assert.Equal(FakePng, first);
             Assert.Equal(FakePng, second);
             Assert.Equal(1, calls); // der zweite Aufruf kommt aus dem Platten-Cache
-            Assert.True(File.Exists(Path.Combine(dir, "5", "8", "8.png")));
+            Assert.NotEmpty(Directory.GetFiles(dir, "8.png", SearchOption.AllDirectories));
         }
         finally
         {
