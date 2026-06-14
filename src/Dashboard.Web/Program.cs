@@ -9,6 +9,7 @@ using Dashboard.Infrastructure.Quotes;
 using Dashboard.Infrastructure.Seeding;
 using Dashboard.Infrastructure.Status;
 using Dashboard.Infrastructure.Strava;
+using Dashboard.Infrastructure.Tiles;
 using Dashboard.Infrastructure.Time;
 using Dashboard.Infrastructure.Weather;
 using Dashboard.Infrastructure.Whoop;
@@ -191,6 +192,19 @@ try
         ? new LinuxSystemMetricsProvider()
         : new NullSystemMetricsProvider());
 
+    // Karten-Kachel-Proxy: Das bewusst offline gehaltene Kiosk-iPad holt Kacheln nur vom
+    // LAN-Server, der sie online nachlädt und auf Platte cached (Sektion „Tiles").
+    var tileOptions = builder.Configuration
+        .GetSection(TileOptions.SectionName)
+        .Get<TileOptions>() ?? new TileOptions();
+
+    builder.Services.Configure<TileOptions>(builder.Configuration.GetSection(TileOptions.SectionName));
+    builder.Services.AddHttpClient<TileProvider>(http =>
+    {
+        http.Timeout = TimeSpan.FromSeconds(15);
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd(tileOptions.UserAgent);
+    });
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -303,6 +317,21 @@ try
         }
 
         return Results.Redirect("/");
+    });
+
+    // Karten-Kachel-Proxy-Endpoint: liefert Kacheln aus dem lokalen Cache bzw. lädt sie online
+    // nach. Slippy-Map-Schema {z}/{x}/{y}.png; Leaflet zeigt eine fehlende Kachel einfach nicht.
+    app.MapGet("/tiles/{z:int}/{x:int}/{y:int}.png", async (
+        int z, int x, int y, TileProvider tiles, HttpContext context, CancellationToken ct) =>
+    {
+        var bytes = await tiles.GetTileAsync(z, x, y, ct);
+        if (bytes is null)
+        {
+            return Results.NotFound();
+        }
+
+        context.Response.Headers.CacheControl = "public, max-age=2592000"; // 30 Tage im Client-Cache
+        return Results.File(bytes, "image/png");
     });
 
     // Configure the HTTP request pipeline.

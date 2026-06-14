@@ -337,9 +337,10 @@ export async function render(elementId, runs, layer) {
     }
 
     const map = L.map(element, { preferCanvas: true }).setView([53.55, 9.99], 11); // Default: Hamburg
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    // Lokaler Kachel-Proxy (siehe /tiles-Endpoint): das offline iPad bekommt die Karte vom
+    // LAN-Server, der sie online lädt + cached. Keine externe CDN-Abhängigkeit mehr.
+    L.tileLayer('/tiles/{z}/{x}/{y}.png', {
         maxZoom: 20,
-        subdomains: 'abcd',
         attribution: '© OpenStreetMap, © CARTO'
     }).addTo(map);
 
