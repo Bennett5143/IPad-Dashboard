@@ -112,9 +112,11 @@
     background: #16181d;
 }
 
-/* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Wirkt nur auf die Basiskarte-Kacheln –
-   die Lauf-Routen liegen auf einem eigenen Canvas (.heat-canvas) und bleiben unverändert. */
-::deep .leaflet-tile {
+/* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Filter bewusst auf die GESAMTE Kachel-Ebene
+   (ein composited Layer) statt auf jede Kachel einzeln – sonst lässt Safari beim Pannen/Zoomen
+   einen Teilbereich ungefiltert (heller Block). Die Lauf-Routen liegen in der overlay-pane und
+   bleiben dadurch unberührt. */
+::deep .leaflet-tile-pane {
     filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 
