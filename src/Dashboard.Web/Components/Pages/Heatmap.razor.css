@@ -105,6 +105,13 @@
     background: var(--color-surface-base); /* dunkler Grund, passend zur dunklen Karte */
 }
 
+/* Leaflets Default-Kartenhintergrund ist hellgrau (#ddd) und scheint dort durch, wo gerade
+   keine Kachel liegt (ladend oder fehlend) → helle/„weiße" Flecken. Dunkel setzen, passend
+   zur invertierten Karte, damit Lücken nicht aufblitzen. */
+::deep .leaflet-container {
+    background: #16181d;
+}
+
 /* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Wirkt nur auf die Basiskarte-Kacheln –
    die Lauf-Routen liegen auf einem eigenen Canvas (.heat-canvas) und bleiben unverändert. */
 ::deep .leaflet-tile {
