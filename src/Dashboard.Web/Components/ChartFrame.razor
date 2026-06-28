@@ -1,0 +1,45 @@
+@* Achsen-Rahmen um ein Diagramm (FA-10.09): Y-Beschriftung links (gedreht), X-Beschriftung
+   unten, optional Start/Ende-Werte direkt unter der Kurve. Rein darstellend – die eigentliche
+   Visualisierung (Sparkline/Scatter/SVG) kommt als ChildContent. Höhe/Farben des Diagramms
+   bleiben bei den seiteneigenen ::deep-Regeln; dieser Wrapper ändert sie nicht. *@
+
+<div class="chart-frame @CssClass">
+    @if (YLabel is not null)
+    {
+        <span class="chart-y-label">@YLabel</span>
+    }
+    <div class="chart-area">
+        @ChildContent
+        @if (RangeStart is not null || RangeEnd is not null)
+        {
+            <div class="chart-range">
+                <span>@RangeStart</span>
+                <span>@RangeEnd</span>
+            </div>
+        }
+    </div>
+    @if (XLabel is not null)
+    {
+        <span class="chart-x-label">@XLabel</span>
+    }
+</div>
+
+@code {
+    /// <summary>Das Diagramm selbst (Sparkline/Scatter/Inline-SVG).</summary>
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Beschriftung der X-Achse (z. B. „Zeit (letzte 30 Tage)").</summary>
+    [Parameter] public string? XLabel { get; set; }
+
+    /// <summary>Beschriftung der Y-Achse (z. B. „Herzschläge pro km").</summary>
+    [Parameter] public string? YLabel { get; set; }
+
+    /// <summary>Optionaler Wert am linken Rand unter der Kurve (z. B. Minimum/Startwert).</summary>
+    [Parameter] public string? RangeStart { get; set; }
+
+    /// <summary>Optionaler Wert am rechten Rand unter der Kurve (z. B. Maximum/Endwert).</summary>
+    [Parameter] public string? RangeEnd { get; set; }
+
+    /// <summary>Zusätzliche CSS-Klassen für den Rahmen.</summary>
+    [Parameter] public string? CssClass { get; set; }
+}

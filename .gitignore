@@ -436,3 +436,6 @@ FodyWeavers.xsd
 .DS_Store
 
 .vscode
+
+# Karten-Kachel-Cache (Proxy)
+tile-cache/

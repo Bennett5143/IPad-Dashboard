@@ -102,7 +102,22 @@
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-md);
-    background: var(--color-surface-base); /* dunkler Grund, passend zur dark-Basiskarte */
+    background: var(--color-surface-base); /* dunkler Grund, passend zur dunklen Karte */
+}
+
+/* Leaflets Default-Kartenhintergrund ist hellgrau (#ddd) und scheint dort durch, wo gerade
+   keine Kachel liegt (ladend oder fehlend) → helle/„weiße" Flecken. Dunkel setzen, passend
+   zur invertierten Karte, damit Lücken nicht aufblitzen. */
+::deep .leaflet-container {
+    background: #16181d;
+}
+
+/* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Filter bewusst auf die GESAMTE Kachel-Ebene
+   (ein composited Layer) statt auf jede Kachel einzeln – sonst lässt Safari beim Pannen/Zoomen
+   einen Teilbereich ungefiltert (heller Block). Die Lauf-Routen liegen in der overlay-pane und
+   bleiben dadurch unberührt. */
+::deep .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 
 .layer-buttons {
@@ -183,4 +198,25 @@
 .sync-info {
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
+}
+
+/* Runden-Ansicht: Banner statt Zeitraum-Buttons (FA-8.17 / Runde antippbar). */
+.cluster-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-secondary);
+}
+
+.cluster-reset {
+    padding: var(--space-2) var(--space-4);
+    border-radius: 999px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-accent);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
 }

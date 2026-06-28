@@ -3,10 +3,13 @@
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 @inject IRunRepository RunRepository
+@inject IRouteClusterStore RouteClusters
 @inject IStravaTokenStore TokenStore
 @inject ISyncStateStore SyncStateStore
 @inject IClock Clock
 @inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject Microsoft.Extensions.Options.IOptions<MapOptions> MapView
 
 <PageTitle>Lauf-Heatmap</PageTitle>
 
@@ -25,11 +28,21 @@
     else
     {
         <div class="heatmap-controls">
-            <div class="range-buttons" role="group" aria-label="Zeitraum">
-                <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
-                <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
-                <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
-            </div>
+            @if (Cluster is null)
+            {
+                <div class="range-buttons" role="group" aria-label="Zeitraum">
+                    <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
+                    <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
+                    <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
+                </div>
+            }
+            else
+            {
+                <div class="cluster-banner">
+                    <span>Standard-Runde · @_runs.Count Läufe</span>
+                    <button class="cluster-reset" @onclick="ResetCluster">alle Läufe anzeigen</button>
+                </div>
+            }
 
             <div class="heatmap-stats">
                 <div class="stat"><span class="stat-value">@_stats.RunCount</span><span class="stat-label">Läufe</span></div>
@@ -63,6 +76,9 @@
 
     private const string MapElementId = "heatmap-map";
 
+    /// <summary>Optionaler Filter: nur die Läufe dieser Standard-Runde anzeigen (Tap auf /runs).</summary>
+    [Parameter, SupplyParameterFromQuery] public int? Cluster { get; set; }
+
     private bool _connected;
     private RunTimeRange _range = RunTimeRange.TwelveMonths;
     private string _layer = "heat";
@@ -86,15 +102,41 @@
         if (firstRender && _connected)
         {
             await RenderMapAsync();
+
+            // Sicherheitsnetz: Der erste Aufbau kann je nach Layout-/Stylesheet-Timing eine leere
+            // Karte erzeugen – erst ein zweiter Render rendert zuverlässig (wie ein Zeitraum-Klick).
+            // Daher nach kurzer Verzögerung einmal neu aufbauen.
+            await Task.Delay(300);
+            try
+            {
+                await RenderMapAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Nutzer hat die Seite inzwischen verlassen – nichts zu tun.
+            }
         }
     }
 
     private async Task LoadRunsAsync()
     {
-        var cutoff = _range.CutoffUtc(Clock.UtcNow);
-        _runs = await RunRepository.GetRunsAsync(cutoff);
+        if (Cluster is { } clusterId)
+        {
+            // Eine Runde anzeigen: alle Läufe dieses Clusters, unabhängig vom Zeitraum.
+            var ids = (await RouteClusters.GetRunIdsForClusterAsync(clusterId)).ToHashSet();
+            var all = await RunRepository.GetRunsAsync(null);
+            _runs = all.Where(r => ids.Contains(r.Id)).ToList();
+        }
+        else
+        {
+            var cutoff = _range.CutoffUtc(Clock.UtcNow);
+            _runs = await RunRepository.GetRunsAsync(cutoff);
+        }
+
         _stats = RunStatsCalculator.Calculate(_runs);
     }
+
+    private void ResetCluster() => Nav.NavigateTo("/heatmap", forceLoad: true);
 
     private async Task SetRangeAsync(RunTimeRange range)
     {
@@ -110,12 +152,21 @@
 
     private async Task RenderMapAsync()
     {
-        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/heatmap.js");
+        // Versions-Query bricht den Browser-Cache. An den Prozessstart gekoppelt (AppAssets),
+        // damit nach jedem App-Neustart automatisch die aktuelle Datei geladen wird.
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", $"./js/heatmap.js?v={AppAssets.Version}");
 
         // Pro Lauf Punkte + (sofern vorhanden) Streams; die JS verbindet sie zu Linien und
         // färbt je nach Ebene segmentweise ein.
         var runs = HeatmapPayloadBuilder.Build(_runs);
-        await _module.InvokeVoidAsync("render", MapElementId, runs, _layer);
+
+        // Gesamt-Ansicht auf den Heimat-Standort zentrieren (sonst zerren entfernte Läufe die
+        // Karte auf halb Europa). Bei einer einzelnen Runde stattdessen auf deren Läufe passen
+        // (fitBounds in der JS), daher dort kein Fokus.
+        var focus = Cluster is null
+            ? new { lat = MapView.Value.Latitude, lng = MapView.Value.Longitude, zoom = MapView.Value.Zoom }
+            : null;
+        await _module.InvokeVoidAsync("render", MapElementId, runs, _layer, focus);
     }
 
     private async Task SetLayerAsync(string layer)

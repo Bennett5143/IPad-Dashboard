@@ -1,0 +1,123 @@
+/* Klickbare Hülle: füllt ihre Gitterzelle, das enthaltene Element (Karte) wird gestreckt. */
+.explainable {
+    display: grid;
+    cursor: pointer;
+    border-radius: var(--radius-lg);
+    transition: box-shadow 120ms ease;
+}
+
+.explainable:hover {
+    box-shadow: 0 0 0 1px var(--glass-rim);
+}
+
+.explainable:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.explainable:active {
+    transform: scale(0.995);
+}
+
+/* ---- Erklärungs-Popup (baut auf dem globalen .dialog-Muster auf) ---- */
+.metric-dialog {
+    width: min(94vw, 520px);
+}
+
+.metric-dialog-head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+}
+
+.metric-dialog-head .dialog-title {
+    margin: 0;
+    flex: 1;
+}
+
+.metric-dialog-close {
+    flex: none;
+    width: 1.8rem;
+    height: 1.8rem;
+    padding: 0;
+    border: 1px solid var(--glass-rim);
+    border-radius: 50%;
+    background: var(--color-surface-sunken);
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.metric-dialog-close:hover,
+.metric-dialog-close:focus-visible {
+    color: var(--color-fg-primary);
+    outline: none;
+}
+
+/* Statistik groß im Popup: das Diagramm darf hier deutlich höher als inline sein. */
+.metric-dialog-stat {
+    margin: var(--space-4) 0 var(--space-2);
+}
+
+.metric-dialog-stat ::deep .sparkline {
+    height: 150px;
+}
+
+.metric-dialog-stat ::deep .scatter {
+    height: 240px;
+}
+
+.metric-dialog-summary {
+    margin: var(--space-3) 0 0;
+    color: var(--color-fg-secondary);
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+}
+
+.metric-dialog-block {
+    margin-top: var(--space-4);
+}
+
+.metric-dialog-block p {
+    margin: var(--space-1) 0 0;
+    color: var(--color-fg-secondary);
+    line-height: 1.5;
+}
+
+.metric-dialog-label {
+    font-family: var(--font-family-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.metric-dialog-axes {
+    list-style: none;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+}
+
+.metric-dialog-axes li {
+    color: var(--color-fg-secondary);
+    line-height: 1.4;
+}
+
+.axis-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    margin-right: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--glass-rim);
+    color: var(--color-accent);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}

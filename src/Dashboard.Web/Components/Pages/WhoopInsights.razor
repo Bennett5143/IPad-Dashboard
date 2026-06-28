@@ -31,18 +31,27 @@
         <section class="metric-grid">
             @foreach (var card in _cards)
             {
-                <article class="metric-card">
-                    <div class="metric-head">
-                        <span class="metric-title">@card.Title</span>
-                        <span class="metric-current">@card.Current<span class="metric-unit">@card.Unit</span></span>
-                    </div>
-                    <Sparkline Values="card.Values" CssClass="@card.CssClass" />
-                    <div class="metric-stats">
-                        <span>Ø @card.Avg</span>
-                        <span>min @card.Min</span>
-                        <span>max @card.Max</span>
-                    </div>
-                </article>
+                <Explainable Id="CardMetric(card.CssClass)">
+                    <ChildContent>
+                        <article class="metric-card">
+                            <div class="metric-head">
+                                <span class="metric-title">@card.Title</span>
+                                <span class="metric-current">@card.Current<span class="metric-unit">@card.Unit</span></span>
+                            </div>
+                            <Sparkline Values="card.Values" CssClass="@card.CssClass" />
+                            <div class="metric-stats">
+                                <span>Ø @card.Avg</span>
+                                <span>min @card.Min</span>
+                                <span>max @card.Max</span>
+                            </div>
+                        </article>
+                    </ChildContent>
+                    <Detail>
+                        <ChartFrame XLabel="Zeit · letzte 30 Tage" YLabel="@CardYAxis(card.CssClass)">
+                            <Sparkline Values="card.Values" CssClass="@card.CssClass" />
+                        </ChartFrame>
+                    </Detail>
+                </Explainable>
             }
         </section>
 
@@ -50,18 +59,26 @@
         {
             <section class="load">
                 <h2>Trainingslast <span class="tod-window">ACWR · Tages-Strain</span></h2>
-                <article class="tod-card">
-                    <div class="load-head">
-                        <span class="load-ratio @_trainingLoad.ZoneCss">@_trainingLoad.RatioLabel</span>
-                        <span class="load-zone @_trainingLoad.ZoneCss">@_trainingLoad.ZoneLabel</span>
-                    </div>
-                    <Sparkline Values="_trainingLoad.Sparkline" CssClass="load" />
-                    @if (_trainingLoad.ConfidenceHint is not null)
-                    {
-                        <p class="load-confidence">@_trainingLoad.ConfidenceHint</p>
-                    }
-                    <p class="tod-hint">@_trainingLoad.MethodHint</p>
-                </article>
+                <Explainable Id="MetricId.TrainingLoad">
+                    <ChildContent>
+                        <article class="tod-card">
+                            <div class="load-head">
+                                <span class="load-ratio @_trainingLoad.ZoneCss">@_trainingLoad.RatioLabel</span>
+                                <span class="load-zone @_trainingLoad.ZoneCss">@_trainingLoad.ZoneLabel</span>
+                            </div>
+                            <Sparkline Values="_trainingLoad.Sparkline" CssClass="load" />
+                            @if (_trainingLoad.ConfidenceHint is not null)
+                            {
+                                <p class="load-confidence">@_trainingLoad.ConfidenceHint</p>
+                            }
+                        </article>
+                    </ChildContent>
+                    <Detail>
+                        <ChartFrame XLabel="Zeit · letzte ~90 Tage" YLabel="ACWR-Verhältnis">
+                            <Sparkline Values="_trainingLoad.Sparkline" CssClass="load" />
+                        </ChartFrame>
+                    </Detail>
+                </Explainable>
             </section>
         }
 
@@ -69,17 +86,25 @@
         {
             <section class="load">
                 <h2>Aerobe Fitness <span class="tod-window">Monats-Ø · letzte 12 Monate</span></h2>
-                <article class="tod-card">
-                    <div class="load-head">
-                        <span class="fitness-current">@_fitnessCurve.CurrentLabel</span>
-                        @if (_fitnessCurve.TrendLabel is not null)
-                        {
-                            <span class="fitness-trend @_fitnessCurve.TrendCss">@_fitnessCurve.TrendLabel</span>
-                        }
-                    </div>
-                    <Sparkline Values="_fitnessCurve.Sparkline" CssClass="fitness" />
-                    <p class="tod-hint">@_fitnessCurve.Hint</p>
-                </article>
+                <Explainable Id="MetricId.AerobicFitness">
+                    <ChildContent>
+                        <article class="tod-card">
+                            <div class="load-head">
+                                <span class="fitness-current">@_fitnessCurve.CurrentLabel</span>
+                                @if (_fitnessCurve.TrendLabel is not null)
+                                {
+                                    <span class="fitness-trend @_fitnessCurve.TrendCss">@_fitnessCurve.TrendLabel</span>
+                                }
+                            </div>
+                            <Sparkline Values="_fitnessCurve.Sparkline" CssClass="fitness" />
+                        </article>
+                    </ChildContent>
+                    <Detail>
+                        <ChartFrame XLabel="Zeit · letzte 12 Monate" YLabel="Herzschläge/km">
+                            <Sparkline Values="_fitnessCurve.Sparkline" CssClass="fitness" />
+                        </ChartFrame>
+                    </Detail>
+                </Explainable>
             </section>
         }
 
@@ -87,23 +112,26 @@
         {
             <section class="tod">
                 <h2>Recovery-Treiber <span class="tod-window">Korrelation · letzte 12 Monate</span></h2>
-                <article class="tod-card drivers-card">
-                    <ul class="drv-rows">
-                        @foreach (var row in _recoveryDrivers.Rows)
-                        {
-                            <li class="@(row.LowSample ? "is-thin" : null)">
-                                <span class="tod-bucket">@row.Label</span>
-                                <span class="tod-bar">
-                                    <span class="tod-bar-fill"
-                                          style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
-                                </span>
-                                <span class="tod-value">@row.RLabel</span>
-                                <span class="drv-strength">@row.StrengthLabel · n=@row.Count</span>
-                            </li>
-                        }
-                    </ul>
-                    <p class="tod-hint">@_recoveryDrivers.Hint</p>
-                </article>
+                <Explainable Id="MetricId.RecoveryDrivers">
+                    <ChildContent>
+                        <article class="tod-card drivers-card">
+                            <ul class="drv-rows">
+                                @foreach (var row in _recoveryDrivers.Rows)
+                                {
+                                    <li class="@(row.LowSample ? "is-thin" : null)">
+                                        <span class="tod-bucket">@row.Label</span>
+                                        <span class="tod-bar">
+                                            <span class="tod-bar-fill"
+                                                  style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+                                        </span>
+                                        <span class="tod-value">@row.RLabel</span>
+                                        <span class="drv-strength">@row.StrengthLabel · n=@row.Count</span>
+                                    </li>
+                                }
+                            </ul>
+                        </article>
+                    </ChildContent>
+                </Explainable>
 
                 @if (_recoveryDrivers.Scatters.Count > 0)
                 {
@@ -127,6 +155,7 @@
         {
             <section class="sleep">
                 <h2>Letzte Nacht <span class="sleep-date">@_night.DateLabel</span></h2>
+                <Explainable Id="MetricId.SleepNight"><ChildContent>
                 <article class="sleep-card">
                     <div class="sleep-meta">
                         @if (_night.TimeRange is not null)
@@ -158,6 +187,7 @@
                         }
                     </ul>
                 </article>
+                </ChildContent></Explainable>
             </section>
         }
 
@@ -174,6 +204,7 @@
                 <div class="tod-grid">
                     @foreach (var card in _todCards)
                     {
+                        <Explainable Id="MetricId.TimeOfDay"><ChildContent>
                         <article class="tod-card">
                             <div class="tod-head">
                                 <span class="tod-title">@card.Title</span>
@@ -195,11 +226,13 @@
                             </ul>
                             <p class="tod-verdict">@card.Verdict</p>
                         </article>
+                        </ChildContent></Explainable>
                     }
                 </div>
 
                 @if (_todMatrix is not null)
                 {
+                    <Explainable Id="MetricId.TimeOfDayMatrix"><ChildContent>
                     <table class="tod-matrix">
                         <thead>
                             <tr>
@@ -225,6 +258,7 @@
                             }
                         </tbody>
                     </table>
+                    </ChildContent></Explainable>
                 }
             }
         </section>
@@ -245,6 +279,7 @@
                 }
 
                 <div class="tod-grid">
+                    <Explainable Id="MetricId.SleepBedtime"><ChildContent>
                     <article class="tod-card">
                         <div class="tod-head">
                             <span class="tod-title">Einschlafzeit → Recovery</span>
@@ -266,7 +301,9 @@
                         </ul>
                         <p class="tod-verdict">@_sleepInsights.BedtimeVerdict</p>
                     </article>
+                    </ChildContent></Explainable>
 
+                    <Explainable Id="MetricId.SleepDuration"><ChildContent>
                     <article class="tod-card">
                         <div class="tod-head">
                             <span class="tod-title">Schlafdauer → Recovery</span>
@@ -288,6 +325,7 @@
                         </ul>
                         <p class="tod-verdict">@_sleepInsights.DurationVerdict</p>
                     </article>
+                    </ChildContent></Explainable>
                 </div>
 
                 @if (_sleepInsights.EveningLabel is not null)
@@ -326,6 +364,21 @@
 
     private static readonly TimeZoneInfo BerlinTz =
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    /// <summary>Bildet die stabile CssClass einer Metrik-Karte auf ihre Erklärungs-ID ab.</summary>
+    private static MetricId CardMetric(string cssClass) => cssClass switch
+    {
+        "recovery" => MetricId.WhoopRecovery,
+        "hrv" => MetricId.WhoopHrv,
+        "rhr" => MetricId.WhoopRestingHeartRate,
+        "sleep" => MetricId.WhoopSleep,
+        "strain" => MetricId.WhoopStrain,
+        "resp" => MetricId.WhoopRespiratoryRate,
+        _ => throw new ArgumentOutOfRangeException(nameof(cssClass), cssClass, "Unbekannte Metrik-Karte."),
+    };
+
+    /// <summary>Y-Achsenbeschriftung fürs große Diagramm im Popup – aus dem Katalog.</summary>
+    private static string CardYAxis(string cssClass) => MetricCatalog.Get(CardMetric(cssClass)).YAxis ?? "";
 
     private bool _connected;
     private bool _loading = true;

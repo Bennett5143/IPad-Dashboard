@@ -39,6 +39,7 @@
         {
             <section class="run-efforts">
                 <h2>Bestzeiten in diesem Lauf</h2>
+                <Explainable Id="MetricId.RunBestEfforts"><ChildContent>
                 <div class="effort-chips">
                     @foreach (var effort in _bestEfforts)
                     {
@@ -48,6 +49,7 @@
                         </div>
                     }
                 </div>
+                </ChildContent></Explainable>
             </section>
         }
 
@@ -60,15 +62,15 @@
             <section class="run-profiles">
                 @if (_profile.HasPace)
                 {
-                    @ProfileBlock("Pace", "pace", "min/km · niedriger = schneller", _profile.Pace, invert: true)
+                    @ProfileBlock("Pace", "pace", "min/km · niedriger = schneller", "Pace (min/km)", MetricId.RunPaceProfile, _profile.Pace, invert: true)
                 }
                 @if (_profile.HasElevation)
                 {
-                    @ProfileBlock("Höhe", "elevation", "Meter", _profile.Elevation, invert: false)
+                    @ProfileBlock("Höhe", "elevation", "Meter", "Höhe (m)", MetricId.RunElevationProfile, _profile.Elevation, invert: false)
                 }
                 @if (_profile.HasHeartRate)
                 {
-                    @ProfileBlock("Herzfrequenz", "heartrate", "bpm", _profile.HeartRate, invert: false)
+                    @ProfileBlock("Herzfrequenz", "heartrate", "bpm", "Herzfrequenz (bpm)", MetricId.RunHeartRateProfile, _profile.HeartRate, invert: false)
                 }
             </section>
         }
@@ -101,23 +103,37 @@
         _cluster = await RouteClusters.GetClusterForRunAsync(Id);
     }
 
-    private RenderFragment ProfileBlock(string title, string css, string hint, IReadOnlyList<double?> values, bool invert) => __builder =>
+    private RenderFragment ProfileBlock(
+        string title, string css, string hint, string yLabel, MetricId metricId,
+        IReadOnlyList<double?> values, bool invert) => __builder =>
     {
         var present = values.Where(v => v is not null).Select(v => v!.Value).ToList();
         var (min, max) = present.Count > 0 ? (present.Min(), present.Max()) : (0, 0);
+        var rangeStart = Format(invert ? max : min, css);
+        var rangeEnd = Format(invert ? min : max, css);
 
         <text>
-            <article class="run-profile">
-                <div class="run-profile-head">
-                    <span class="run-profile-title">@title</span>
-                    <span class="run-profile-hint">@hint</span>
-                </div>
-                <Sparkline Values="values" CssClass="@($"profile-{css}")" />
-                <div class="run-profile-range">
-                    <span>@Format(invert ? max : min, css)</span>
-                    <span>@Format(invert ? min : max, css)</span>
-                </div>
-            </article>
+            <Explainable Id="metricId">
+                <ChildContent>
+                    <article class="run-profile">
+                        <div class="run-profile-head">
+                            <span class="run-profile-title">@title</span>
+                            <span class="run-profile-hint">@hint</span>
+                        </div>
+                        <Sparkline Values="values" CssClass="@($"profile-{css}")" />
+                        <div class="run-profile-range">
+                            <span>@rangeStart</span>
+                            <span>@rangeEnd</span>
+                        </div>
+                    </article>
+                </ChildContent>
+                <Detail>
+                    <ChartFrame XLabel="Distanz (Lauf-Verlauf)" YLabel="@yLabel"
+                                RangeStart="@rangeStart" RangeEnd="@rangeEnd">
+                        <Sparkline Values="values" CssClass="@($"profile-{css}")" />
+                    </ChartFrame>
+                </Detail>
+            </Explainable>
         </text>;
     };
 

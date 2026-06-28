@@ -45,6 +45,7 @@
                     <div><dt>Eddington</dt><dd>@_review.Eddington</dd></div>
                 </dl>
 
+                <Explainable Id="MetricId.RunYearReview"><ChildContent>
                 <div class="review-bars" role="img" aria-label="Kilometer pro Monat">
                     @foreach (var month in _review.Months)
                     {
@@ -57,6 +58,7 @@
                         </div>
                     }
                 </div>
+                </ChildContent></Explainable>
 
                 <dl class="review-records">
                     <div><dt>Längster Lauf</dt><dd>@_review.LongestRun</dd></div>
@@ -70,6 +72,10 @@
         {
             <section class="routes">
                 <h2>Standard-Runden</h2>
+                <p class="routes-hint">
+                    Ähnlich verlaufende Läufe werden automatisch zu „Runden" gebündelt (richtungsunabhängig,
+                    Toleranz ~150 m). Eine Runde antippen zeigt ihre Läufe auf der Karte.
+                </p>
                 <table class="runs-table">
                     <thead>
                         <tr>
@@ -83,7 +89,7 @@
                     <tbody>
                         @foreach (var cluster in _clusters)
                         {
-                            <tr>
+                            <tr class="runs-row" @onclick="() => OpenCluster(cluster.Id)">
                                 <td class="run-name">@cluster.Name</td>
                                 <td class="num">@cluster.Members</td>
                                 <td class="num">@cluster.Distance</td>
@@ -182,6 +188,10 @@
     }
 
     private void Open(long id) => Nav.NavigateTo($"/runs/{id}");
+
+    // Voller Seitenaufruf statt interaktiver Navigation: Leaflet rendert sonst nach In-App-Nav
+    // eine leere/schwarze Karte (Container beim Init noch nicht endgültig vermessen).
+    private void OpenCluster(int clusterId) => Nav.NavigateTo($"/heatmap?cluster={clusterId}", forceLoad: true);
 
     private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
 }

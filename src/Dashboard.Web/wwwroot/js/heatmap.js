@@ -23,13 +23,18 @@ function loadScript(src) {
 }
 
 function addStylesheet(href) {
-    if (document.querySelector(`link[href="${href}"]`)) {
-        return;
-    }
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
+    return new Promise(resolve => {
+        if (document.querySelector(`link[href="${href}"]`)) {
+            resolve();
+            return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = () => resolve();
+        link.onerror = () => resolve(); // CSS-Fehler nicht den Map-Aufbau blockieren lassen
+        document.head.appendChild(link);
+    });
 }
 
 function ensureLeaflet() {
@@ -39,9 +44,31 @@ function ensureLeaflet() {
     if (leafletLoader) {
         return leafletLoader;
     }
-    addStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-    leafletLoader = loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
+    // Leaflet wird lokal ausgeliefert (wwwroot/lib/leaflet), NICHT vom CDN – sonst rendert die
+    // Karte z. B. auf dem Kiosk-iPad gar nicht, wenn unpkg/CDN nicht erreichbar oder geblockt ist.
+    // WICHTIG: auch auf das CSS warten – ohne Leaflet-Styles bleibt der erste Aufbau schwarz.
+    leafletLoader = Promise.all([
+        addStylesheet('/lib/leaflet/leaflet.css'),
+        loadScript('/lib/leaflet/leaflet.js')
+    ]);
     return leafletLoader;
+}
+
+// Wartet, bis der Container tatsächlich Maße hat. Das scoped CSS (height:70vh) greift u. U.
+// minimal nach dem ersten Render – Leaflet auf einem 0×0-Container erzeugt eine schwarze Karte,
+// die invalidateSize nicht zuverlässig heilt. Also erst bei echter Größe die Karte bauen.
+function waitForSize(element) {
+    return new Promise(resolve => {
+        let tries = 0;
+        const check = () => {
+            if ((element.clientWidth > 0 && element.clientHeight > 0) || tries++ > 60) {
+                resolve();
+            } else {
+                requestAnimationFrame(check);
+            }
+        };
+        check();
+    });
 }
 
 // ---- Geometrie / Farben -------------------------------------------------
@@ -163,18 +190,33 @@ function defineLayer() {
         },
         onAdd(map) {
             this._map = map;
-            const canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-zoom-hide');
+            // Bei aktiver Zoom-Animation als „leaflet-zoom-animated" markieren und auf zoomanim
+            // reagieren, damit das Canvas WÄHREND des Zoomens mitskaliert. Sonst „schwebt" die
+            // Strecke (Canvas-Overlay) auf Touch-Geräten und springt erst beim Loslassen zurück.
+            const animated = map.options.zoomAnimation && L.Browser.any3d;
+            const canvas = L.DomUtil.create('canvas', 'heat-canvas leaflet-layer leaflet-zoom-' + (animated ? 'animated' : 'hide'));
             canvas.style.position = 'absolute';
             canvas.style.pointerEvents = 'none';
             this._canvas = canvas;
             map.getPanes().overlayPane.appendChild(canvas);
-            map.on('moveend zoomend resize', this._reset, this);
+            map.on('moveend resize', this._reset, this);
+            if (animated) {
+                map.on('zoomanim', this._animateZoom, this);
+            }
             this._reset();
             return this;
         },
         onRemove(map) {
-            map.off('moveend zoomend resize', this._reset, this);
+            map.off('moveend resize', this._reset, this);
+            map.off('zoomanim', this._animateZoom, this);
             L.DomUtil.remove(this._canvas);
+        },
+        _animateZoom(e) {
+            // Canvas per CSS-Transform mit der Zoom-Animation mitziehen (Muster wie Leaflet.heat
+            // / Leaflets eigener Canvas-Renderer). _reset (auf moveend) zeichnet danach scharf neu.
+            const scale = this._map.getZoomScale(e.zoom);
+            const offset = this._map._getCenterOffset(e.center)._multiplyBy(-scale).subtract(this._map._getMapPanePos());
+            L.DomUtil.setTransform(this._canvas, offset, scale);
         },
         _reset() {
             const size = this._map.getSize();
@@ -294,23 +336,45 @@ function showRunPopup(map, e, runs) {
 
 // ---- Öffentliche API ----------------------------------------------------
 
-export async function render(elementId, runs, layer) {
+export async function render(elementId, runs, layer, focus) {
     await ensureLeaflet();
     defineLayer();
 
     const element = document.getElementById(elementId);
     if (!element) return;
 
+    // Erst bauen, wenn der Container Maße hat – sonst schwarze Karte beim ersten Render.
+    await waitForSize(element);
+
     if (element._heat?.map) {
+        element._heat.ro?.disconnect();
         element._heat.map.remove();
     }
 
     const map = L.map(element, { preferCanvas: true }).setView([53.55, 9.99], 11); // Default: Hamburg
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-        maxZoom: 20,
-        subdomains: 'abcd',
-        attribution: '© OpenStreetMap, © CARTO'
-    }).addTo(map);
+    // Lokaler Kachel-Proxy (siehe /tiles-Endpoint): das offline iPad bekommt die Karte vom
+    // LAN-Server, der sie online lädt + cached. Keine externe CDN-Abhängigkeit mehr.
+    const baseLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png', {
+        maxZoom: 19, // OSM-Kacheln gibt es bis Zoom 19
+        attribution: '© OpenStreetMap'
+    });
+
+    // Beim ersten Schwung scheitern manche Kacheln (Anbieter drosselt) → gezielt und gestaffelt
+    // erneut anfragen, damit sich die Lücken OHNE manuelles Neuladen von selbst füllen. Der
+    // ?r=-Parameter umgeht den Negativ-Cache des Browsers; der Proxy ignoriert ihn.
+    baseLayer.on('tileerror', e => {
+        const img = e.tile;
+        const attempt = (img._retry || 0) + 1;
+        if (attempt > 4 || !e.coords) {
+            return;
+        }
+        img._retry = attempt;
+        setTimeout(() => {
+            img.src = `/tiles/${e.coords.z}/${e.coords.x}/${e.coords.y}.png?r=${attempt}`;
+        }, 700 * attempt);
+    });
+
+    baseLayer.addTo(map);
 
     const data = Array.isArray(runs) ? runs.filter(r => r && Array.isArray(r.pts) && r.pts.length > 1) : [];
     const overlay = new HeatCanvasLayer(data, layer || 'heat').addTo(map);
@@ -323,8 +387,28 @@ export async function render(elementId, runs, layer) {
     for (const run of data) {
         for (const point of run.pts) bounds.extend(point);
     }
-    if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [24, 24] });
+
+    // Bei In-App-Navigation hat der Container beim Init evtl. noch nicht die endgültige Größe –
+    // Leaflet zeigt dann eine leere/schwarze Karte mit nicht geladenen Kacheln. Nach dem Layout
+    // neu vermessen (invalidateSize) und Ausschnitt setzen; mehrfach, um Timing-Fenster abzudecken.
+    // Mit focus (Gesamt-Ansicht) auf den Heimat-Standort zentrieren statt über alle Läufe zu passen.
+    const fit = () => {
+        map.invalidateSize();
+        if (focus) {
+            map.setView([focus.lat, focus.lng], focus.zoom);
+        } else if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [24, 24] });
+        }
+    };
+    fit();
+    requestAnimationFrame(fit);
+
+    // Container-Größe kann sich nach dem Init noch ändern (spät angewandtes CSS, Layout nach
+    // Navigation) – dann die Karte zuverlässig neu vermessen + einpassen.
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => fit());
+        ro.observe(element);
+        element._heat.ro = ro;
     }
 }
 
@@ -340,6 +424,7 @@ export function setLayer(elementId, layer) {
 export function dispose(elementId) {
     const element = document.getElementById(elementId);
     if (element && element._heat?.map) {
+        element._heat.ro?.disconnect();
         element._heat.map.remove();
         element._heat = null;
     }

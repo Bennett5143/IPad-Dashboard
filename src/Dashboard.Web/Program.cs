@@ -9,6 +9,7 @@ using Dashboard.Infrastructure.Quotes;
 using Dashboard.Infrastructure.Seeding;
 using Dashboard.Infrastructure.Status;
 using Dashboard.Infrastructure.Strava;
+using Dashboard.Infrastructure.Tiles;
 using Dashboard.Infrastructure.Time;
 using Dashboard.Infrastructure.Weather;
 using Dashboard.Infrastructure.Whoop;
@@ -191,6 +192,20 @@ try
         ? new LinuxSystemMetricsProvider()
         : new NullSystemMetricsProvider());
 
+    // Karten-Kachel-Proxy: Das bewusst offline gehaltene Kiosk-iPad holt Kacheln nur vom
+    // LAN-Server, der sie online nachlädt und auf Platte cached (Sektion „Tiles").
+    var tileOptions = builder.Configuration
+        .GetSection(TileOptions.SectionName)
+        .Get<TileOptions>() ?? new TileOptions();
+
+    builder.Services.Configure<TileOptions>(builder.Configuration.GetSection(TileOptions.SectionName));
+    builder.Services.Configure<MapOptions>(builder.Configuration.GetSection(MapOptions.SectionName));
+    builder.Services.AddHttpClient<TileProvider>(http =>
+    {
+        http.Timeout = TimeSpan.FromSeconds(15);
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd(tileOptions.UserAgent);
+    });
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -303,6 +318,58 @@ try
         }
 
         return Results.Redirect("/");
+    });
+
+    // Karten-Kachel-Proxy-Endpoint: liefert Kacheln aus dem lokalen Cache bzw. lädt sie online
+    // nach. Slippy-Map-Schema {z}/{x}/{y}.png; Leaflet zeigt eine fehlende Kachel einfach nicht.
+    app.MapGet("/tiles/{z:int}/{x:int}/{y:int}.png", async (
+        int z, int x, int y, TileProvider tiles, HttpContext context, CancellationToken ct) =>
+    {
+        var bytes = await tiles.GetTileAsync(z, x, y, ct);
+        if (bytes is null)
+        {
+            // Fehlversuch NICHT cachen → der nächste Map-Load fragt die Kachel erneut an.
+            context.Response.Headers.CacheControl = "no-store";
+            return Results.NotFound();
+        }
+
+        context.Response.Headers.CacheControl = "public, max-age=2592000"; // 30 Tage im Client-Cache
+        return Results.File(bytes, "image/png");
+    });
+
+    // Cache vorwärmen: lädt ein Gebiet (Bounding-Box × Zoomstufen) einmalig gedrosselt in den
+    // Cache, damit die Karte danach auch offline lückenlos und sofort ist. Läuft im Hintergrund;
+    // Fortschritt im Server-Log. Mengen-Schranke gegen versehentlich riesige Anfragen.
+    app.MapGet("/tiles/warm", (
+        double minLat, double minLng, double maxLat, double maxLng, int minZoom, int maxZoom,
+        IServiceScopeFactory scopeFactory, ILoggerFactory loggerFactory) =>
+    {
+        if (minZoom < 0 || maxZoom > 19 || minZoom > maxZoom || minLat >= maxLat || minLng >= maxLng)
+        {
+            return Results.BadRequest("Ungültige Parameter (Zoom 0–19, minZoom ≤ maxZoom, min < max).");
+        }
+
+        var count = TileProvider.CountTiles(minLat, minLng, maxLat, maxLng, minZoom, maxZoom);
+        if (count > 200_000)
+        {
+            return Results.BadRequest($"Zu viele Kacheln ({count:N0}). Kleinere Fläche oder weniger Zoom wählen.");
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var provider = scope.ServiceProvider.GetRequiredService<TileProvider>();
+                await provider.WarmAsync(minLat, minLng, maxLat, maxLng, minZoom, maxZoom, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                loggerFactory.CreateLogger("TileWarm").LogWarning(ex, "Tile-Warmup abgebrochen.");
+            }
+        });
+
+        return Results.Ok($"Warmup gestartet: ~{count:N0} Kacheln. Fortschritt im Server-Log.");
     });
 
     // Configure the HTTP request pipeline.

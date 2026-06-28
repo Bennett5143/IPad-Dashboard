@@ -1,0 +1,35 @@
+/* Achsen-Rahmen: Y-Beschriftung als kleine Zeile über der Kurve, X-Beschriftung zentriert
+   darunter. Bewusst horizontal (nicht gedreht) – gedrehte Labels würden die nur ~36 px hohen
+   Sparklines überragen und sind am Kiosk schlechter lesbar. */
+.chart-frame {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.chart-y-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.chart-area {
+    min-width: 0;
+}
+
+/* Start/Ende-Werte direkt unter der Kurve (z. B. min/max). */
+.chart-range {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.chart-x-label {
+    margin-top: var(--space-1);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}

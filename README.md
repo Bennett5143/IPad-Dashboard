@@ -72,6 +72,14 @@ Globale Design-Tokens (Farben, Spacing-Scale, Typografie) liegen als CSS
 Custom Properties in `wwwroot/app.css`. Komponenten-spezifisches Styling
 nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
 
+Die Auswertungen auf den Unterseiten sind selbsterklärend: jede (nicht triviale)
+Statistik ist als Ganzes antippbar (`Components/Explainable.razor`) und öffnet ein
+zentriertes Popup mit der Statistik in groß plus sachlicher Erklärung (was man sieht,
+Grundlage, wofür, Achsen). Die Texte stehen zentral und testbar im `MetricCatalog`;
+das große Diagramm im Popup bekommt über `ChartFrame` X/Y-Achsen. Das Overlay wird
+bewusst außerhalb der Karte gerendert, da deren `backdrop-filter` sonst die
+Zentrierung eines `position:fixed`-Overlays bricht.
+
 ## Status
 
 - ✅ **Phasen 0–3:** Repo, Dev-Umgebung, CI/Coverage/Branch-Protection/Dependabot, Dashboard-Skelett
@@ -85,9 +93,10 @@ nutzt Blazor's CSS Isolation via `*.razor.css`-Dateien.
   - Analytics auf `/whoop`: Tageszeit-Effektivität, Schlafenszeiten, Trainingslast (ACWR),
     aerobe Fitness-Kurve, Recovery-Treiber
   - Lauf-Vertiefung: klickbare Heatmap, `/runs` Liste + Detailprofile, Year in Review,
-    Routen-Erkennung, Best Efforts
+    Routen-Erkennung (Runde antippbar → auf der Heatmap ansehbar), Best Efforts
   - Habits: `/habits`-Jahres-Heatmap + Streaks · Observability: `/status` + Log-Ringpuffer
   - Quick-Wins: Liga-Tabelle & Wochenkalender auf Tap, Wetter-Extras, Quer-Navigation
+  - Erklärbare Metriken: Statistik antippen → Popup mit großer Ansicht, Achsen und sachlicher Erklärung
 - ⬜ **Offen:** Container/Pi-Deployment (Phase 5) & Kiosk-Hardening (Phase 6); Kachel-Redesign (Phase 14.1)
 
 > Anforderungen, Phasenplan und detaillierte Feature-Roadmap werden außerhalb des Repos
@@ -239,6 +248,13 @@ freundlich „nicht verfügbar" (FA-6.05).
 GPS-Tracks der Läufe werden via offizieller Strava-API (OAuth2) in die lokale
 DB synchronisiert und als PostGIS-`geometry(LineString,4326)` gespeichert; die
 Heatmap unter `/heatmap` rendert sie clientseitig mit Leaflet.
+
+Da das Kiosk-iPad bewusst offline (nur LAN) betrieben wird, ist **Leaflet selbst
+gehostet** (`wwwroot/lib/leaflet/`) und die Karten-Kacheln laufen über einen
+**server-seitigen Proxy mit Platten-Cache** (Endpoint `/tiles/{z}/{x}/{y}.png`,
+`Infrastructure/Tiles/TileProvider`, Sektion `Tiles`) — das iPad spricht nur mit
+dem LAN-Server, der die Kacheln online nachlädt und cached. Eine Runde auf `/runs`
+ist antippbar und öffnet die Heatmap gefiltert auf diese Route (`/heatmap?cluster=N`).
 
 **Voraussetzung DB:** PostGIS — `docker-compose.yml` nutzt dafür das
 `imresamu/postgis`-Image (Multi-Arch-Fork mit amd64 **und** arm64) statt

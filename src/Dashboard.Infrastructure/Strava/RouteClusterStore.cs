@@ -134,6 +134,16 @@ public sealed class RouteClusterStore : IRouteClusterStore
         return cluster is null ? null : new RouteClusterInfo(cluster.Id, cluster.Name);
     }
 
+    public async Task<IReadOnlyList<long>> GetRunIdsForClusterAsync(int clusterId, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct);
+        return await db.Set<RunActivityEntity>().AsNoTracking()
+            .Where(e => e.RouteClusterId == clusterId)
+            .OrderBy(e => e.StartUtc)
+            .Select(e => e.Id)
+            .ToListAsync(ct);
+    }
+
     private static async Task MarkAsync(
         DashboardDbContext db, long runId, int? clusterId, DateTimeOffset whenUtc, CancellationToken ct)
     {

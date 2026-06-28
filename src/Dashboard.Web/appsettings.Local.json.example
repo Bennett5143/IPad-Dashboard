@@ -2,13 +2,37 @@
 //
 // Kopieren nach  appsettings.Local.json  (gitignored) und mit den eigenen Werten füllen.
 // Wird umgebungsunabhängig geladen (auch in Production / auf dem Raspberry Pi) und über-
-// schreibt die Werte aus appsettings.json. So bleiben private Daten (z. B. die konkreten
-// HVV-Haltestellen in deiner Nähe oder dein Wetter-Standort) aus dem öffentlichen Repo.
-//
-// MasterId einer Haltestelle ermittelt man über den HVV-checkName-Endpoint bzw. den
-// Stations-Generator; Lines filtert nach Linie (+ optional Richtung als Teilstring).
-// Leeres "Lines" = alle Abfahrten der Haltestelle. Leeres "Stations" = HVV-Kachel bleibt leer.
+// schreibt die Werte aus appsettings.json. So bleiben private/standortbezogene Daten
+// (Wetter-Standort, Karten-Zentrierung, beobachtete Vereine, HVV-Haltestellen) aus dem
+// öffentlichen Repo. Die Werte unten sind Platzhalter – durch eigene ersetzen.
 {
+  // Wetter-Standort (Dezimalgrad). Ohne Angabe greift ein generischer Default im Code.
+  "Weather": {
+    "Latitude": 0.0,
+    "Longitude": 0.0
+  },
+
+  // Start-Zentrierung der Lauf-Heatmap = dein Haupt-Laufgebiet (Dezimalgrad) + Zoom (3–19).
+  "Map": {
+    "Latitude": 0.0,
+    "Longitude": 0.0,
+    "Zoom": 13
+  },
+
+  // Beobachtete Fußball-Vereine (football-data.org-IDs/-Codes; nur Free-Tier-Wettbewerbe).
+  // Der ApiKey gehört in User-Secrets (Header X-Auth-Token), NICHT hierher.
+  "Football": {
+    "RecentCount": 3,
+    "UpcomingCount": 3,
+    "Teams": [
+      { "Name": "Verein A", "TeamId": 0, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
+      { "Name": "Verein B", "TeamId": 0, "CompetitionCode": "BL1", "Competitions": [ "BL1" ] }
+    ]
+  },
+
+  // HVV-Haltestellen in deiner Nähe. MasterId über den HVV-checkName-Endpoint bzw. den
+  // Stations-Generator; "Lines" filtert nach Linie (+ optional Richtung als Teilstring).
+  // Leeres "Lines" = alle Abfahrten. Leeres/fehlendes "Stations" = HVV-Kachel bleibt leer.
   "Hvv": {
     "Stations": [
       {
@@ -20,11 +44,5 @@
         ]
       }
     ]
-  },
-
-  // Optional: eigenen Wetter-Standort hier überschreiben statt in appsettings.json.
-  // "Weather": {
-  //   "Latitude": 53.4600,
-  //   "Longitude": 9.9830
-  // }
+  }
 }
