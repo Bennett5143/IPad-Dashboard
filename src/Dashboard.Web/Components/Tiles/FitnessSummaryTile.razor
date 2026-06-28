@@ -2,8 +2,8 @@
 @inject WhoopState WhoopState
 @inject HabitTrackingService HabitService
 
-@* Fitness-Summary: WHOOP Recovery (Hero) + HRV·Ruhepuls + Strain/Schlaf + heute gemachte
-   Habits. Ganze Kachel tippbar → /whoop (Insights-Hub). *@
+@* Fitness-Summary: vier Kennzahlen als Fortschritts-Kreise – WHOOP Recovery / Schlaf /
+   Strain + heute gemachte Habits. Ganze Kachel tippbar → /whoop (Insights-Hub). *@
 <a class="tile-tap @CssClass" href="/whoop">
     <Tile Title="Fitness">
         <Icon>
@@ -11,35 +11,18 @@
         </Icon>
         <ChildContent>
             <div class="fitness-summary">
-                <div class="fitness-recovery @WhoopFormatter.RecoveryCss(_whoop?.Recovery?.Level)">
-                    <span class="fitness-recovery-value">@WhoopFormatter.RecoveryScore(_whoop?.Recovery)</span>
-                    <span class="fitness-recovery-label">Recovery</span>
+                <div class="fitness-rings">
+                    <MetricRing Label="Recovery" Center="@WhoopFormatter.RecoveryScore(_whoop?.Recovery)"
+                                Fraction="@RecoveryFraction" ColorClass="@RecoveryColor" />
+                    <MetricRing Label="Schlaf" Center="@SleepText" Fraction="@SleepFraction" />
+                    <MetricRing Label="Strain" Center="@WhoopFormatter.Strain(_whoop?.DayStrain)" Fraction="@StrainFraction" />
+                    <MetricRing Label="Habits" Center="@HabitsText" Fraction="@HabitsFraction" />
                 </div>
 
-                @if (_whoop?.Recovery is not null)
-                {
-                    <div class="fitness-vitals">
-                        <span>@WhoopFormatter.Hrv(_whoop.Recovery)</span>
-                        <span aria-hidden="true">·</span>
-                        <span>@WhoopFormatter.RestingHr(_whoop.Recovery)</span>
-                    </div>
-                }
-
-                @if (_whoop is not null)
-                {
-                    <dl class="fitness-metrics">
-                        <div><dt>Strain</dt><dd>@WhoopFormatter.Strain(_whoop.DayStrain)</dd></div>
-                        <div><dt>Schlaf</dt><dd>@WhoopFormatter.Sleep(_whoop.Sleep)</dd></div>
-                    </dl>
-                }
-                else
+                @if (_whoop is null)
                 {
                     <small class="fitness-hint">WHOOP nicht verbunden</small>
                 }
-
-                <dl class="fitness-habits">
-                    <div><dt>Habits heute</dt><dd>@_habitsDone / @_habitsTotal</dd></div>
-                </dl>
             </div>
         </ChildContent>
     </Tile>
@@ -87,6 +70,27 @@
             _reloadingHabits = false;
         }
     }
+
+    // Recovery 0–100 %, farbcodiert nach WHOOP-Ampel.
+    private double RecoveryFraction => _whoop?.Recovery is { } r ? r.ScorePercent / 100.0 : 0;
+    private string RecoveryColor => _whoop?.Recovery?.Level switch
+    {
+        WhoopRecoveryLevel.High => "is-high",
+        WhoopRecoveryLevel.Medium => "is-medium",
+        WhoopRecoveryLevel.Low => "is-low",
+        _ => string.Empty
+    };
+
+    // Schlaf-Performance 0–100 %.
+    private string SleepText => _whoop?.Sleep is { } s ? $"{s.PerformancePercent}%" : "–";
+    private double SleepFraction => _whoop?.Sleep is { } s ? s.PerformancePercent / 100.0 : 0;
+
+    // Day-Strain auf der WHOOP-Skala 0–21.
+    private double StrainFraction => _whoop?.DayStrain is { } d ? Math.Clamp(d / 21.0, 0, 1) : 0;
+
+    // Heute abgehakte Habits / gesamt.
+    private string HabitsText => $"{_habitsDone}/{_habitsTotal}";
+    private double HabitsFraction => _habitsTotal > 0 ? (double)_habitsDone / _habitsTotal : 0;
 
     public void Dispose() => WhoopState.Changed -= OnWhoopChanged;
 }
