@@ -32,21 +32,40 @@
 
   // HVV-Haltestellen in deiner Nähe. MasterId über den HVV-checkName-Endpoint bzw. den
   // Stations-Generator; "Lines" filtert nach Linie (+ optional Richtung als Teilstring).
-  // Leeres "Lines" = alle Abfahrten. Leeres/fehlendes "Stations" = HVV-Kachel bleibt leer.
-  // "Group": Linien gleicher Gruppe teilen sich ein Kontingent; "DeparturesPerGroup" =
-  // wie viele Abfahrten je Gruppe behalten werden (1 = nur die nächste je Gruppe).
-  // Die Summary-Kachel zeigt die nächste je Linie; die Detailseite /hvv die volle Liste.
+  // "Group": Linien/Richtungen gleicher Gruppe teilen sich ein Kontingent; "DeparturesPerGroup"
+  // = wie viele Abfahrten je Gruppe behalten werden. Für BEIDE Endstationen einer Linie je
+  // Richtung einen eigenen Filter mit eigener Group anlegen (sonst kann NextPerGroup eine
+  // Richtung verdrängen). Die Summary-Kachel führt ALLE Stationen zusammen und zeigt die
+  // nächste Abfahrt je (Linie + Richtung), soonest-first (max. 5); /hvv die vollen Listen.
   "Hvv": {
     "Stations": [
       {
-        "Name": "Beispielhaltestelle",
+        "Name": "Beispielhaltestelle A",
         "MasterId": "Master:00000",
         "City": "Hamburg",
-        "DeparturesPerGroup": 2,
+        "DeparturesPerGroup": 1,
         "Lines": [
-          { "Line": "42",  "Group": "Bus 42" },
+          { "Line": "42", "Direction": "Hafen Harburg",   "Group": "42 Hafen" },
+          { "Line": "42", "Direction": "Harburg Rathaus", "Group": "42 Rathaus" }
+        ]
+      },
+      {
+        "Name": "Beispielhaltestelle B",
+        "MasterId": "Master:00001",
+        "City": "Hamburg",
+        "DeparturesPerGroup": 1,
+        "Lines": [
           { "Line": "143", "Group": "143/443" },
           { "Line": "443", "Group": "143/443" }
+        ]
+      },
+      {
+        "Name": "Beispielbahnhof",
+        "MasterId": "Master:00002",
+        "City": "Hamburg",
+        "DeparturesPerGroup": 1,
+        "Lines": [
+          { "Line": "S3", "Direction": "Pinneberg" }
         ]
       }
     ]
