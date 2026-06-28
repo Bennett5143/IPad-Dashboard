@@ -33,14 +33,20 @@
   // HVV-Haltestellen in deiner Nähe. MasterId über den HVV-checkName-Endpoint bzw. den
   // Stations-Generator; "Lines" filtert nach Linie (+ optional Richtung als Teilstring).
   // Leeres "Lines" = alle Abfahrten. Leeres/fehlendes "Stations" = HVV-Kachel bleibt leer.
+  // "Group": Linien gleicher Gruppe teilen sich ein Kontingent; "DeparturesPerGroup" =
+  // wie viele Abfahrten je Gruppe behalten werden (1 = nur die nächste je Gruppe).
+  // Die Summary-Kachel zeigt die nächste je Linie; die Detailseite /hvv die volle Liste.
   "Hvv": {
     "Stations": [
       {
         "Name": "Beispielhaltestelle",
         "MasterId": "Master:00000",
         "City": "Hamburg",
+        "DeparturesPerGroup": 2,
         "Lines": [
-          { "Line": "42", "Direction": "Zielrichtung" }
+          { "Line": "42",  "Group": "Bus 42" },
+          { "Line": "143", "Group": "143/443" },
+          { "Line": "443", "Group": "143/443" }
         ]
       }
     ]

@@ -1,0 +1,83 @@
+@implements IDisposable
+@inject HvvState HvvState
+
+@* Schlanke HVV-Summary für die Hauptseite: nächste Abfahrt je Linie der Haupt-Haltestelle.
+   Ganze Kachel tippbar → /hvv (alle Stationen, volle Liste). *@
+<a class="tile-tap @CssClass" href="/hvv">
+    <Tile Title="@_title">
+        <Icon>
+            <span class="hvv-summary-emoji" aria-hidden="true">🚏</span>
+        </Icon>
+        <ChildContent>
+            <div class="hvv-summary">
+                @if (_departures is null)
+                {
+                    <p class="hvv-summary-empty">Abfahrten gerade nicht verfügbar.</p>
+                }
+                else if (_departures.Count == 0)
+                {
+                    <p class="hvv-summary-empty">Keine Abfahrten im Zeitfenster.</p>
+                }
+                else
+                {
+                    <ul class="hvv-summary-list">
+                        @foreach (var d in _departures)
+                        {
+                            var badge = HvvFormatter.DelayBadge(d);
+                            <li>
+                                <span class="hvv-summary-line">@d.LineName</span>
+                                <span class="hvv-summary-time">@HvvFormatter.Time(d)</span>
+                                @if (badge is not null)
+                                {
+                                    <span class="hvv-summary-delay">@badge</span>
+                                }
+                                else if (!d.HasLiveData)
+                                {
+                                    <span class="hvv-summary-plan">Plan</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </ChildContent>
+    </Tile>
+</a>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+
+    private string _title = "Abfahrten";
+    private IReadOnlyList<Departure>? _departures;
+
+    protected override void OnInitialized()
+    {
+        HvvState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        var snapshot = HvvState.Current;
+        var board = snapshot is { Stations.Count: > 0 } ? snapshot.Stations[0] : null;
+        _title = board?.StationName ?? "Abfahrten";
+
+        // Aus der (bereits nach Gruppe begrenzten) Tafel die nächste Abfahrt je Linie:
+        // die Tafel ist zeitsortiert, also genügt der erste Treffer je Liniennamen.
+        _departures = board is null || !board.Available
+            ? null
+            : board.Departures
+                .GroupBy(d => d.LineName, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .OrderBy(d => d.ExpectedTime)
+                .ToList();
+    }
+
+    public void Dispose() => HvvState.Changed -= OnChanged;
+}

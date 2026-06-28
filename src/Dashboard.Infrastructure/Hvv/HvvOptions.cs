@@ -38,6 +38,10 @@ public sealed class HvvStationConfig
     /// <summary>Welche Linien/Richtungen angezeigt werden. Leer = alle Abfahrten der Haltestelle.</summary>
     public IReadOnlyList<HvvLineFilter> Lines { get; init; } = [];
 
+    /// <summary>Bei gesetzten <see cref="Lines"/>: wie viele Abfahrten je Gruppe behalten werden
+    /// (z. B. 1 = nur die nächste je Linie/Gruppe). Ohne Filter ungenutzt.</summary>
+    public int DeparturesPerGroup { get; init; } = 2;
+
     public int MaxList { get; init; } = 40;
     public int MaxTimeOffsetMinutes { get; init; } = 120;
 }
@@ -52,4 +56,9 @@ public sealed class HvvLineFilter
 {
     public string Line { get; init; } = string.Empty;
     public string Direction { get; init; } = string.Empty;
+
+    /// <summary>Optionale Gruppe für „nächste N je Gruppe". Mehrere Linien mit gleicher Gruppe
+    /// teilen sich ein Kontingent (z. B. „143" und „443" → Gruppe „143/443"). Leer = die Linie
+    /// selbst ist die Gruppe.</summary>
+    public string Group { get; init; } = string.Empty;
 }

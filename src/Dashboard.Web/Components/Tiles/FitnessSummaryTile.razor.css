@@ -1,0 +1,67 @@
+.fitness-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.fitness-recovery {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+}
+
+.fitness-recovery-value {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    line-height: var(--line-height-tight);
+    color: var(--color-fg-primary);
+}
+
+.fitness-recovery-label {
+    color: var(--color-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: var(--font-size-sm);
+}
+
+.fitness-recovery.recovery-high .fitness-recovery-value {
+    color: var(--color-success);
+    text-shadow: var(--glow-success);
+}
+
+.fitness-recovery.recovery-medium .fitness-recovery-value {
+    color: var(--color-warning);
+}
+
+.fitness-recovery.recovery-low .fitness-recovery-value {
+    color: var(--color-error);
+}
+
+.fitness-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+}
+
+.fitness-metrics div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.fitness-metrics dt {
+    color: var(--color-fg-muted);
+}
+
+.fitness-metrics dd {
+    margin: 0;
+    color: var(--color-fg-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.fitness-hint {
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-sm);
+}

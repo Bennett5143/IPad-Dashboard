@@ -77,29 +77,40 @@ public sealed class HvvDepartureClient : IHvvProvider
 
         var serverTime = HvvServerTimeParser.Parse(dto.Time.Date, dto.Time.Time, BerlinTz);
 
-        var departures = dto.Departures
+        var ordered = dto.Departures
             .OrderBy(d => d.TimeOffset)
             .Select(d => MapDeparture(d, serverTime))
-            .Where(d => Matches(d, station.Lines))
-            .Take(_options.MaxDepartures)
             .ToList();
+
+        // Ohne Linien-Filter: alle Abfahrten bis zum globalen Deckel. Mit Filtern: je Gruppe
+        // (Linie bzw. konfigurierte Gruppe) die nächsten N – so verdrängt eine häufige Linie
+        // nicht die übrigen (z. B. „nächster Bus 42 UND nächster 143/443").
+        var departures = station.Lines.Count == 0
+            ? ordered.Take(_options.MaxDepartures).ToList()
+            : DepartureSelector
+                .NextPerGroup(ordered, d => GroupKeyFor(d, station.Lines), station.DeparturesPerGroup)
+                .Take(_options.MaxDepartures)
+                .ToList();
 
         return new StationBoard(station.Name, Available: true, departures);
     }
 
-    // Leere Filterliste → alle Abfahrten; sonst muss Linie übereinstimmen und (falls gesetzt)
-    // der Richtungstext den konfigurierten Teilstring enthalten.
-    private static bool Matches(Departure departure, IReadOnlyList<HvvLineFilter> lines)
+    // Bestimmt die Gruppe einer Abfahrt anhand der ersten passenden Filter-Regel (Linie +
+    // optional Richtungs-Teilstring). null = keine Regel passt → Abfahrt verwerfen. Leere
+    // Gruppe in der Regel ⇒ die Linie selbst ist die Gruppe.
+    private static string? GroupKeyFor(Departure departure, IReadOnlyList<HvvLineFilter> lines)
     {
-        if (lines.Count == 0)
+        foreach (var f in lines)
         {
-            return true;
+            if (string.Equals(departure.LineName, f.Line, StringComparison.OrdinalIgnoreCase)
+                && (string.IsNullOrWhiteSpace(f.Direction)
+                    || departure.Direction.Contains(f.Direction, StringComparison.OrdinalIgnoreCase)))
+            {
+                return string.IsNullOrWhiteSpace(f.Group) ? f.Line : f.Group;
+            }
         }
 
-        return lines.Any(f =>
-            string.Equals(departure.LineName, f.Line, StringComparison.OrdinalIgnoreCase)
-            && (string.IsNullOrWhiteSpace(f.Direction)
-                || departure.Direction.Contains(f.Direction, StringComparison.OrdinalIgnoreCase)));
+        return null;
     }
 
     private static Departure MapDeparture(HvvDepartureDto dto, DateTimeOffset serverTime)

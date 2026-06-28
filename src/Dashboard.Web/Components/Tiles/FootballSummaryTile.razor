@@ -1,0 +1,17 @@
+@* Platzhalter bis Slice 15.6 (Fußball-Ausbau). Bewusst inert – kein State, nicht tippbar.
+   Wird in 15.6 durch die echte Summary (Wochen-Spiele-Zähler + Fabrizio-Alert) ersetzt. *@
+<Tile CssClass="@CssClass" Title="Fußball">
+    <Icon>
+        <span aria-hidden="true">⚽</span>
+    </Icon>
+    <ChildContent>
+        <div class="summary-placeholder">
+            <span class="summary-placeholder-text">Spiel-Übersicht folgt</span>
+            <span class="summary-placeholder-sub">Modul-Ausbau · 15.6</span>
+        </div>
+    </ChildContent>
+</Tile>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+}
