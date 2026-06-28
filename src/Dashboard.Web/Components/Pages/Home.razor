@@ -4,6 +4,9 @@
 
 <PageTitle>Dashboard</PageTitle>
 
+@* Schlanke Summary-Hauptseite: Header (Uhr/Zitat) + 5 Modul-Kacheln, jede zeigt nur das
+   Minimum und ist (bis auf die Platzhalter) tippbar → Detailseite. Football/Crypto sind
+   bewusst inerte Platzhalter, bis ihre Module (Slices 15.6 / 15.4) stehen. *@
 <div class="dashboard">
     <TileBoundary CssClass="area-header">
         <ClockTile CssClass="area-header" />
@@ -13,42 +16,23 @@
         <QuoteTile CssClass="area-quote" />
     </TileBoundary>
 
-    <TileBoundary CssClass="area-hvv1">
-        <HvvTile StationIndex="0" CssClass="area-hvv1" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-hvv2">
-        <HvvTile StationIndex="1" CssClass="area-hvv2" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-hvv3">
-        <HvvTile StationIndex="2" CssClass="area-hvv3" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-habits">
-        <HabitsTile CssClass="area-habits" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-football">
-        <FootballTile CssClass="area-football" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-whoop">
-        <WhoopTile CssClass="area-whoop" />
+    <TileBoundary CssClass="area-hvv">
+        <HvvSummaryTile CssClass="area-hvv" />
     </TileBoundary>
 
     <TileBoundary CssClass="area-weather">
-        <WeatherTile Variant="WeatherTile.WeatherVariant.Today"
-                     CssClass="area-weather" />
+        <WeatherSummaryTile CssClass="area-weather" />
     </TileBoundary>
 
-    <TileBoundary CssClass="area-hourly">
-        <WeatherTile Variant="WeatherTile.WeatherVariant.Hourly"
-                     CssClass="area-hourly" />
+    <TileBoundary CssClass="area-fitness">
+        <FitnessSummaryTile CssClass="area-fitness" />
     </TileBoundary>
 
-    <TileBoundary CssClass="area-tomorrow">
-        <WeatherTile Variant="WeatherTile.WeatherVariant.Tomorrow"
-                     CssClass="area-tomorrow" />
+    <TileBoundary CssClass="area-football">
+        <FootballSummaryTile CssClass="area-football" />
+    </TileBoundary>
+
+    <TileBoundary CssClass="area-crypto">
+        <CryptoSummaryTile CssClass="area-crypto" />
     </TileBoundary>
 </div>

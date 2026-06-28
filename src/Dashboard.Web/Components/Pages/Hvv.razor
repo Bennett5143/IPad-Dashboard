@@ -1,0 +1,42 @@
+@page "/hvv"
+@implements IDisposable
+@inject HvvState HvvState
+@rendermode InteractiveServer
+
+<PageTitle>Abfahrten</PageTitle>
+
+<h1 class="page-title">Abfahrten</h1>
+
+<div class="hvv-page">
+    @if (_count == 0)
+    {
+        <p class="hvv-page-empty">Keine Haltestellen konfiguriert.</p>
+    }
+    else
+    {
+        @for (var i = 0; i < _count; i++)
+        {
+            <HvvTile StationIndex="i" />
+        }
+    }
+</div>
+
+@code {
+    private int _count;
+
+    protected override void OnInitialized()
+    {
+        HvvState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState() => _count = HvvState.Current?.Stations.Count ?? 0;
+
+    public void Dispose() => HvvState.Changed -= OnChanged;
+}

@@ -1,0 +1,10 @@
+.hvv-page {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.hvv-page-empty {
+    color: var(--color-fg-muted);
+}
