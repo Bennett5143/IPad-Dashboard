@@ -6,6 +6,7 @@
 
 .hvv-summary-empty {
     color: var(--color-fg-muted);
+    font-style: italic;
 }
 
 .hvv-summary-list {
@@ -18,13 +19,18 @@
 }
 
 .hvv-summary-list li {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;   /* mode | line | direction | when */
     align-items: baseline;
     gap: var(--space-2);
     font-variant-numeric: tabular-nums;
 }
 
-.hvv-summary-line {
+.hvv-sum-mode {
+    font-size: var(--font-size-base);
+}
+
+.hvv-sum-line {
     font-family: var(--font-family-display);
     font-weight: var(--font-weight-semibold);
     color: var(--color-fg-primary);
@@ -35,19 +41,47 @@
     text-align: center;
 }
 
-.hvv-summary-time {
-    margin-left: auto;
+.hvv-sum-dir {
+    color: var(--color-fg-secondary);
+    min-width: 0;                 /* nötig: lässt die 1fr-Spalte schrumpfen → Ellipsis greift */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hvv-sum-when {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    justify-self: end;
+}
+
+.hvv-sum-when time {
     font-family: var(--font-family-display);
     font-size: var(--font-size-lg);
     color: var(--color-fg-primary);
 }
 
-.hvv-summary-delay {
-    color: var(--color-warning);
+.hvv-sum-delay {
     font-size: var(--font-size-sm);
+    color: var(--color-error);    /* wie die Detail-Kachel HvvTile */
 }
 
-.hvv-summary-plan {
+.hvv-sum-plan {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.hvv-summary-list li.is-planned {
+    color: var(--color-fg-secondary);
+}
+
+.hvv-summary-list li.is-planned .hvv-sum-when time {
+    font-weight: var(--font-weight-regular);
+}
+
+.hvv-sum-more {
+    margin-top: var(--space-1);
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
 }

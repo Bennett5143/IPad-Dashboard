@@ -2,8 +2,8 @@
 @inject WhoopState WhoopState
 @inject HabitTrackingService HabitService
 
-@* Schlanke Fitness-Summary: WHOOP Recovery/Strain/Schlaf + heute gemachte Habits.
-   Ganze Kachel tippbar → /whoop (Insights-Hub). *@
+@* Fitness-Summary: WHOOP Recovery (Hero) + HRV·Ruhepuls + Strain/Schlaf + heute gemachte
+   Habits. Ganze Kachel tippbar → /whoop (Insights-Hub). *@
 <a class="tile-tap @CssClass" href="/whoop">
     <Tile Title="Fitness">
         <Icon>
@@ -16,16 +16,30 @@
                     <span class="fitness-recovery-label">Recovery</span>
                 </div>
 
-                <dl class="fitness-metrics">
-                    <div><dt>Strain</dt><dd>@WhoopFormatter.Strain(_whoop?.DayStrain)</dd></div>
-                    <div><dt>Schlaf</dt><dd>@WhoopFormatter.Sleep(_whoop?.Sleep)</dd></div>
-                    <div><dt>Habits heute</dt><dd>@_habitsDone / @_habitsTotal</dd></div>
-                </dl>
+                @if (_whoop?.Recovery is not null)
+                {
+                    <div class="fitness-vitals">
+                        <span>@WhoopFormatter.Hrv(_whoop.Recovery)</span>
+                        <span aria-hidden="true">·</span>
+                        <span>@WhoopFormatter.RestingHr(_whoop.Recovery)</span>
+                    </div>
+                }
 
-                @if (_whoop is null)
+                @if (_whoop is not null)
+                {
+                    <dl class="fitness-metrics">
+                        <div><dt>Strain</dt><dd>@WhoopFormatter.Strain(_whoop.DayStrain)</dd></div>
+                        <div><dt>Schlaf</dt><dd>@WhoopFormatter.Sleep(_whoop.Sleep)</dd></div>
+                    </dl>
+                }
+                else
                 {
                     <small class="fitness-hint">WHOOP nicht verbunden</small>
                 }
+
+                <dl class="fitness-habits">
+                    <div><dt>Habits heute</dt><dd>@_habitsDone / @_habitsTotal</dd></div>
+                </dl>
             </div>
         </ChildContent>
     </Tile>
