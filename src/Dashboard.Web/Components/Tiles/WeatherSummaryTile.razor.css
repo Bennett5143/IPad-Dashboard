@@ -1,7 +1,7 @@
 .weather-summary {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-2);
 }
 
 .weather-summary-empty {
@@ -18,19 +18,39 @@
     font-size: var(--font-size-2xl);
 }
 
+.weather-summary-headline {
+    display: flex;
+    flex-direction: column;
+    line-height: var(--line-height-tight);
+    min-width: 0;
+}
+
 .weather-summary-temp {
     font-family: var(--font-family-display);
     font-size: var(--font-size-3xl);
     font-weight: 700;
-    line-height: var(--line-height-tight);
     color: var(--color-fg-primary);
     text-shadow: 0 0 16px rgba(58, 157, 99, 0.22);
 }
 
+.weather-summary-desc {
+    font-size: var(--font-size-base);
+    color: var(--color-fg-secondary);
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.weather-summary-feels {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
 .weather-summary-meta {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-1) var(--space-4);
     margin: 0;
 }
 
