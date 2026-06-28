@@ -1,0 +1,78 @@
+@implements IDisposable
+@inject WhoopState WhoopState
+@inject HabitTrackingService HabitService
+
+@* Schlanke Fitness-Summary: WHOOP Recovery/Strain/Schlaf + heute gemachte Habits.
+   Ganze Kachel tippbar → /whoop (Insights-Hub). *@
+<a class="tile-tap @CssClass" href="/whoop">
+    <Tile Title="Fitness">
+        <Icon>
+            <span class="fitness-summary-emoji" aria-hidden="true">💪</span>
+        </Icon>
+        <ChildContent>
+            <div class="fitness-summary">
+                <div class="fitness-recovery @WhoopFormatter.RecoveryCss(_whoop?.Recovery?.Level)">
+                    <span class="fitness-recovery-value">@WhoopFormatter.RecoveryScore(_whoop?.Recovery)</span>
+                    <span class="fitness-recovery-label">Recovery</span>
+                </div>
+
+                <dl class="fitness-metrics">
+                    <div><dt>Strain</dt><dd>@WhoopFormatter.Strain(_whoop?.DayStrain)</dd></div>
+                    <div><dt>Schlaf</dt><dd>@WhoopFormatter.Sleep(_whoop?.Sleep)</dd></div>
+                    <div><dt>Habits heute</dt><dd>@_habitsDone / @_habitsTotal</dd></div>
+                </dl>
+
+                @if (_whoop is null)
+                {
+                    <small class="fitness-hint">WHOOP nicht verbunden</small>
+                }
+            </div>
+        </ChildContent>
+    </Tile>
+</a>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+
+    private WhoopSnapshot? _whoop;
+    private int _habitsDone;
+    private int _habitsTotal;
+    private bool _reloadingHabits;
+
+    protected override async Task OnInitializedAsync()
+    {
+        WhoopState.Changed += OnWhoopChanged;
+        _whoop = WhoopState.Current;
+        await LoadHabitsAsync();
+    }
+
+    private void OnWhoopChanged() => _ = InvokeAsync(async () =>
+    {
+        _whoop = WhoopState.Current;
+        await LoadHabitsAsync();   // ein WHOOP-Refresh kann Habits automatisch füllen
+        StateHasChanged();
+    });
+
+    private async Task LoadHabitsAsync()
+    {
+        if (_reloadingHabits)
+        {
+            return;
+        }
+
+        _reloadingHabits = true;
+        try
+        {
+            var today = HabitService.GetCurrentLocalDate();
+            var summaries = await HabitService.GetSummaryForAsync(today);
+            _habitsDone = summaries.Count(s => s.IsDoneToday);
+            _habitsTotal = summaries.Count;
+        }
+        finally
+        {
+            _reloadingHabits = false;
+        }
+    }
+
+    public void Dispose() => WhoopState.Changed -= OnWhoopChanged;
+}

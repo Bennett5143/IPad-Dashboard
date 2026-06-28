@@ -1,0 +1,51 @@
+.weather-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.weather-summary-empty {
+    color: var(--color-fg-muted);
+}
+
+.weather-summary-now {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.weather-summary-glyph {
+    font-size: var(--font-size-2xl);
+}
+
+.weather-summary-temp {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    line-height: var(--line-height-tight);
+    color: var(--color-fg-primary);
+    text-shadow: 0 0 16px rgba(58, 157, 99, 0.22);
+}
+
+.weather-summary-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+}
+
+.weather-summary-meta div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.weather-summary-meta dt {
+    color: var(--color-fg-muted);
+}
+
+.weather-summary-meta dd {
+    margin: 0;
+    color: var(--color-fg-secondary);
+    font-variant-numeric: tabular-nums;
+}

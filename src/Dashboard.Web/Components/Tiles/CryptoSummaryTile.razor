@@ -1,0 +1,17 @@
+@* Platzhalter bis Slice 15.4 (Crypto-Modul). Bewusst inert – kein State, nicht tippbar.
+   Wird in 15.4 durch die echte Summary (BTC-Preis + 24h-% + Bullish/Bearish) ersetzt. *@
+<Tile CssClass="@CssClass" Title="Krypto">
+    <Icon>
+        <span aria-hidden="true">₿</span>
+    </Icon>
+    <ChildContent>
+        <div class="summary-placeholder">
+            <span class="summary-placeholder-text">Kurs-Übersicht folgt</span>
+            <span class="summary-placeholder-sub">Neues Modul · 15.4</span>
+        </div>
+    </ChildContent>
+</Tile>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+}

@@ -200,3 +200,44 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     box-shadow: var(--glow-accent);
 }
 .dialog-actions button:disabled { opacity: 0.6; cursor: default; }
+
+/* ============================================================
+   Layout-Utilities (themeneutral)
+   ============================================================ */
+
+/* Ganze Kachel als Tap-Ziel: Anchor füllt die Grid-Zelle, das Tile darin 100 % Höhe. */
+.tile-tap {
+    display: block;
+    height: 100%;
+    min-height: 0;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Inerter Platzhalter in Summary-Kacheln, deren Modul noch ausgebaut wird. */
+.summary-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    height: 100%;
+    text-align: center;
+    color: var(--color-fg-muted);
+}
+.summary-placeholder-text {
+    font-family: var(--font-family-display);
+    letter-spacing: 0.04em;
+}
+.summary-placeholder-sub {
+    font-size: var(--font-size-sm);
+    opacity: 0.7;
+}
+
+/* Überschrift der Unterseiten (FocusOnNavigate zielt auf das h1). */
+.page-title {
+    font-family: var(--font-family-display);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-4);
+}

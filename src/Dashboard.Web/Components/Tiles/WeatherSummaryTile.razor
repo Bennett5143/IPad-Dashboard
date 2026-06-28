@@ -1,0 +1,59 @@
+@implements IDisposable
+@inject WeatherState WeatherState
+
+@* Schlanke Wetter-Summary: aktuelle Temperatur, heute Min/Max, Regenwahrscheinlichkeit.
+   Ganze Kachel tippbar → /weather (Verlauf + Morgen + Extras). *@
+<a class="tile-tap @CssClass" href="/weather">
+    <Tile Title="Wetter">
+        <Icon>
+            <span class="weather-summary-emoji" aria-hidden="true">@HeaderEmoji</span>
+        </Icon>
+        <ChildContent>
+            <div class="weather-summary">
+                @if (_snapshot is null)
+                {
+                    <p class="weather-summary-empty">Wetterdaten gerade nicht verfügbar.</p>
+                }
+                else
+                {
+                    <div class="weather-summary-now">
+                        <span class="weather-summary-glyph" aria-hidden="true">@WeatherFormatter.Emoji(_snapshot.Current.Condition)</span>
+                        <span class="weather-summary-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
+                    </div>
+                    <dl class="weather-summary-meta">
+                        <div>
+                            <dt>Min/Max</dt>
+                            <dd>@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</dd>
+                        </div>
+                        <div>
+                            <dt>Regen</dt>
+                            <dd>@WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</dd>
+                        </div>
+                    </dl>
+                }
+            </div>
+        </ChildContent>
+    </Tile>
+</a>
+
+@code {
+    [Parameter] public string? CssClass { get; set; }
+
+    private WeatherSnapshot? _snapshot;
+
+    protected override void OnInitialized()
+    {
+        WeatherState.Changed += OnChanged;
+        _snapshot = WeatherState.Current;
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        _snapshot = WeatherState.Current;
+        StateHasChanged();
+    });
+
+    public void Dispose() => WeatherState.Changed -= OnChanged;
+
+    private string HeaderEmoji => _snapshot is null ? "⛅" : WeatherFormatter.Emoji(_snapshot.Current.Condition);
+}
