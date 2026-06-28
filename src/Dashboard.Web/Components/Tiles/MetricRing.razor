@@ -1,0 +1,39 @@
+@using System.Globalization
+
+@* Wiederverwendbarer Fortschritts-Kreis: Wert in der Mitte, der Ring füllt sich nach
+   Fraction (0..1). SVG-Ring via stroke-dasharray/-offset; Ringfarbe über ColorClass
+   (Default = Akzent, sonst is-high/is-medium/is-low für die Recovery-Ampel). *@
+<div class="ring @ColorClass">
+    <div class="ring-disc">
+        <svg class="ring-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ring-track" cx="50" cy="50" r="44" />
+            <circle class="ring-fill" cx="50" cy="50" r="44"
+                    stroke-dasharray="@_dashArray"
+                    stroke-dashoffset="@_dashOffset"
+                    transform="rotate(-90 50 50)" />
+        </svg>
+        <span class="ring-value">@Center</span>
+    </div>
+    <span class="ring-label">@Label</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Center { get; set; } = string.Empty;
+    [Parameter] public double Fraction { get; set; }
+    [Parameter] public string? ColorClass { get; set; }
+
+    private const double Radius = 44;
+
+    private string _dashArray = string.Empty;
+    private string _dashOffset = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        var circumference = 2 * Math.PI * Radius;
+        var offset = circumference * (1 - Math.Clamp(Fraction, 0, 1));
+        // InvariantCulture ist Pflicht: ein de-DE-Komma würde das SVG-Attribut ungültig machen.
+        _dashArray = circumference.ToString("0.##", CultureInfo.InvariantCulture);
+        _dashOffset = offset.ToString("0.##", CultureInfo.InvariantCulture);
+    }
+}

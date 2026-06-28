@@ -35,8 +35,9 @@
   // "Group": Linien/Richtungen gleicher Gruppe teilen sich ein Kontingent; "DeparturesPerGroup"
   // = wie viele Abfahrten je Gruppe behalten werden. Für BEIDE Endstationen einer Linie je
   // Richtung einen eigenen Filter mit eigener Group anlegen (sonst kann NextPerGroup eine
-  // Richtung verdrängen). Die Summary-Kachel führt ALLE Stationen zusammen und zeigt die
-  // nächste Abfahrt je (Linie + Richtung), soonest-first (max. 5); /hvv die vollen Listen.
+  // Richtung verdrängen). Die Summary-Kachel auf der Hauptseite zeigt pro Haltestelle den
+  // nächsten BUS (S-/U-Bahn etc. erscheinen nur auf /hvv), soonest-first; die Detailseite
+  // /hvv zeigt alle Stationen mit den vollen Listen je Verkehrsmittel.
   "Hvv": {
     "Stations": [
       {

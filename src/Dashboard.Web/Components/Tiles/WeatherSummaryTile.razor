@@ -1,8 +1,8 @@
 @implements IDisposable
 @inject WeatherState WeatherState
 
-@* Wetter-Summary: aktuelle Temp + Beschreibung + gefühlt, dann 2×2-Meta (Min/Max · Regen ·
-   Wind · Sonne). Ganze Kachel tippbar → /weather (Verlauf + Morgen + Extras). *@
+@* Wetter-Summary: groß & prägnant – aktuelle Temperatur, heute Min/Max, Regenwahrscheinlichkeit.
+   Ganze Kachel tippbar → /weather (Verlauf + Morgen + Extras). *@
 <a class="tile-tap @CssClass" href="/weather">
     <Tile Title="Wetter">
         <Icon>
@@ -16,32 +16,20 @@
                 }
                 else
                 {
-                    <div class="weather-summary-now">
-                        <span class="weather-summary-glyph" aria-hidden="true">@WeatherFormatter.Emoji(_snapshot.Current.Condition)</span>
-                        <div class="weather-summary-headline">
-                            <span class="weather-summary-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
-                            <span class="weather-summary-desc">@_snapshot.Current.Description</span>
-                            <span class="weather-summary-feels">gefühlt @WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</span>
+                    <div class="weather-hero">
+                        <span class="weather-hero-glyph" aria-hidden="true">@WeatherFormatter.Emoji(_snapshot.Current.Condition)</span>
+                        <span class="weather-hero-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
+                    </div>
+                    <div class="weather-stats">
+                        <div class="weather-stat">
+                            <span class="weather-stat-value">@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
+                            <span class="weather-stat-label">Min / Max</span>
+                        </div>
+                        <div class="weather-stat">
+                            <span class="weather-stat-value">@WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
+                            <span class="weather-stat-label">Regen</span>
                         </div>
                     </div>
-                    <dl class="weather-summary-meta">
-                        <div>
-                            <dt>Min/Max</dt>
-                            <dd>@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</dd>
-                        </div>
-                        <div>
-                            <dt>Regen</dt>
-                            <dd>@WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</dd>
-                        </div>
-                        <div>
-                            <dt>Wind</dt>
-                            <dd>@WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)@(WeatherFormatter.WindDirection(_snapshot.Current.WindDirectionDeg) is { } wd ? $" {wd}" : "")</dd>
-                        </div>
-                        <div>
-                            <dt>Sonne</dt>
-                            <dd>↑@WeatherFormatter.Sun(_snapshot.Current.SunriseUtc) ↓@WeatherFormatter.Sun(_snapshot.Current.SunsetUtc)</dd>
-                        </div>
-                    </dl>
                 }
             </div>
         </ChildContent>
