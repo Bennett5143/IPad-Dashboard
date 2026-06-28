@@ -1,71 +1,59 @@
 .weather-summary {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-4);
+    height: 100%;
+    justify-content: center;
 }
 
 .weather-summary-empty {
     color: var(--color-fg-muted);
 }
 
-.weather-summary-now {
+.weather-hero {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    justify-content: center;
+    gap: var(--space-4);
 }
 
-.weather-summary-glyph {
-    font-size: var(--font-size-2xl);
+.weather-hero-glyph {
+    font-size: var(--font-size-3xl);
 }
 
-.weather-summary-headline {
+.weather-hero-temp {
+    font-family: var(--font-family-display);
+    font-size: 4.5rem;            /* groß & prägnant, auf einen Blick */
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-fg-primary);
+    text-shadow: 0 0 18px rgba(58, 157, 99, 0.25);
+}
+
+.weather-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: var(--space-4);
+}
+
+.weather-stat {
     display: flex;
     flex-direction: column;
-    line-height: var(--line-height-tight);
-    min-width: 0;
+    align-items: center;
+    gap: var(--space-1);
 }
 
-.weather-summary-temp {
+.weather-stat-value {
     font-family: var(--font-family-display);
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-2xl);
     font-weight: 700;
     color: var(--color-fg-primary);
-    text-shadow: 0 0 16px rgba(58, 157, 99, 0.22);
+    font-variant-numeric: tabular-nums;
 }
 
-.weather-summary-desc {
-    font-size: var(--font-size-base);
-    color: var(--color-fg-secondary);
-    text-transform: capitalize;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.weather-summary-feels {
+.weather-stat-label {
     font-size: var(--font-size-sm);
     color: var(--color-fg-muted);
-}
-
-.weather-summary-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-1) var(--space-4);
-    margin: 0;
-}
-
-.weather-summary-meta div {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-3);
-}
-
-.weather-summary-meta dt {
-    color: var(--color-fg-muted);
-}
-
-.weather-summary-meta dd {
-    margin: 0;
-    color: var(--color-fg-secondary);
-    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
