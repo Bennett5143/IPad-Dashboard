@@ -28,7 +28,7 @@
     font-weight: var(--font-weight-bold, 700);
     font-variant-numeric: tabular-nums;
     line-height: 1;
-    text-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
+    text-shadow: 0 0 18px rgba(58, 157, 99, 0.35);
 }
 
 .clock-separator {
