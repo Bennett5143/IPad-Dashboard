@@ -89,12 +89,12 @@ function rgb(c) { return `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`; }
 function ramp(x, a, b, c) {
     return x < 0.5 ? rgb(lerpArr(a, b, x * 2)) : rgb(lerpArr(b, c, (x - 0.5) * 2));
 }
-const warmColor = x => ramp(x, [51, 13, 5], [255, 90, 31], [255, 223, 128]);     // dunkel → orange → hell
+const warmColor = x => ramp(x, [120, 60, 20], [255, 140, 40], [255, 232, 150]);  // dunkel → amber → hell (auf dunkler Karte sichtbar)
 const hrColor = x => ramp(x, [44, 127, 184], [255, 207, 51], [226, 59, 59]);     // blau → gelb → rot
 
 function directionColor(signedGradient, scale) {
     const t = clamp(signedGradient / (scale || 1), -1, 1);
-    const grey = [120, 120, 120];
+    const grey = [170, 176, 182];
     return t >= 0 ? rgb(lerpArr(grey, [160, 92, 255], t))   // bergauf → lila
         : rgb(lerpArr(grey, [60, 208, 112], -t));            // bergab → grün
 }
@@ -168,7 +168,7 @@ function prepareRuns(runs, layer) {
     return perRun.map(({ pts, values }) => {
         if (!values) return { pts, colors: null };
         const colors = values.map(v => {
-            if (v == null || !isFinite(v)) return 'rgba(150,150,150,0.25)';
+            if (v == null || !isFinite(v)) return 'rgba(205,212,224,0.55)';
             if (layer === 'direction') return directionColor(v, dirScale);
             const x = clamp((v - lo) / (hi - lo || 1), 0, 1);
             return layer === 'heartrate' ? hrColor(x) : warmColor(x);
@@ -235,8 +235,8 @@ function defineLayer() {
 
             if (this._layer === 'heat') {
                 ctx.globalCompositeOperation = 'lighter';
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = 'rgba(255,90,30,0.22)';
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'rgba(255,150,40,0.38)';
                 for (const run of this._prepared) {
                     strokePath(ctx, run.pts, at);
                 }
@@ -245,11 +245,11 @@ function defineLayer() {
             }
 
             ctx.globalCompositeOperation = 'source-over';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             for (const run of this._prepared) {
                 const pts = run.pts;
                 if (!run.colors) {
-                    ctx.strokeStyle = 'rgba(150,150,150,0.25)'; // kein passender Stream
+                    ctx.strokeStyle = 'rgba(205,212,224,0.55)'; // kein passender Stream
                     strokePath(ctx, pts, at);
                     continue;
                 }

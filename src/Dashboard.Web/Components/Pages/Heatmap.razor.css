@@ -109,7 +109,7 @@
    keine Kachel liegt (ladend oder fehlend) → helle/„weiße" Flecken. Dunkel setzen, passend
    zur invertierten Karte, damit Lücken nicht aufblitzen. */
 ::deep .leaflet-container {
-    background: #16181d;
+    background: #0b1110;
 }
 
 /* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Filter bewusst auf die GESAMTE Kachel-Ebene
@@ -117,7 +117,7 @@
    einen Teilbereich ungefiltert (heller Block). Die Lauf-Routen liegen in der overlay-pane und
    bleiben dadurch unberührt. */
 ::deep .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
+    filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.95);
 }
 
 .layer-buttons {
