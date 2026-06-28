@@ -2,44 +2,44 @@
    Design Tokens (CSS Custom Properties)
    ============================================================
    Single source of truth für Farben, Spacing, Typografie.
-   Thema: futuristisches Kiosk-HUD („Command Center") – tiefes
-   Space-Blau mit feinem Raster, Neon-Cyan-Akzent, Display-Typo
-   für Kennzahlen. Kompakte Skala, damit die Hauptansicht ohne
-   Scrollen auf 768 px Höhe (iPad 9,7" quer) passt.
+   Thema: futuristisches Kiosk-HUD („Command Center") – fast
+   schwarzer, grünstichiger Grund mit feinem Raster, mäßiges Waldgrün
+   als Akzent, Display-Typo für Kennzahlen. Kompakte Skala, damit die
+   Hauptansicht ohne Scrollen auf 768 px Höhe (iPad 9,7" quer) passt.
    ============================================================ */
 
 :root {
     color-scheme: dark;
 
     /* Farben: Surface-Levels (Hintergrund-Hierarchie) */
-    --color-surface-base:    #05070d;  /* Seiten-Hintergrund (Deep Space) */
-    --color-surface-raised:  #0d1320;  /* Panel-/Tile-Hintergrund */
-    --color-surface-sunken:  #141c2e;  /* innere Boxen/Chips */
+    --color-surface-base:    #060a07;  /* Seiten-Hintergrund (fast schwarz, grünstichig) */
+    --color-surface-raised:  #0d1410;  /* Panel-/Tile-Hintergrund */
+    --color-surface-sunken:  #131d16;  /* innere Boxen/Chips */
 
     /* Farben: Vordergrund (Text) */
-    --color-fg-primary:      #e9f1ff;
-    --color-fg-secondary:    #9fb0cc;
-    --color-fg-muted:        #5d6e8e;
+    --color-fg-primary:      #eaf3ec;
+    --color-fg-secondary:    #a3b8a9;
+    --color-fg-muted:        #647a69;
 
-    /* Farben: Akzent & Status (Neon-Set) */
-    --color-accent:          #00d4ff;  /* Cyan – Links, aktive Controls */
-    --color-accent-2:        #7c5cff;  /* Violett – Verlaufs-Partner des Akzents */
-    --color-success:         #2ee6a8;
+    /* Farben: Akzent & Status (Waldgrün-Set) */
+    --color-accent:          #3a9d63;  /* mäßiges Waldgrün – Links, aktive Controls */
+    --color-accent-2:        #2bb47f;  /* helleres Wald-/Teal-Grün – Verlaufs-Partner */
+    --color-success:         #57f5c2;  /* helles Mint – bewusst vom Akzent abgesetzt */
     --color-warning:         #ffd166;
     --color-error:           #ff5470;
 
     /* Marken-Farbe Strava (Connect-Button, bewusst kein Statuston) */
     --color-strava:          #fc4c02;
 
-    --color-border:          #1b2740;
+    --color-border:          #1f3328;
 
     /* Glow-Effekte (sparsam einsetzen: große Zahlen, aktive Controls) */
-    --glow-accent:  0 0 14px rgba(0, 212, 255, 0.30);
-    --glow-success: 0 0 14px rgba(46, 230, 168, 0.30);
+    --glow-accent:  0 0 14px rgba(58, 157, 99, 0.30);
+    --glow-success: 0 0 14px rgba(87, 245, 194, 0.30);
 
     /* Liquid Glass: durchscheinende Panels mit Blur, heller Glanzkante & Tiefe */
-    --glass-bg:        rgba(18, 27, 46, 0.55);
-    --glass-bg-strong: rgba(16, 24, 41, 0.74);
+    --glass-bg:        rgba(20, 34, 26, 0.55);
+    --glass-bg-strong: rgba(16, 30, 22, 0.74);
     --glass-blur:      blur(18px) saturate(140%);
     --glass-rim:       rgba(255, 255, 255, 0.12);
     --glass-sheen:     linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 45%);
@@ -111,10 +111,10 @@ body {
        „Szene", die alle Glas-Panels einheitlich brechen. */
     background-color: var(--color-surface-base);
     background-image:
-        radial-gradient(950px 650px at 80% -12%, rgba(0, 150, 255, 0.32), transparent 60%),
-        radial-gradient(820px 640px at 4% 110%, rgba(124, 92, 255, 0.22), transparent 60%),
-        linear-gradient(rgba(0, 212, 255, 0.030) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 212, 255, 0.030) 1px, transparent 1px);
+        radial-gradient(950px 650px at 80% -12%, rgba(34, 140, 80, 0.30), transparent 60%),
+        radial-gradient(820px 640px at 4% 110%, rgba(40, 110, 78, 0.20), transparent 60%),
+        linear-gradient(rgba(74, 200, 130, 0.030) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 200, 130, 0.030) 1px, transparent 1px);
     background-size: auto, auto, 34px 34px, 34px 34px;
     background-attachment: fixed;
 }
@@ -196,7 +196,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 }
 .dialog-actions button:first-child {
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04101a;
+    color: #04140c;
     box-shadow: var(--glow-accent);
 }
 .dialog-actions button:disabled { opacity: 0.6; cursor: default; }
