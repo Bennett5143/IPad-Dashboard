@@ -38,5 +38,5 @@
 
 .subnav-links ::deep a.active {
     color: var(--color-accent);
-    background: rgba(0, 212, 255, 0.12);
+    background: rgba(58, 157, 99, 0.12);
 }

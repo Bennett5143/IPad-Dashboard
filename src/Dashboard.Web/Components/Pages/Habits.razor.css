@@ -38,7 +38,7 @@
 
 .habit-tabs button.active {
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04101a;
+    color: #04140c;
     font-weight: var(--font-weight-semibold);
     box-shadow: var(--glow-accent);
 }
@@ -108,15 +108,15 @@
 }
 
 .heat-cell.lvl-1 {
-    background: rgba(0, 212, 255, 0.25);
+    background: rgba(58, 157, 99, 0.25);
 }
 
 .heat-cell.lvl-2 {
-    background: rgba(0, 212, 255, 0.45);
+    background: rgba(58, 157, 99, 0.45);
 }
 
 .heat-cell.lvl-3 {
-    background: rgba(0, 212, 255, 0.7);
+    background: rgba(58, 157, 99, 0.7);
 }
 
 .heat-cell.lvl-4 {

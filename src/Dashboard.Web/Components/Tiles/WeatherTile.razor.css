@@ -32,7 +32,7 @@
     font-size: var(--font-size-3xl);
     font-weight: 700;
     line-height: var(--line-height-tight);
-    text-shadow: 0 0 16px rgba(0, 212, 255, 0.22);
+    text-shadow: 0 0 16px rgba(58, 157, 99, 0.22);
 }
 
 .weather-desc {

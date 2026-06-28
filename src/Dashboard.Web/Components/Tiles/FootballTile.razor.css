@@ -59,7 +59,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-4);
-    background: rgba(2, 5, 12, 0.72);
+    background: rgba(3, 8, 5, 0.72);
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
 }
@@ -128,7 +128,7 @@
 }
 
 .league-table tr.is-own td {
-    background: rgba(0, 212, 255, 0.1);
+    background: rgba(58, 157, 99, 0.1);
     color: var(--color-fg-primary);
 }
 

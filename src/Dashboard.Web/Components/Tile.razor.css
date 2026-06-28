@@ -30,7 +30,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent 4%, rgba(0, 212, 255, 0.65), rgba(124, 92, 255, 0.4) 70%, transparent 96%);
+    background: linear-gradient(90deg, transparent 4%, rgba(58, 157, 99, 0.65), rgba(43, 180, 127, 0.4) 70%, transparent 96%);
     pointer-events: none;
 }
 

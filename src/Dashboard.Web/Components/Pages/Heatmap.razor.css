@@ -68,7 +68,7 @@
 
 .range-buttons button.active {
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04101a;
+    color: #04140c;
     font-weight: var(--font-weight-semibold);
     box-shadow: var(--glow-accent);
 }
@@ -139,7 +139,7 @@
 
 .layer-buttons button.active {
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04101a;
+    color: #04140c;
     font-weight: var(--font-weight-semibold);
     box-shadow: var(--glow-accent);
 }

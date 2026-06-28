@@ -286,8 +286,8 @@
 }
 
 .tod-rows li.is-best {
-    background: rgba(46, 230, 168, 0.08);
-    outline: 1px solid rgba(46, 230, 168, 0.35);
+    background: rgba(87, 245, 194, 0.08);
+    outline: 1px solid rgba(87, 245, 194, 0.35);
 }
 
 .tod-rows li.is-thin {
@@ -498,15 +498,15 @@
 }
 
 .tod-matrix td.cell-1 {
-    background: rgba(0, 212, 255, 0.18);
+    background: rgba(58, 157, 99, 0.18);
 }
 
 .tod-matrix td.cell-2 {
-    background: rgba(0, 212, 255, 0.38);
+    background: rgba(58, 157, 99, 0.38);
 }
 
 .tod-matrix td.cell-3 {
-    background: rgba(0, 212, 255, 0.62);
+    background: rgba(58, 157, 99, 0.62);
     color: var(--color-surface-base);
 }
 
