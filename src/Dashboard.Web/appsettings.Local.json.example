@@ -28,7 +28,9 @@
   // Jeder Wettbewerb wird pro Refresh genau EINMAL abgefragt (Vereine werden client-seitig daraus
   // aufgelöst) – 12 Vereine über 5 Ligen + CL ⇒ ~11 Calls; InterCallDelay (appsettings.json) hält
   // das ≤8/min unter dem Free-Tier-Limit (10/min). Die Top-5-Ligatabellen auf /football kommen aus
-  // appsettings.json → Football:LeagueCodes (unabhängig von den hier getrackten Vereinen).
+  // appsettings.json → Football:LeagueCodes (unabhängig von den hier getrackten Vereinen). Die
+  // Champions League (Ligaphase + K.o.-Bracket) und EM/WM-Turnierfenster sind ebenfalls app-weit in
+  // appsettings.json konfiguriert (Football:ChampionsLeagueCode / Football:Tournaments) – nicht hier.
   "Football": {
     "Teams": [
       { "Name": "Real Madrid", "TeamId": 86, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
