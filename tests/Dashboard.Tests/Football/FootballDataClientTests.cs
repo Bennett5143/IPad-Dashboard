@@ -64,6 +64,7 @@ public class FootballDataClientTests
             UpcomingCount = upcoming,
             InterCallDelay = TimeSpan.Zero,
             LeagueCodes = ["PD"],
+            ChampionsLeagueCode = "", // CL hier aus, Tests fokussieren auf Liga/Team-Logik
             Teams = [new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" }]
         });
 
@@ -179,6 +180,7 @@ public class FootballDataClientTests
             ApiKey = "test-key",
             InterCallDelay = TimeSpan.Zero,
             LeagueCodes = ["PD"],
+            ChampionsLeagueCode = "",
             // Drei Vereine derselben Liga (PD) – ohne Dedup wären es 3 matches- + 3 standings-Calls.
             Teams =
             [
@@ -211,6 +213,7 @@ public class FootballDataClientTests
             ApiKey = "test-key",
             InterCallDelay = TimeSpan.Zero,
             LeagueCodes = ["PD"],
+            ChampionsLeagueCode = "",
             Teams =
             [
                 new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" },

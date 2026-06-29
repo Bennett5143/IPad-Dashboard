@@ -1,0 +1,43 @@
+@* K.o.-Baum: Runden als horizontal scrollbare Spalten, je Zweikampf eine Karte. Sieger fett.
+   Aggregat (Hin/Rück) bzw. Einzelspiel-Ergebnis; Elfmeterschießen als „i.E."-Zeile. *@
+<div class="bracket">
+    @foreach (var round in Bracket.Rounds)
+    {
+        <div class="bracket-round">
+            <h4 class="bracket-round-title">@round.Label</h4>
+            <div class="bracket-ties">
+                @foreach (var tie in round.Ties)
+                {
+                    <div class="bracket-tie @(tie.TwoLegs ? "is-two-legs" : null)">
+                        <div class="bracket-team @(IsWinner(tie, tie.Home) ? "is-winner" : null)">
+                            <span class="bt-name">@Label(tie.Home)</span>
+                            <span class="bt-score">@(tie.HomeAggregate?.ToString() ?? "")</span>
+                        </div>
+                        <div class="bracket-team @(IsWinner(tie, tie.Away) ? "is-winner" : null)">
+                            <span class="bt-name">@Label(tie.Away)</span>
+                            <span class="bt-score">@(tie.AwayAggregate?.ToString() ?? "")</span>
+                        </div>
+                        @if (tie is { HomePenalties: { } hp, AwayPenalties: { } ap })
+                        {
+                            <span class="bracket-note">i.E. @hp:@ap</span>
+                        }
+                        else if (!tie.Decided)
+                        {
+                            <span class="bracket-note">@FootballFormatter.DateTimeLabel(tie.EarliestKickoff)</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public KnockoutBracket Bracket { get; set; } = default!;
+
+    private static bool IsWinner(KnockoutTie tie, TeamRef team) =>
+        tie.Winner is { } winner && winner.Id == team.Id;
+
+    private static string Label(TeamRef team) =>
+        string.IsNullOrWhiteSpace(team.Tla) ? team.Name : team.Tla;
+}

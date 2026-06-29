@@ -29,7 +29,22 @@ public sealed class FootballOptions
     /// </summary>
     public IReadOnlyList<string> LeagueCodes { get; init; } = ["PL", "PD", "BL1", "SA", "FL1"];
 
+    /// <summary>Code der Champions League (immer geholt: Ligaphase-Tabelle + K.o.-Bracket). Leer = aus.</summary>
+    public string ChampionsLeagueCode { get; init; } = "CL";
+
+    /// <summary>Turnier-Fenster (EM/WM). Nur aktive werden abgerufen (null Idle-Calls außerhalb).</summary>
+    public IReadOnlyList<TournamentConfig> Tournaments { get; init; } = [];
+
     public IReadOnlyList<FootballTeamConfig> Teams { get; init; } = [];
+}
+
+/// <summary>Ein Turnier-Fenster (z. B. WM) mit football-data-Code und Aktiv-Zeitraum (UTC).</summary>
+public sealed class TournamentConfig
+{
+    public string Code { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public DateTimeOffset From { get; init; }
+    public DateTimeOffset To { get; init; }
 }
 
 /// <summary>Ein zu beobachtender Verein (football-data.org-IDs/-Codes).</summary>

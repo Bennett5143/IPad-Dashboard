@@ -10,6 +10,8 @@ internal sealed record FdMatchesResponse(
 internal sealed record FdMatch(
     [property: JsonPropertyName("utcDate")] DateTimeOffset UtcDate,
     [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("stage")] string? Stage,
+    [property: JsonPropertyName("group")] string? Group,
     [property: JsonPropertyName("competition")] FdCompetition Competition,
     [property: JsonPropertyName("homeTeam")] FdTeam HomeTeam,
     [property: JsonPropertyName("awayTeam")] FdTeam AwayTeam,
@@ -19,14 +21,22 @@ internal sealed record FdCompetition(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("code")] string? Code);
 
+// Id ist nullable: noch nicht ausgespielte K.o.-Partien (TBD) liefern null-Teams.
 internal sealed record FdTeam(
-    [property: JsonPropertyName("id")] int Id,
-    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("id")] int? Id,
+    [property: JsonPropertyName("name")] string? Name,
     [property: JsonPropertyName("shortName")] string? ShortName,
     [property: JsonPropertyName("tla")] string? Tla);
 
+// fullTime enthält bei Elfmeterschießen die Elfmeter MIT; die On-Pitch-Tore stehen in
+// regularTime (+ extraTime), das Schießen separat in penalties.
 internal sealed record FdScore(
-    [property: JsonPropertyName("fullTime")] FdScoreTime FullTime);
+    [property: JsonPropertyName("winner")] string? Winner,
+    [property: JsonPropertyName("duration")] string? Duration,
+    [property: JsonPropertyName("fullTime")] FdScoreTime? FullTime,
+    [property: JsonPropertyName("regularTime")] FdScoreTime? RegularTime,
+    [property: JsonPropertyName("extraTime")] FdScoreTime? ExtraTime,
+    [property: JsonPropertyName("penalties")] FdScoreTime? Penalties);
 
 internal sealed record FdScoreTime(
     [property: JsonPropertyName("home")] int? Home,
@@ -38,6 +48,7 @@ internal sealed record FdStandingsResponse(
 
 internal sealed record FdStanding(
     [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("group")] string? Group,
     [property: JsonPropertyName("table")] IReadOnlyList<FdTableEntry> Table);
 
 internal sealed record FdTableEntry(
