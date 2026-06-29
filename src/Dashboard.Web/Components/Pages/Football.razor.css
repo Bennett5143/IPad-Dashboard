@@ -1,0 +1,105 @@
+.football-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.football-page-empty {
+    color: var(--color-fg-muted);
+    font-style: italic;
+}
+
+.football-tabs {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.football-tab {
+    background: transparent;
+    border: 1px solid var(--glass-rim);
+    border-radius: 999px;
+    padding: var(--space-1) var(--space-4);
+    color: var(--color-fg-secondary);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+}
+
+.football-tab:hover {
+    color: var(--color-fg-primary);
+    border-color: var(--color-accent);
+}
+
+.football-tab.is-active {
+    color: var(--color-fg-primary);
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    border-color: var(--color-accent);
+}
+
+.football-tables {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.football-table-card {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow);
+}
+
+.football-table-card h2 {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    color: var(--color-fg-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-3);
+}
+
+.league-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.league-table th {
+    text-align: left;
+    color: var(--color-fg-muted);
+    font-weight: var(--font-weight-normal, 400);
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.league-table th.num,
+.league-table td.num {
+    text-align: right;
+}
+
+.league-table td {
+    padding: var(--space-1) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-fg-secondary);
+}
+
+.league-table td.pts {
+    color: var(--color-fg-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.league-table tr.is-own td {
+    background: rgba(58, 157, 99, 0.1);
+    color: var(--color-fg-primary);
+}
+
+/* Der „Vereine"-Tab reicht die vorhandene FootballTile durch – sie bringt ihre eigenen
+   (CSS-isolierten) Stile und Tap-Modals mit; hier nur die Breite begrenzen. */
+.football-clubs {
+    max-width: 640px;
+}

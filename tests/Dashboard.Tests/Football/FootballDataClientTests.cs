@@ -38,6 +38,7 @@ public class FootballDataClientTests
     private const string StandingsJson =
         """
         {
+          "competition": { "name": "La Liga", "code": "PD" },
           "standings": [
             { "type": "HOME", "table": [ { "position": 5, "team": { "id": 86, "name": "Real Madrid CF" }, "playedGames": 18, "points": 40 } ] },
             { "type": "TOTAL", "table": [
@@ -61,6 +62,8 @@ public class FootballDataClientTests
             ApiKey = "test-key",
             RecentCount = recent,
             UpcomingCount = upcoming,
+            InterCallDelay = TimeSpan.Zero,
+            LeagueCodes = ["PD"],
             Teams = [new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" }]
         });
 
@@ -150,5 +153,89 @@ public class FootballDataClientTests
         Assert.Equal(27, own.Won);
         Assert.Equal(48, own.GoalDifference);
         Assert.False(team.Table.Single(r => r.Position == 2).IsOwnTeam); // Barcelona
+    }
+
+    [Fact]
+    public async Task GetFootballAsync_FetchesEachCompetitionOnce_RegardlessOfTeamCount()
+    {
+        var matchesCalls = 0;
+        var standingsCalls = 0;
+        var handler = new StubHttpMessageHandler(request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path.Contains("standings", StringComparison.Ordinal))
+            {
+                standingsCalls++;
+                return StubHttpMessageHandler.Json(StandingsJson);
+            }
+
+            matchesCalls++;
+            return StubHttpMessageHandler.Json(MatchesJson);
+        });
+
+        var http = new HttpClient(handler) { BaseAddress = new Uri("https://test.local/") };
+        var options = Options.Create(new FootballOptions
+        {
+            ApiKey = "test-key",
+            InterCallDelay = TimeSpan.Zero,
+            LeagueCodes = ["PD"],
+            // Drei Vereine derselben Liga (PD) – ohne Dedup wären es 3 matches- + 3 standings-Calls.
+            Teams =
+            [
+                new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" },
+                new FootballTeamConfig { Name = "Barcelona", TeamId = 81, CompetitionCode = "PD" },
+                new FootballTeamConfig { Name = "Real Betis", TeamId = 90, CompetitionCode = "PD" }
+            ]
+        });
+
+        var snapshot = await new FootballDataClient(
+            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance)
+            .GetFootballAsync();
+
+        Assert.Equal(3, snapshot.Teams.Count);
+        Assert.Equal(1, matchesCalls);   // genau ein /matches-Call für PD
+        Assert.Equal(1, standingsCalls); // genau ein /standings-Call für PD
+    }
+
+    [Fact]
+    public async Task GetFootballAsync_BuildsLeagueTable_MarkingEveryTrackedTeam()
+    {
+        var handler = new StubHttpMessageHandler(request =>
+            request.RequestUri!.AbsolutePath.Contains("standings", StringComparison.Ordinal)
+                ? StubHttpMessageHandler.Json(StandingsJson)
+                : StubHttpMessageHandler.Json(MatchesJson));
+
+        var http = new HttpClient(handler) { BaseAddress = new Uri("https://test.local/") };
+        var options = Options.Create(new FootballOptions
+        {
+            ApiKey = "test-key",
+            InterCallDelay = TimeSpan.Zero,
+            LeagueCodes = ["PD"],
+            Teams =
+            [
+                new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" },
+                new FootballTeamConfig { Name = "Barcelona", TeamId = 81, CompetitionCode = "PD" }
+            ]
+        });
+
+        var snapshot = await new FootballDataClient(
+            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance)
+            .GetFootballAsync();
+
+        Assert.NotNull(snapshot.LeagueTables);
+        var table = Assert.Single(snapshot.LeagueTables!);
+        Assert.Equal("PD", table.Code);
+        Assert.Equal("La Liga", table.Name);                       // aus competition.name
+        Assert.Equal(2, table.Rows.Count(r => r.IsOwnTeam));       // beide getrackten Vereine markiert
+    }
+
+    [Fact]
+    public async Task GetFootballAsync_CountsInterestingGamesInCurrentWeek()
+    {
+        // NowUtc = Mi 2026-06-10 → Woche Mo 08. – So 14.06. Im MatchesJson liegt nur das
+        // Sevilla-Real-Spiel am 08.06. in dieser Woche.
+        var snapshot = await CreateClient().GetFootballAsync();
+
+        Assert.Equal(1, snapshot.InterestingGamesThisWeek);
     }
 }

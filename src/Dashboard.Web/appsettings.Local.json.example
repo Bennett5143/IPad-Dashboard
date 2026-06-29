@@ -19,14 +19,22 @@
     "Zoom": 13
   },
 
-  // Beobachtete Fußball-Vereine (football-data.org-IDs/-Codes; nur Free-Tier-Wettbewerbe).
-  // Der ApiKey gehört in User-Secrets (Header X-Auth-Token), NICHT hierher.
+  // Beobachtete Fußball-Vereine (football-data.org-IDs/-Codes). Der ApiKey gehört in User-Secrets
+  // (Football:ApiKey, Header X-Auth-Token), NICHT hierher. Nur Free-Tier-Wettbewerbe verwenden:
+  // PL, PD, BL1, SA, FL1, CL, EC (EM), WC (WM) – kein nationaler Pokal/2. Liga.
+  //
+  // "CompetitionCode" = die Liga für Tabellenplatz/-zeile des Vereins. "Competitions" = alle
+  // Wettbewerbe, aus denen Spiele geholt werden (z. B. ["PD","CL"]); leer = nur CompetitionCode.
+  // Jeder Wettbewerb wird pro Refresh genau EINMAL abgefragt (Vereine werden client-seitig daraus
+  // aufgelöst) – 12 Vereine über 5 Ligen + CL ⇒ ~11 Calls; InterCallDelay (appsettings.json) hält
+  // das ≤8/min unter dem Free-Tier-Limit (10/min). Die Top-5-Ligatabellen auf /football kommen aus
+  // appsettings.json → Football:LeagueCodes (unabhängig von den hier getrackten Vereinen).
   "Football": {
-    "RecentCount": 3,
-    "UpcomingCount": 3,
     "Teams": [
-      { "Name": "Verein A", "TeamId": 0, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
-      { "Name": "Verein B", "TeamId": 0, "CompetitionCode": "BL1", "Competitions": [ "BL1" ] }
+      { "Name": "Real Madrid", "TeamId": 86, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
+      { "Name": "Barcelona",   "TeamId": 81, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
+      { "Name": "Liverpool",   "TeamId": 64, "CompetitionCode": "PL", "Competitions": [ "PL", "CL" ] },
+      { "Name": "HSV",         "TeamId": 7,  "CompetitionCode": "BL1", "Competitions": [ "BL1" ] }
     ]
   },
 

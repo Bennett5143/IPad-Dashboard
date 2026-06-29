@@ -12,10 +12,22 @@ public sealed class FootballOptions
     public string ApiKey { get; init; } = string.Empty;
     public string BaseUrl { get; init; } = "https://api.football-data.org/";
 
-    public TimeSpan RefreshInterval { get; init; } = TimeSpan.FromMinutes(30);
+    public TimeSpan RefreshInterval { get; init; } = TimeSpan.FromMinutes(20);
+
+    /// <summary>
+    /// Pause zwischen zwei API-Calls eines Refreshs. football-data.org Free-Tier erlaubt 10/min;
+    /// 8 s lässt einen Call Puffer (≤8/min). In Tests auf <see cref="TimeSpan.Zero"/> setzen.
+    /// </summary>
+    public TimeSpan InterCallDelay { get; init; } = TimeSpan.FromSeconds(8);
 
     public int RecentCount { get; init; } = 3;
     public int UpcomingCount { get; init; } = 2;
+
+    /// <summary>
+    /// Ligen, deren vollständige Tabelle auf <c>/football</c> gezeigt wird (Top-5-Tabellen, je 1
+    /// Standings-Call). Standardmäßig die fünf großen Ligen. Unabhängig von den getrackten Vereinen.
+    /// </summary>
+    public IReadOnlyList<string> LeagueCodes { get; init; } = ["PL", "PD", "BL1", "SA", "FL1"];
 
     public IReadOnlyList<FootballTeamConfig> Teams { get; init; } = [];
 }

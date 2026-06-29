@@ -33,6 +33,7 @@ internal sealed record FdScoreTime(
     [property: JsonPropertyName("away")] int? Away);
 
 internal sealed record FdStandingsResponse(
+    [property: JsonPropertyName("competition")] FdCompetition? Competition,
     [property: JsonPropertyName("standings")] IReadOnlyList<FdStanding> Standings);
 
 internal sealed record FdStanding(
