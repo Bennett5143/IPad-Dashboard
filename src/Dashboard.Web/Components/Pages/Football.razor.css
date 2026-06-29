@@ -11,6 +11,7 @@
 
 .football-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
 }
 
@@ -38,14 +39,20 @@
     border-color: var(--color-accent);
 }
 
-.football-tables {
+.football-comp {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.football-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: var(--space-4);
     align-items: start;
 }
 
-.football-table-card {
+.football-card {
     padding: var(--space-4);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
@@ -53,49 +60,18 @@
     box-shadow: var(--glass-shadow);
 }
 
-.football-table-card h2 {
+/* Bracket braucht volle Breite (horizontaler Scroll der Runden). */
+.football-card-wide {
+    overflow: hidden;
+}
+
+.football-card h2 {
     font-family: var(--font-family-display);
     font-size: var(--font-size-lg);
     color: var(--color-fg-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: var(--space-3);
-}
-
-.league-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--font-size-sm);
-    font-variant-numeric: tabular-nums;
-}
-
-.league-table th {
-    text-align: left;
-    color: var(--color-fg-muted);
-    font-weight: var(--font-weight-normal, 400);
-    padding: var(--space-1) var(--space-2);
-    border-bottom: 1px solid var(--color-border);
-}
-
-.league-table th.num,
-.league-table td.num {
-    text-align: right;
-}
-
-.league-table td {
-    padding: var(--space-1) var(--space-2);
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-fg-secondary);
-}
-
-.league-table td.pts {
-    color: var(--color-fg-primary);
-    font-weight: var(--font-weight-semibold);
-}
-
-.league-table tr.is-own td {
-    background: rgba(58, 157, 99, 0.1);
-    color: var(--color-fg-primary);
 }
 
 /* Der „Vereine"-Tab reicht die vorhandene FootballTile durch – sie bringt ihre eigenen

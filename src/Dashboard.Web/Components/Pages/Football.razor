@@ -9,54 +9,25 @@
 
 <div class="football-page">
     <div class="football-tabs" role="tablist">
-        <button class="football-tab @(_tab == Tab.Tables ? "is-active" : null)"
-                role="tab" aria-selected="@(_tab == Tab.Tables)" @onclick="() => _tab = Tab.Tables">
-            Tabellen
-        </button>
-        <button class="football-tab @(_tab == Tab.Clubs ? "is-active" : null)"
-                role="tab" aria-selected="@(_tab == Tab.Clubs)" @onclick="() => _tab = Tab.Clubs">
-            Vereine
-        </button>
+        @foreach (var (key, label) in Tabs())
+        {
+            <button class="football-tab @(_tab == key ? "is-active" : null)"
+                    role="tab" aria-selected="@(_tab == key)" @onclick="() => _tab = key">
+                @label
+            </button>
+        }
     </div>
 
-    @if (_tab == Tab.Tables)
+    @if (_tab == "tables")
     {
         @if (_tables is { Count: > 0 })
         {
-            <div class="football-tables">
+            <div class="football-cards">
                 @foreach (var table in _tables)
                 {
-                    <section class="football-table-card">
+                    <section class="football-card">
                         <h2>@FootballFormatter.Competition(table.Code)</h2>
-                        <table class="league-table">
-                            <thead>
-                                <tr>
-                                    <th class="num">#</th>
-                                    <th>Verein</th>
-                                    <th class="num">Sp</th>
-                                    <th class="num">S</th>
-                                    <th class="num">U</th>
-                                    <th class="num">N</th>
-                                    <th class="num">Diff</th>
-                                    <th class="num">Pkt</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var row in table.Rows)
-                                {
-                                    <tr class="@(row.IsOwnTeam ? "is-own" : null)">
-                                        <td class="num">@row.Position</td>
-                                        <td>@row.TeamName</td>
-                                        <td class="num">@row.PlayedGames</td>
-                                        <td class="num">@row.Won</td>
-                                        <td class="num">@row.Draw</td>
-                                        <td class="num">@row.Lost</td>
-                                        <td class="num">@(row.GoalDifference > 0 ? "+" : "")@row.GoalDifference</td>
-                                        <td class="num pts">@row.Points</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                        <StandingsTable Table="table" />
                     </section>
                 }
             </div>
@@ -66,7 +37,50 @@
             <p class="football-page-empty">Tabellen gerade nicht verfügbar.</p>
         }
     }
-    else
+    else if (_tab == "cl" && _cl is not null)
+    {
+        <div class="football-comp">
+            @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
+            {
+                <section class="football-card">
+                    <h2>Ligaphase</h2>
+                    <StandingsTable Table="phase" />
+                </section>
+            }
+            @if (_cl.Bracket is not null)
+            {
+                <section class="football-card football-card-wide">
+                    <h2>K.o.-Runde</h2>
+                    <KnockoutBracketView Bracket="_cl.Bracket" />
+                </section>
+            }
+        </div>
+    }
+    else if (_tab.StartsWith("t:", StringComparison.Ordinal) && CurrentTournament() is { } tournament)
+    {
+        <div class="football-comp">
+            @if (tournament.Groups.Count > 0)
+            {
+                <div class="football-cards">
+                    @foreach (var group in tournament.Groups)
+                    {
+                        <section class="football-card">
+                            <h2>@group.Name</h2>
+                            <StandingsTable Table="group" />
+                        </section>
+                    }
+                </div>
+            }
+            @if (tournament.Bracket is not null)
+            {
+                <section class="football-card football-card-wide">
+                    <h2>K.o.-Runde</h2>
+                    <KnockoutBracketView Bracket="tournament.Bracket" />
+                </section>
+            }
+        </div>
+    }
+    else if (_tab == "clubs")
     {
         <div class="football-clubs">
             <FootballTile />
@@ -75,28 +89,73 @@
 </div>
 
 @code {
-    private enum Tab
-    {
-        Tables,
-        Clubs
-    }
-
-    private Tab _tab = Tab.Tables;
     private IReadOnlyList<LeagueTable>? _tables;
+    private ChampionsLeague? _cl;
+    private IReadOnlyList<TournamentView>? _tournaments;
+    private string _tab = "tables";
 
     protected override void OnInitialized()
     {
         FootballState.Changed += OnChanged;
         ReadState();
+        _tab = DefaultTab();
     }
 
     private void OnChanged() => _ = InvokeAsync(() =>
     {
         ReadState();
+        EnsureValidTab();
         StateHasChanged();
     });
 
-    private void ReadState() => _tables = FootballState.Current?.LeagueTables;
+    private void ReadState()
+    {
+        var snapshot = FootballState.Current;
+        _tables = snapshot?.LeagueTables;
+        _cl = snapshot?.Cl;
+        _tournaments = snapshot?.Tournaments;
+    }
+
+    // Tab-Reihenfolge: Tabellen · Champions League · aktive Turniere · Vereine.
+    private IReadOnlyList<(string Key, string Label)> Tabs()
+    {
+        var tabs = new List<(string, string)> { ("tables", "Tabellen") };
+        if (_cl is not null)
+        {
+            tabs.Add(("cl", "Champions League"));
+        }
+
+        if (_tournaments is not null)
+        {
+            tabs.AddRange(_tournaments.Select(t => ($"t:{t.Code}", t.Name)));
+        }
+
+        tabs.Add(("clubs", "Vereine"));
+        return tabs;
+    }
+
+    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab.
+    private string DefaultTab() =>
+        _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
+
+    private void EnsureValidTab()
+    {
+        if (!Tabs().Any(t => t.Key == _tab))
+        {
+            _tab = DefaultTab();
+        }
+    }
+
+    private TournamentView? CurrentTournament()
+    {
+        if (_tournaments is null || !_tab.StartsWith("t:", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var code = _tab[2..];
+        return _tournaments.FirstOrDefault(t => t.Code == code);
+    }
 
     public void Dispose() => FootballState.Changed -= OnChanged;
 }

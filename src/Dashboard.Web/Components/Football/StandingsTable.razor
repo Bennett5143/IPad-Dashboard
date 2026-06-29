@@ -1,0 +1,35 @@
+@* Wiederverwendbare Ligatabelle (Top-5, CL-Ligaphase, Turnier-Gruppen). Getrackte Vereine
+   (Table.Rows[i].IsOwnTeam) werden hervorgehoben. *@
+<table class="league-table">
+    <thead>
+        <tr>
+            <th class="num">#</th>
+            <th>Verein</th>
+            <th class="num">Sp</th>
+            <th class="num">S</th>
+            <th class="num">U</th>
+            <th class="num">N</th>
+            <th class="num">Diff</th>
+            <th class="num">Pkt</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Table.Rows)
+        {
+            <tr class="@(row.IsOwnTeam ? "is-own" : null)">
+                <td class="num">@row.Position</td>
+                <td>@row.TeamName</td>
+                <td class="num">@row.PlayedGames</td>
+                <td class="num">@row.Won</td>
+                <td class="num">@row.Draw</td>
+                <td class="num">@row.Lost</td>
+                <td class="num">@(row.GoalDifference > 0 ? "+" : "")@row.GoalDifference</td>
+                <td class="num pts">@row.Points</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter, EditorRequired] public LeagueTable Table { get; set; } = default!;
+}
