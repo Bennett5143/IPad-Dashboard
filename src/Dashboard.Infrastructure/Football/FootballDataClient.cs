@@ -12,9 +12,10 @@ namespace Dashboard.Infrastructure.Football;
 /// <summary>
 /// <see cref="IFootballProvider"/> auf Basis von football-data.org v4. Jeder Wettbewerb wird pro Refresh
 /// <b>genau einmal</b> abgefragt – Spiele (<c>competitions/{code}/matches</c>) und Tabelle
-/// (<c>competitions/{code}/standings</c>) –, danach werden alle getrackten Vereine client-seitig daraus
-/// aufgelöst. Das spart Calls (12 Vereine über 5 Ligen + CL ⇒ ~11 statt ~24) und schont das Free-Tier-
-/// Limit (10/min), zusätzlich abgesichert durch <see cref="FootballOptions.InterCallDelay"/>.
+/// (<c>competitions/{code}/standings</c>) –, danach werden Vereine, Top-5-Tabellen, Champions League
+/// (Ligaphase + K.o.-Bracket) und aktive Turniere (EM/WM: Gruppen + Bracket) client-seitig daraus
+/// abgeleitet. Ligen nutzen ein enges Datumsfenster; CL/Turniere die volle Saison (für den Bracket).
+/// <see cref="FootballOptions.InterCallDelay"/> drosselt unter das Free-Tier-Limit (10/min).
 /// </summary>
 public sealed class FootballDataClient : IFootballProvider
 {
@@ -37,9 +38,24 @@ public sealed class FootballDataClient : IFootballProvider
     public async Task<FootballSnapshot> GetFootballAsync(CancellationToken ct = default)
     {
         var now = _clock.UtcNow;
-        // Datumsfenster, damit auch über die Saisongrenze hinweg jüngste Ergebnisse erscheinen.
-        var from = now.AddDays(-90).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var to = now.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        // Enges Fenster für Liga-Spiele (jüngste Ergebnisse über die Saisongrenze hinweg).
+        var narrowFrom = now.AddDays(-90).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var narrowTo = now.AddDays(30).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // Wettbewerbe, die die volle Saison brauchen (für Gruppen/Bracket): CL + aktive Turniere.
+        var fullSeasonCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(_options.ChampionsLeagueCode))
+        {
+            fullSeasonCodes.Add(_options.ChampionsLeagueCode);
+        }
+
+        var activeTournaments = _options.Tournaments
+            .Where(t => !string.IsNullOrWhiteSpace(t.Code) && t.From <= now && now <= t.To)
+            .ToList();
+        foreach (var tournament in activeTournaments)
+        {
+            fullSeasonCodes.Add(tournament.Code);
+        }
 
         // Drosselung über alle Calls eines Refreshs hinweg (durchgehendes Rate-Budget).
         var firstCall = true;
@@ -53,15 +69,20 @@ public sealed class FootballDataClient : IFootballProvider
             firstCall = false;
         }
 
-        // 1) Spiele je Wettbewerb genau einmal (Union der Wettbewerbe aller getrackten Vereine).
+        // 1) Spiele je Wettbewerb genau einmal (Team-Wettbewerbe ∪ Voll-Saison-Codes).
         var matchesByComp = new Dictionary<string, IReadOnlyList<FdMatch>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var comp in _options.Teams.SelectMany(CompetitionsOf).Distinct(StringComparer.OrdinalIgnoreCase))
+        var matchComps = _options.Teams.SelectMany(CompetitionsOf)
+            .Concat(fullSeasonCodes)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+        foreach (var comp in matchComps)
         {
             try
             {
                 await ThrottleAsync();
-                var response = await GetAsync<FdMatchesResponse>(
-                    $"v4/competitions/{comp}/matches?dateFrom={from}&dateTo={to}", ct);
+                var url = fullSeasonCodes.Contains(comp)
+                    ? $"v4/competitions/{comp}/matches"
+                    : $"v4/competitions/{comp}/matches?dateFrom={narrowFrom}&dateTo={narrowTo}";
+                var response = await GetAsync<FdMatchesResponse>(url, ct);
                 matchesByComp[comp] = response.Matches;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -74,10 +95,11 @@ public sealed class FootballDataClient : IFootballProvider
             }
         }
 
-        // 2) Tabellen je Liga genau einmal: konfigurierte Top-5-Ligen ∪ Liga jedes Vereins.
+        // 2) Tabellen je Liga genau einmal: Top-5-Ligen ∪ Liga jedes Vereins ∪ Voll-Saison-Codes.
         var standingsByComp = new Dictionary<string, FdStandingsResponse>(StringComparer.OrdinalIgnoreCase);
         var standingsCodes = _options.LeagueCodes
             .Concat(_options.Teams.Select(t => t.CompetitionCode))
+            .Concat(fullSeasonCodes)
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .Distinct(StringComparer.OrdinalIgnoreCase);
         foreach (var code in standingsCodes)
@@ -113,7 +135,7 @@ public sealed class FootballDataClient : IFootballProvider
 
         // 4) Vereins-Sichten + Wochen-Fixtures aus den gecachten Daten ableiten (keine weiteren Calls).
         var teams = new List<FootballTeamSnapshot>(_options.Teams.Count);
-        var fixtures = new List<FixtureKey>();
+        var weekFixtures = new List<FixtureKey>();
         foreach (var team in _options.Teams)
         {
             var teamMatches = CompetitionsOf(team)
@@ -144,14 +166,88 @@ public sealed class FootballDataClient : IFootballProvider
                 : null;
 
             teams.Add(new FootballTeamSnapshot(team.Name, recent, upcoming, standing, table));
-
-            fixtures.AddRange(teamMatches.Select(m => new FixtureKey(
-                m.Competition.Code ?? m.Competition.Name, m.UtcDate, m.HomeTeam.Id, m.AwayTeam.Id)));
+            weekFixtures.AddRange(teamMatches.Select(ToFixtureKey));
         }
 
-        var interestingGames = FootballWeekCounter.CountInterestingGames(fixtures, now);
+        // 5) Champions League: Ligaphase-Tabelle + K.o.-Bracket.
+        var cl = BuildChampionsLeague(standingsByComp, matchesByComp, trackedIds);
 
-        return new FootballSnapshot(teams, now, leagueTables, interestingGames);
+        // 6) Aktive Turniere: Gruppentabellen + K.o.-Bracket; ihre Spiele zählen für die Wochensicht mit.
+        var tournaments = new List<TournamentView>();
+        foreach (var tournament in activeTournaments)
+        {
+            var view = BuildTournament(tournament, standingsByComp, matchesByComp, trackedIds);
+            if (view is not null)
+            {
+                tournaments.Add(view);
+            }
+
+            if (matchesByComp.TryGetValue(tournament.Code, out var tMatches))
+            {
+                weekFixtures.AddRange(tMatches
+                    .Where(m => m.HomeTeam.Id is not null && m.AwayTeam.Id is not null)
+                    .Select(ToFixtureKey));
+            }
+        }
+
+        var interestingGames = FootballWeekCounter.CountInterestingGames(weekFixtures, now);
+
+        return new FootballSnapshot(
+            teams, now, leagueTables, interestingGames,
+            cl, tournaments.Count > 0 ? tournaments : null);
+    }
+
+    private ChampionsLeague? BuildChampionsLeague(
+        IReadOnlyDictionary<string, FdStandingsResponse> standingsByComp,
+        IReadOnlyDictionary<string, IReadOnlyList<FdMatch>> matchesByComp,
+        IReadOnlyCollection<int> trackedIds)
+    {
+        var code = _options.ChampionsLeagueCode;
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return null;
+        }
+
+        LeagueTable? leaguePhase = null;
+        if (standingsByComp.TryGetValue(code, out var standings)
+            && ExtractRows(standings, trackedIds) is { Count: > 0 } rows)
+        {
+            leaguePhase = new LeagueTable(code, standings.Competition?.Name ?? code, rows);
+        }
+
+        var bracket = BuildBracket(code, matchesByComp);
+
+        return leaguePhase is null && bracket is null
+            ? null
+            : new ChampionsLeague(leaguePhase, bracket);
+    }
+
+    private static TournamentView? BuildTournament(
+        TournamentConfig tournament,
+        IReadOnlyDictionary<string, FdStandingsResponse> standingsByComp,
+        IReadOnlyDictionary<string, IReadOnlyList<FdMatch>> matchesByComp,
+        IReadOnlyCollection<int> trackedIds)
+    {
+        var groups = standingsByComp.TryGetValue(tournament.Code, out var standings)
+            ? ExtractGroupTables(standings, trackedIds)
+            : [];
+        var bracket = BuildBracket(tournament.Code, matchesByComp);
+
+        return groups.Count == 0 && bracket is null
+            ? null
+            : new TournamentView(tournament.Code, tournament.Name, groups, bracket);
+    }
+
+    private static KnockoutBracket? BuildBracket(
+        string code, IReadOnlyDictionary<string, IReadOnlyList<FdMatch>> matchesByComp)
+    {
+        if (!matchesByComp.TryGetValue(code, out var matches))
+        {
+            return null;
+        }
+
+        var bracket = KnockoutBracketBuilder.Build(matches.Select(ToFixture));
+        return bracket.Rounds.Count > 0 ? bracket : null;
     }
 
     private static IEnumerable<string> CompetitionsOf(FootballTeamConfig team)
@@ -159,6 +255,9 @@ public sealed class FootballDataClient : IFootballProvider
         IEnumerable<string> comps = team.Competitions.Count > 0 ? team.Competitions : [team.CompetitionCode];
         return comps.Where(c => !string.IsNullOrWhiteSpace(c));
     }
+
+    private static FixtureKey ToFixtureKey(FdMatch m) => new(
+        m.Competition.Code ?? m.Competition.Name, m.UtcDate, m.HomeTeam.Id ?? 0, m.AwayTeam.Id ?? 0);
 
     // Liest die Antwort und macht den echten football-data.org-Fehler (Status + Body) sichtbar –
     // z. B. 403 "check your subscription", 404 (Team/Wettbewerb), 429 (Rate-Limit).
@@ -180,11 +279,56 @@ public sealed class FootballDataClient : IFootballProvider
     {
         var isHome = match.HomeTeam.Id == teamId;
         var opponent = OpponentName(isHome ? match.AwayTeam : match.HomeTeam);
-        var ownGoals = isHome ? match.Score.FullTime.Home : match.Score.FullTime.Away;
-        var opponentGoals = isHome ? match.Score.FullTime.Away : match.Score.FullTime.Home;
+        var ownGoals = isHome ? match.Score.FullTime?.Home : match.Score.FullTime?.Away;
+        var opponentGoals = isHome ? match.Score.FullTime?.Away : match.Score.FullTime?.Home;
 
         return new Match(
             match.UtcDate, match.Competition.Code ?? match.Competition.Name, opponent, isHome, ownGoals, opponentGoals);
+    }
+
+    private static Fixture ToFixture(FdMatch match)
+    {
+        var status = match.Status switch
+        {
+            "IN_PLAY" or "PAUSED" => MatchStatus.Live,
+            "FINISHED" => MatchStatus.Finished,
+            _ => MatchStatus.Scheduled
+        };
+
+        var (homeGoals, awayGoals, homePenalties, awayPenalties, afterExtraTime) = ResolveScore(match.Score);
+
+        return new Fixture(
+            match.UtcDate,
+            match.Stage ?? string.Empty,
+            match.Group,
+            ToTeamRef(match.HomeTeam),
+            ToTeamRef(match.AwayTeam),
+            homeGoals, awayGoals, homePenalties, awayPenalties, afterExtraTime, status);
+    }
+
+    private static TeamRef ToTeamRef(FdTeam team) =>
+        new(team.Id ?? 0, OpponentName(team), team.Tla);
+
+    // On-Pitch-Tore (regulär + Verlängerung) von einem etwaigen Elfmeterschießen trennen, da
+    // fullTime bei Schießen die Elfmeter MIT enthält.
+    private static (int?, int?, int?, int?, bool) ResolveScore(FdScore? score)
+    {
+        if (score is null)
+        {
+            return (null, null, null, null, false);
+        }
+
+        var shootout = string.Equals(score.Duration, "PENALTY_SHOOTOUT", StringComparison.Ordinal);
+        var afterExtraTime = shootout || string.Equals(score.Duration, "EXTRA_TIME", StringComparison.Ordinal);
+
+        if (shootout)
+        {
+            var homeOnPitch = (score.RegularTime?.Home ?? 0) + (score.ExtraTime?.Home ?? 0);
+            var awayOnPitch = (score.RegularTime?.Away ?? 0) + (score.ExtraTime?.Away ?? 0);
+            return (homeOnPitch, awayOnPitch, score.Penalties?.Home, score.Penalties?.Away, afterExtraTime);
+        }
+
+        return (score.FullTime?.Home, score.FullTime?.Away, null, null, afterExtraTime);
     }
 
     // Voller Vereinsname statt shortName: letzterer ist teils zu knapp/mehrdeutig
@@ -195,23 +339,28 @@ public sealed class FootballDataClient : IFootballProvider
     private static IReadOnlyList<LeagueRow> ExtractRows(FdStandingsResponse standings, IReadOnlyCollection<int> ownTeamIds)
     {
         var total = standings.Standings.FirstOrDefault(s => s.Type == "TOTAL");
-        if (total is null)
-        {
-            return [];
-        }
-
-        return total.Table
-            .Select(e => new LeagueRow(
-                e.Position,
-                OpponentName(e.Team),
-                e.Team.Tla,
-                e.PlayedGames,
-                e.Won,
-                e.Draw,
-                e.Lost,
-                e.GoalDifference,
-                e.Points,
-                IsOwnTeam: ownTeamIds.Contains(e.Team.Id)))
-            .ToList();
+        return total is null ? [] : total.Table.Select(e => ToRow(e, ownTeamIds)).ToList();
     }
+
+    private static IReadOnlyList<LeagueTable> ExtractGroupTables(
+        FdStandingsResponse standings, IReadOnlyCollection<int> ownTeamIds) =>
+        standings.Standings
+            .Where(s => s.Type == "TOTAL")
+            .Select(s => new LeagueTable(
+                s.Group ?? string.Empty,
+                s.Group ?? string.Empty,
+                s.Table.Select(e => ToRow(e, ownTeamIds)).ToList()))
+            .ToList();
+
+    private static LeagueRow ToRow(FdTableEntry entry, IReadOnlyCollection<int> ownTeamIds) => new(
+        entry.Position,
+        OpponentName(entry.Team),
+        entry.Team.Tla,
+        entry.PlayedGames,
+        entry.Won,
+        entry.Draw,
+        entry.Lost,
+        entry.GoalDifference,
+        entry.Points,
+        IsOwnTeam: entry.Team.Id is int id && ownTeamIds.Contains(id));
 }
