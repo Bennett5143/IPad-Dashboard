@@ -1,0 +1,102 @@
+@page "/football"
+@implements IDisposable
+@inject FootballState FootballState
+@rendermode InteractiveServer
+
+<PageTitle>Fußball</PageTitle>
+
+<h1 class="page-title">Fußball</h1>
+
+<div class="football-page">
+    <div class="football-tabs" role="tablist">
+        <button class="football-tab @(_tab == Tab.Tables ? "is-active" : null)"
+                role="tab" aria-selected="@(_tab == Tab.Tables)" @onclick="() => _tab = Tab.Tables">
+            Tabellen
+        </button>
+        <button class="football-tab @(_tab == Tab.Clubs ? "is-active" : null)"
+                role="tab" aria-selected="@(_tab == Tab.Clubs)" @onclick="() => _tab = Tab.Clubs">
+            Vereine
+        </button>
+    </div>
+
+    @if (_tab == Tab.Tables)
+    {
+        @if (_tables is { Count: > 0 })
+        {
+            <div class="football-tables">
+                @foreach (var table in _tables)
+                {
+                    <section class="football-table-card">
+                        <h2>@FootballFormatter.Competition(table.Code)</h2>
+                        <table class="league-table">
+                            <thead>
+                                <tr>
+                                    <th class="num">#</th>
+                                    <th>Verein</th>
+                                    <th class="num">Sp</th>
+                                    <th class="num">S</th>
+                                    <th class="num">U</th>
+                                    <th class="num">N</th>
+                                    <th class="num">Diff</th>
+                                    <th class="num">Pkt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in table.Rows)
+                                {
+                                    <tr class="@(row.IsOwnTeam ? "is-own" : null)">
+                                        <td class="num">@row.Position</td>
+                                        <td>@row.TeamName</td>
+                                        <td class="num">@row.PlayedGames</td>
+                                        <td class="num">@row.Won</td>
+                                        <td class="num">@row.Draw</td>
+                                        <td class="num">@row.Lost</td>
+                                        <td class="num">@(row.GoalDifference > 0 ? "+" : "")@row.GoalDifference</td>
+                                        <td class="num pts">@row.Points</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </section>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="football-page-empty">Tabellen gerade nicht verfügbar.</p>
+        }
+    }
+    else
+    {
+        <div class="football-clubs">
+            <FootballTile />
+        </div>
+    }
+</div>
+
+@code {
+    private enum Tab
+    {
+        Tables,
+        Clubs
+    }
+
+    private Tab _tab = Tab.Tables;
+    private IReadOnlyList<LeagueTable>? _tables;
+
+    protected override void OnInitialized()
+    {
+        FootballState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState() => _tables = FootballState.Current?.LeagueTables;
+
+    public void Dispose() => FootballState.Changed -= OnChanged;
+}

@@ -1,17 +1,70 @@
-@* Platzhalter bis Slice 15.6 (Fußball-Ausbau). Bewusst inert – kein State, nicht tippbar.
-   Wird in 15.6 durch die echte Summary (Wochen-Spiele-Zähler + Fabrizio-Alert) ersetzt. *@
-<Tile CssClass="@CssClass" Title="Fußball">
-    <Icon>
-        <span aria-hidden="true">⚽</span>
-    </Icon>
-    <ChildContent>
-        <div class="summary-placeholder">
-            <span class="summary-placeholder-text">Spiel-Übersicht folgt</span>
-            <span class="summary-placeholder-sub">Modul-Ausbau · 15.6</span>
-        </div>
-    </ChildContent>
-</Tile>
+@implements IDisposable
+@inject FootballState FootballState
+@inject IFabrizioAlertSource FabrizioAlerts
+
+@* Fußball-Summary: Zähler „interessante Spiele diese Woche" + (ab 15.8) Fabrizio-Alert-Badge.
+   Ganze Kachel tippbar → /football (Top-5-Tabellen + getrackte Vereine). *@
+<a class="tile-tap @CssClass" href="/football">
+    <Tile Title="Fußball">
+        <Icon>
+            <span class="football-emoji" aria-hidden="true">⚽</span>
+        </Icon>
+        <ChildContent>
+            <div class="football-summary">
+                @if (_snapshot is null)
+                {
+                    <p class="football-summary-empty">Fußballdaten gerade nicht verfügbar.</p>
+                }
+                else
+                {
+                    <div class="football-summary-count">
+                        <span class="football-summary-number">@_snapshot.InterestingGamesThisWeek</span>
+                        <span class="football-summary-label">
+                            @(_snapshot.InterestingGamesThisWeek == 1 ? "Spiel diese Woche" : "Spiele diese Woche")
+                        </span>
+                    </div>
+
+                    @if (_snapshot.InterestingGamesThisWeek == 0)
+                    {
+                        <span class="football-summary-hint">Saisonpause – keine Spiele deiner Vereine</span>
+                    }
+
+                    @if (_alert is not null)
+                    {
+                        <div class="football-summary-alert" title="@_alert.Headline">
+                            <span class="football-summary-alert-tag">Fabrizio</span>
+                            <span class="football-summary-alert-text">@_alert.Headline</span>
+                        </div>
+                    }
+                }
+            </div>
+        </ChildContent>
+    </Tile>
+</a>
 
 @code {
     [Parameter] public string? CssClass { get; set; }
+
+    private FootballSnapshot? _snapshot;
+    private FabrizioAlert? _alert;
+
+    protected override void OnInitialized()
+    {
+        FootballState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        _snapshot = FootballState.Current;
+        _alert = FabrizioAlerts.Latest;
+    }
+
+    public void Dispose() => FootballState.Changed -= OnChanged;
 }
