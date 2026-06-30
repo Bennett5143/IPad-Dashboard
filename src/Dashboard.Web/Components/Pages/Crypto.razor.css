@@ -1,0 +1,138 @@
+.crypto-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.crypto-page-empty {
+    color: var(--color-fg-muted);
+    font-style: italic;
+}
+
+/* Fear-&-Greed-Stimmung */
+.crypto-sentiment {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow);
+}
+
+.crypto-sentiment-value {
+    font-family: var(--font-family-display);
+    font-size: 3.2rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    flex: none;
+}
+
+.crypto-sentiment-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
+}
+
+.crypto-sentiment-label {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-fg-secondary);
+}
+
+.crypto-sentiment-class {
+    font-weight: var(--font-weight-semibold);
+}
+
+.crypto-gauge {
+    height: 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-fg-muted) 30%, transparent);
+    overflow: hidden;
+}
+
+.crypto-gauge-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+/* Watchlist-Tabelle */
+.crypto-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.crypto-table thead th {
+    text-align: left;
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-fg-muted);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--glass-rim);
+}
+
+.crypto-table tbody td,
+.crypto-table tbody th {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid color-mix(in srgb, var(--glass-rim) 60%, transparent);
+    font-weight: var(--font-weight-regular);
+}
+
+.crypto-table .num {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.crypto-table .trend {
+    width: 130px;
+}
+
+.crypto-coin {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-align: left;
+}
+
+.crypto-coin-symbol {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-fg-primary);
+}
+
+.crypto-coin-name {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.crypto-table .trend .sparkline {
+    width: 120px;
+    height: 32px;
+    stroke: currentColor;
+    stroke-width: 1.5;
+}
+
+.crypto-updated {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+}
+
+.mood-bullish {
+    color: var(--color-success);
+}
+
+.mood-bearish {
+    color: var(--color-error);
+}
+
+.mood-neutral {
+    color: var(--color-fg-secondary);
+}
