@@ -1,0 +1,108 @@
+@page "/crypto"
+@implements IDisposable
+@inject CryptoState CryptoState
+@rendermode InteractiveServer
+
+<PageTitle>Krypto</PageTitle>
+
+<h1 class="page-title">Krypto</h1>
+
+<div class="crypto-page">
+    @if (_snapshot is null)
+    {
+        <p class="crypto-page-empty">Krypto-Daten gerade nicht verfügbar.</p>
+    }
+    else
+    {
+        @if (_snapshot.Sentiment is { } sentiment)
+        {
+            <section class="crypto-sentiment">
+                <div class="crypto-sentiment-value @CryptoFormatter.MoodClass(sentiment.Mood)">@sentiment.Value</div>
+                <div class="crypto-sentiment-body">
+                    <span class="crypto-sentiment-label">Fear &amp; Greed Index</span>
+                    <span class="crypto-sentiment-class @CryptoFormatter.MoodClass(sentiment.Mood)">
+                        @sentiment.Classification · @CryptoFormatter.MoodLabel(sentiment.Mood)
+                    </span>
+                    <div class="crypto-gauge" role="img"
+                         aria-label="Fear and Greed Index @sentiment.Value von 100">
+                        <div class="crypto-gauge-fill @CryptoFormatter.MoodClass(sentiment.Mood)"
+                             style="width:@(sentiment.Value)%"></div>
+                    </div>
+                </div>
+            </section>
+        }
+
+        @if (_snapshot.Coins.Count > 0)
+        {
+            <table class="crypto-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Coin</th>
+                        <th scope="col" class="num">Preis</th>
+                        <th scope="col" class="num">24 h</th>
+                        <th scope="col" class="trend">7 Tage</th>
+                        <th scope="col" class="num">Marktkap.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var coin in _snapshot.Coins)
+                    {
+                        <tr>
+                            <th scope="row" class="crypto-coin">
+                                <span class="crypto-coin-symbol">@coin.Symbol</span>
+                                <span class="crypto-coin-name">@coin.Name</span>
+                            </th>
+                            <td class="num">@CryptoFormatter.Price(coin.PriceEur)</td>
+                            <td class="num @CryptoFormatter.MoodClass(coin.Direction)">
+                                @CryptoFormatter.Percent(coin.Change24hPct)
+                            </td>
+                            <td class="trend">
+                                <Sparkline Values="coin.Sparkline7d"
+                                           CssClass="@CryptoFormatter.MoodClass(coin.Direction)" />
+                            </td>
+                            <td class="num">@CryptoFormatter.MarketCap(coin.MarketCap)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="crypto-page-empty">Keine Coins konfiguriert.</p>
+        }
+
+        <p class="crypto-updated">
+            Stand @LocalTime(_snapshot.RetrievedAtUtc)@(_isStale ? " · veraltet" : string.Empty)
+        </p>
+    }
+</div>
+
+@code {
+    private static readonly TimeZoneInfo BerlinTz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private CryptoSnapshot? _snapshot;
+    private bool _isStale;
+
+    protected override void OnInitialized()
+    {
+        CryptoState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        _snapshot = CryptoState.Current;
+        _isStale = CryptoState.IsStale;
+    }
+
+    private static string LocalTime(DateTimeOffset utc) =>
+        TimeZoneInfo.ConvertTime(utc, BerlinTz).ToString("HH:mm");
+
+    public void Dispose() => CryptoState.Changed -= OnChanged;
+}
