@@ -1,4 +1,5 @@
 global using Dashboard.Domain.Common;
+global using Dashboard.Domain.Crypto;
 global using Dashboard.Domain.Entities;
 global using Dashboard.Domain.Enums;
 global using Dashboard.Domain.Football;

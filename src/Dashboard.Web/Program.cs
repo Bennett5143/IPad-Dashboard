@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 using Dashboard.Infrastructure;
+using Dashboard.Infrastructure.Crypto;
 using Dashboard.Infrastructure.Football;
 using Dashboard.Infrastructure.Habits;
 using Dashboard.Infrastructure.Hvv;
@@ -111,6 +112,27 @@ try
     });
     builder.Services.AddHostedService<FootballRefreshService>();
 
+    // Crypto (Phase 15.4): Markt-Watchlist (CoinGecko) + Marktstimmung (alternative.me).
+    // Beide Quellen frei & schlüssellos; das offline-iPad bekommt alles serverseitig gepusht.
+    var cryptoOptions = builder.Configuration
+        .GetSection(CryptoOptions.SectionName)
+        .Get<CryptoOptions>() ?? new CryptoOptions();
+
+    builder.Services.Configure<CryptoOptions>(
+        builder.Configuration.GetSection(CryptoOptions.SectionName));
+    builder.Services.AddSingleton<CryptoState>();
+    builder.Services.AddHttpClient<ICryptoMarketProvider, CoinGeckoClient>(http =>
+    {
+        http.BaseAddress = new Uri(cryptoOptions.MarketBaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(10);
+    });
+    builder.Services.AddHttpClient<IMarketSentimentProvider, FearGreedClient>(http =>
+    {
+        http.BaseAddress = new Uri(cryptoOptions.SentimentBaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(10);
+    });
+    builder.Services.AddHostedService<CryptoRefreshService>();
+
     // HVV
     var hvvOptions = builder.Configuration
         .GetSection(HvvOptions.SectionName)
@@ -189,6 +211,7 @@ try
     // registrieren; Host-Metriken nur unter Linux (Raspberry Pi), sonst bewusst leer.
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WeatherState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<FootballState>());
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CryptoState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<HvvState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WhoopState>());
     builder.Services.AddSingleton<ISystemMetricsProvider>(OperatingSystem.IsLinux()
