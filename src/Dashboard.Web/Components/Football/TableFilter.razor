@@ -1,0 +1,64 @@
+@* Zeigt aus einer Liste von Tabellen immer nur EINE – gewählt über eine Pills-Zeile. Genutzt für
+   die Top-5-Ligatabellen und die Turnier-Gruppen: hält das kleine iPad-Display übersichtlich (eine
+   Tabelle statt Grid) und rendert schneller. *@
+@if (Tables is { Count: > 0 })
+{
+    <div class="table-filter">
+        @if (Tables.Count > 1)
+        {
+            <div class="table-filter-pills" role="tablist">
+                @for (var i = 0; i < Tables.Count; i++)
+                {
+                    var index = i;
+                    <button class="table-pill @(_selected == index ? "is-active" : null)"
+                            role="tab" aria-selected="@(_selected == index)"
+                            @onclick="() => _selected = index">
+                        @PillLabel(Tables[index])
+                    </button>
+                }
+            </div>
+        }
+
+        <section class="tf-card">
+            <h2 class="tf-heading">@Heading(Current)</h2>
+            <StandingsTable Table="Current" ShowCrests="ShowCrests" />
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<LeagueTable> Tables { get; set; } = [];
+
+    /// <summary>Wappen in der gezeigten Tabelle ein-/ausblenden (durchgereicht an StandingsTable).</summary>
+    [Parameter] public bool ShowCrests { get; set; } = true;
+
+    private int _selected;
+
+    private LeagueTable Current => Tables[Math.Clamp(_selected, 0, Tables.Count - 1)];
+
+    // Kommt beim Refresh eine kürzere Liste rein, Auswahl in Grenzen halten.
+    protected override void OnParametersSet()
+    {
+        if (_selected >= Tables.Count)
+        {
+            _selected = 0;
+        }
+    }
+
+    // Kompaktes Pill-Label: Liga-Kürzel (PL/PD/…) bzw. der letzte Token eines Gruppennamens (A/B/…).
+    private static string PillLabel(LeagueTable table)
+    {
+        if (!string.IsNullOrEmpty(table.Code) && table.Code.Length <= 4 && !table.Code.Contains(' '))
+        {
+            return table.Code;
+        }
+
+        var name = string.IsNullOrWhiteSpace(table.Name) ? table.Code : table.Name;
+        var last = name.Split(' ', '_', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+        return string.IsNullOrEmpty(last) ? name : last;
+    }
+
+    // Überschrift: der volle Wettbewerbs-/Gruppenname; für Liga-Codes das lesbare Label.
+    private static string Heading(LeagueTable table) =>
+        string.IsNullOrWhiteSpace(table.Name) ? FootballFormatter.Competition(table.Code) : table.Name;
+}

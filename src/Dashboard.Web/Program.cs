@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 using Dashboard.Infrastructure;
+using Dashboard.Infrastructure.Crests;
 using Dashboard.Infrastructure.Crypto;
 using Dashboard.Infrastructure.Football;
 using Dashboard.Infrastructure.Habits;
@@ -232,6 +233,20 @@ try
         http.DefaultRequestHeaders.UserAgent.TryParseAdd(tileOptions.UserAgent);
     });
 
+    // Wappen-/Flaggen-Proxy: gleicher Offline-Gedanke wie beim Kachel-Proxy. Vereinswappen und
+    // Nationalflaggen (football-data.org) werden server-seitig geholt/gecacht und über /crests
+    // ausgeliefert, damit das iPad kein Bild direkt aus dem Internet laden muss (Sektion „Crests").
+    var crestOptions = builder.Configuration
+        .GetSection(CrestOptions.SectionName)
+        .Get<CrestOptions>() ?? new CrestOptions();
+
+    builder.Services.Configure<CrestOptions>(builder.Configuration.GetSection(CrestOptions.SectionName));
+    builder.Services.AddHttpClient<CrestProvider>(http =>
+    {
+        http.Timeout = TimeSpan.FromSeconds(15);
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd(crestOptions.UserAgent);
+    });
+
     var app = builder.Build();
 
     app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -361,6 +376,22 @@ try
 
         context.Response.Headers.CacheControl = "public, max-age=2592000"; // 30 Tage im Client-Cache
         return Results.File(bytes, "image/png");
+    });
+
+    // Wappen-/Flaggen-Proxy-Endpoint: nimmt die Upstream-URL als Query-Parameter (?u=…), prüft sie
+    // gegen die Host-Allowlist und liefert das gecachte Bild. So bleibt das iPad offline.
+    app.MapGet("/crests", async (
+        string u, CrestProvider crests, HttpContext context, CancellationToken ct) =>
+    {
+        var image = await crests.GetCrestAsync(u, ct);
+        if (image is null)
+        {
+            context.Response.Headers.CacheControl = "no-store";
+            return Results.NotFound();
+        }
+
+        context.Response.Headers.CacheControl = "public, max-age=2592000"; // 30 Tage im Client-Cache
+        return Results.File(image.Bytes, image.ContentType);
     });
 
     // Cache vorwärmen: lädt ein Gebiet (Bounding-Box × Zoomstufen) einmalig gedrosselt in den

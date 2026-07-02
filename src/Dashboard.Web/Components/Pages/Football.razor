@@ -8,29 +8,28 @@
 <h1 class="page-title">Fußball</h1>
 
 <div class="football-page">
-    <div class="football-tabs" role="tablist">
-        @foreach (var (key, label) in Tabs())
-        {
-            <button class="football-tab @(_tab == key ? "is-active" : null)"
-                    role="tab" aria-selected="@(_tab == key)" @onclick="() => _tab = key">
-                @label
-            </button>
-        }
+    <div class="football-bar">
+        <div class="football-tabs" role="tablist">
+            @foreach (var (key, label) in Tabs())
+            {
+                <button class="football-tab @(_tab == key ? "is-active" : null)"
+                        role="tab" aria-selected="@(_tab == key)" @onclick="() => _tab = key">
+                    @label
+                </button>
+            }
+        </div>
+        <button class="football-toggle @(_showCrests ? "is-on" : null)"
+                @onclick="() => _showCrests = !_showCrests"
+                title="Vereinswappen / Flaggen ein- oder ausblenden">
+            🛡 Wappen @(_showCrests ? "an" : "aus")
+        </button>
     </div>
 
     @if (_tab == "tables")
     {
         @if (_tables is { Count: > 0 })
         {
-            <div class="football-cards">
-                @foreach (var table in _tables)
-                {
-                    <section class="football-card">
-                        <h2>@FootballFormatter.Competition(table.Code)</h2>
-                        <StandingsTable Table="table" />
-                    </section>
-                }
-            </div>
+            <TableFilter Tables="_tables" ShowCrests="_showCrests" />
         }
         else
         {
@@ -42,16 +41,13 @@
         <div class="football-comp">
             @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
             {
-                <section class="football-card">
-                    <h2>Ligaphase</h2>
-                    <StandingsTable Table="phase" />
-                </section>
+                <TableFilter Tables="@(new[] { phase })" ShowCrests="_showCrests" />
             }
             @if (_cl.Bracket is not null)
             {
                 <section class="football-card football-card-wide">
                     <h2>K.o.-Runde</h2>
-                    <KnockoutBracketView Bracket="_cl.Bracket" />
+                    <KnockoutBracketView Bracket="_cl.Bracket" ShowCrests="_showCrests" />
                 </section>
             }
         </div>
@@ -61,21 +57,13 @@
         <div class="football-comp">
             @if (tournament.Groups.Count > 0)
             {
-                <div class="football-cards">
-                    @foreach (var group in tournament.Groups)
-                    {
-                        <section class="football-card">
-                            <h2>@group.Name</h2>
-                            <StandingsTable Table="group" />
-                        </section>
-                    }
-                </div>
+                <TableFilter Tables="tournament.Groups" ShowCrests="_showCrests" />
             }
             @if (tournament.Bracket is not null)
             {
                 <section class="football-card football-card-wide">
                     <h2>K.o.-Runde</h2>
-                    <KnockoutBracketView Bracket="tournament.Bracket" />
+                    <KnockoutBracketView Bracket="tournament.Bracket" ShowCrests="_showCrests" />
                 </section>
             }
         </div>
@@ -83,7 +71,7 @@
     else if (_tab == "clubs")
     {
         <div class="football-clubs">
-            <FootballTile />
+            <FootballTile ShowCrests="_showCrests" />
         </div>
     }
 </div>
@@ -93,6 +81,7 @@
     private ChampionsLeague? _cl;
     private IReadOnlyList<TournamentView>? _tournaments;
     private string _tab = "tables";
+    private bool _showCrests = true;
 
     protected override void OnInitialized()
     {

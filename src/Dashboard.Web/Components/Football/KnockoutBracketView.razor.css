@@ -55,7 +55,16 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.bt-crest {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex: none;
+}
+
 .bt-name {
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

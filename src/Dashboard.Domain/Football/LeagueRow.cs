@@ -11,4 +11,7 @@ public sealed record LeagueRow(
     int Lost,
     int GoalDifference,
     int Points,
-    bool IsOwnTeam);
+    bool IsOwnTeam,
+    // Upstream-URL des Vereinswappens (bei Nationalteams die Flagge). Wird NICHT direkt vom
+    // Browser geladen (Offline-Kiosk), sondern über den server-seitigen /crests-Proxy.
+    string? CrestUrl = null);

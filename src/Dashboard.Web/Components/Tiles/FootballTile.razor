@@ -17,7 +17,13 @@
                 {
                     <section class="football-team">
                         <header>
-                            <h3>@team.TeamName</h3>
+                            <span class="football-team-name">
+                                @if (ShowCrests && FootballFormatter.CrestSrc(team.CrestUrl) is { } crestSrc)
+                                {
+                                    <img class="football-team-crest" src="@crestSrc" alt="" width="20" height="20" loading="lazy" />
+                                }
+                                <h3>@team.TeamName</h3>
+                            </span>
                             @if (team.Table is { Count: > 0 })
                             {
                                 <button class="football-position is-button" title="Ligatabelle anzeigen"
@@ -162,6 +168,9 @@
 
 @code {
     [Parameter] public string? CssClass { get; set; }
+
+    /// <summary>Vereinswappen vor den Teamnamen zeigen (über den /crests-Proxy).</summary>
+    [Parameter] public bool ShowCrests { get; set; } = true;
 
     private FootballSnapshot? _snapshot;
     private bool _isStale;

@@ -62,4 +62,11 @@ public static class FootballFormatter
     public static string UpdatedAt(DateTimeOffset retrievedAtUtc) =>
         TimeZoneInfo.ConvertTime(retrievedAtUtc, BerlinTz)
             .ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Verweis auf das lokal geproxte Wappen (<c>/crests?u=…</c>) oder <c>null</c>, wenn keine
+    /// Upstream-URL vorliegt. Das iPad lädt so nie direkt aus dem Internet (Offline-Kiosk).
+    /// </summary>
+    public static string? CrestSrc(string? crestUrl) =>
+        string.IsNullOrWhiteSpace(crestUrl) ? null : $"/crests?u={Uri.EscapeDataString(crestUrl)}";
 }

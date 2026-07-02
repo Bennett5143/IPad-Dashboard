@@ -8,8 +8,8 @@ public enum MatchStatus
     Finished
 }
 
-/// <summary>Minimaler Team-Verweis (ID + Name + Kürzel) für neutrale Spiel-/Bracket-Sichten.</summary>
-public readonly record struct TeamRef(int Id, string Name, string? Tla);
+/// <summary>Minimaler Team-Verweis (ID + Name + Kürzel + Wappen/Flagge) für neutrale Spiel-/Bracket-Sichten.</summary>
+public readonly record struct TeamRef(int Id, string Name, string? Tla, string? CrestUrl = null);
 
 /// <summary>
 /// Perspektiv-neutrales Spiel (anders als <see cref="Match"/>, das aus Vereinssicht aufgelöst ist).
