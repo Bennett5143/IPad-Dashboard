@@ -103,4 +103,28 @@ public class KnockoutBracketBuilderTests
         Assert.Equal(["LAST_16", "QUARTER_FINALS"], bracket.Rounds.Select(r => r.Stage));
         Assert.Single(bracket.Rounds[0].Ties); // nur der bekannte Achtelfinal-Zweikampf
     }
+
+    [Fact]
+    public void LaterRound_OrderedByFeederTie_NotByKickoff()
+    {
+        // Achtelfinale in Bracket-Reihenfolge (nach Anstoß): 1v2, 3v4, 5v6, 7v8 – Heim gewinnt je.
+        // Viertelfinale: (1 vs 3) kommt aus AF-Partien 0+1, (5 vs 7) aus 2+3. Die Anstoßzeiten der
+        // VF sind aber VERTAUSCHT (5v7 früher als 1v3). Nach Zeit sortiert stünde 5v7 zuerst; korrekt
+        // im Bracket steht 1v3 zuerst (bei seinen Zubringern).
+        var d = new DateTimeOffset(2026, 4, 1, 18, 0, 0, TimeSpan.Zero);
+        var bracket = KnockoutBracketBuilder.Build(
+        [
+            Leg("LAST_16", 1, 2, 1, 0, d),
+            Leg("LAST_16", 3, 4, 1, 0, d.AddDays(1)),
+            Leg("LAST_16", 5, 6, 1, 0, d.AddDays(2)),
+            Leg("LAST_16", 7, 8, 1, 0, d.AddDays(3)),
+            Leg("QUARTER_FINALS", 5, 7, null, null, d.AddDays(10), status: MatchStatus.Scheduled),
+            Leg("QUARTER_FINALS", 1, 3, null, null, d.AddDays(20), status: MatchStatus.Scheduled)
+        ]);
+
+        var qf = bracket.Rounds.Single(r => r.Stage == "QUARTER_FINALS").Ties;
+        Assert.Equal(2, qf.Count);
+        Assert.Equal([1, 3], new[] { qf[0].Home.Id, qf[0].Away.Id });
+        Assert.Equal([5, 7], new[] { qf[1].Home.Id, qf[1].Away.Id });
+    }
 }

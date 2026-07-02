@@ -20,6 +20,7 @@ public static class KnockoutBracketBuilder
             .ToList();
 
         var rounds = new List<KnockoutRound>();
+        IReadOnlyList<KnockoutTie>? previousMainRound = null;
         foreach (var stage in StageOrder)
         {
             var legs = knockout.Where(f => f.Stage == stage).ToList();
@@ -31,16 +32,65 @@ public static class KnockoutBracketBuilder
             var ties = legs
                 .GroupBy(f => UnorderedPair(f.Home.Id, f.Away.Id))
                 .Select(group => BuildTie(stage, group.OrderBy(f => f.KickoffUtc).ToList()))
-                .OrderBy(tie => tie.EarliestKickoff)
                 .ToList();
 
-            rounds.Add(new KnockoutRound(stage, StageLabel(stage), ties));
+            // Reihenfolge: die erste K.o.-Runde nach Anstoß; jede folgende so, dass eine Partie neben
+            // den beiden Vorrunden-Partien steht, aus denen ihre Teams stammen. Nur so passen die
+            // Spalten optisch zusammen (Sieger fließen ins nächste Spiel derselben Höhe).
+            var ordered = previousMainRound is null
+                ? ties.OrderBy(tie => tie.EarliestKickoff).ToList()
+                : ties
+                    .OrderBy(tie => FeederIndex(tie, previousMainRound))
+                    .ThenBy(tie => tie.EarliestKickoff)
+                    .ToList();
+
+            rounds.Add(new KnockoutRound(stage, StageLabel(stage), ordered));
+
+            // Spiel um Platz 3 (Halbfinal-Verlierer) ist kein Bracket-Fortschritt → nicht als
+            // Feeder-Basis fürs Finale nehmen, sonst verliert das Finale seine Zuordnung.
+            if (stage != "THIRD_PLACE")
+            {
+                previousMainRound = ordered;
+            }
         }
 
         return new KnockoutBracket(rounds);
     }
 
     private static (int, int) UnorderedPair(int a, int b) => a < b ? (a, b) : (b, a);
+
+    // Sortierschlüssel einer Partie relativ zur Vorrunde: die kleinere Position der beiden
+    // Vorrunden-Partien, aus denen ihre Teams kommen – so wird sie zwischen ihre Zubringer einsortiert.
+    private static int FeederIndex(KnockoutTie tie, IReadOnlyList<KnockoutTie> previous)
+    {
+        var home = IndexOfParticipant(previous, tie.Home.Id);
+        var away = IndexOfParticipant(previous, tie.Away.Id);
+
+        if (home >= 0 && away >= 0)
+        {
+            return Math.Min(home, away);
+        }
+
+        if (home >= 0)
+        {
+            return home;
+        }
+
+        return away >= 0 ? away : int.MaxValue;
+    }
+
+    private static int IndexOfParticipant(IReadOnlyList<KnockoutTie> ties, int teamId)
+    {
+        for (var i = 0; i < ties.Count; i++)
+        {
+            if (ties[i].Home.Id == teamId || ties[i].Away.Id == teamId)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 
     private static KnockoutTie BuildTie(string stage, IReadOnlyList<Fixture> legs)
     {
