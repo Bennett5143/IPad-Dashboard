@@ -93,7 +93,7 @@ public sealed class CrestProvider
                     // 404 o. ä. ändert sich nicht – nur bei Drosselung (429)/Serverfehler (5xx) neu versuchen.
                     if (response.StatusCode != HttpStatusCode.TooManyRequests && (int)response.StatusCode < 500)
                     {
-                        _logger.LogDebug("Wappen {Url}: Upstream antwortete {Status}", url, (int)response.StatusCode);
+                        _logger.LogDebug("Wappen {Url}: Upstream antwortete {Status}", ForLog(url), (int)response.StatusCode);
                         return null;
                     }
                 }
@@ -101,7 +101,7 @@ public sealed class CrestProvider
                 {
                     if (ct.IsCancellationRequested || attempt == MaxAttempts)
                     {
-                        _logger.LogDebug(ex, "Wappen {Url}: Abruf fehlgeschlagen", url);
+                        _logger.LogDebug(ex, "Wappen {Url}: Abruf fehlgeschlagen", ForLog(url));
                         return null;
                     }
                 }
@@ -116,6 +116,10 @@ public sealed class CrestProvider
             UpstreamGate.Release();
         }
     }
+
+    // Zeilenumbrüche aus der user-gelieferten URL entfernen, bevor sie ins Log geht: sonst ließen
+    // sich über \r\n gefälschte Log-Zeilen einschleusen (Log-Forging).
+    private static string ForLog(string url) => url.Replace("\r", string.Empty).Replace("\n", string.Empty);
 
     // Hash der vollen URL als Dateiname; Zwei-Zeichen-Präfix als Unterordner, damit kein einzelnes
     // Verzeichnis mit Tausenden Dateien entsteht.
