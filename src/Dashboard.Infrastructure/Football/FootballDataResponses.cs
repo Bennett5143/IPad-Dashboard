@@ -26,7 +26,8 @@ internal sealed record FdTeam(
     [property: JsonPropertyName("id")] int? Id,
     [property: JsonPropertyName("name")] string? Name,
     [property: JsonPropertyName("shortName")] string? ShortName,
-    [property: JsonPropertyName("tla")] string? Tla);
+    [property: JsonPropertyName("tla")] string? Tla,
+    [property: JsonPropertyName("crest")] string? Crest = null);
 
 // fullTime enthält bei Elfmeterschießen die Elfmeter MIT; die On-Pitch-Tore stehen in
 // regularTime (+ extraTime), das Schießen separat in penalties.

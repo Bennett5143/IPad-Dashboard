@@ -43,7 +43,7 @@ public class FootballDataClientTests
             { "type": "HOME", "table": [ { "position": 5, "team": { "id": 86, "name": "Real Madrid CF" }, "playedGames": 18, "points": 40 } ] },
             { "type": "TOTAL", "table": [
               { "position": 2, "team": { "id": 81, "name": "FC Barcelona", "tla": "BAR" }, "playedGames": 36, "won": 25, "draw": 5, "lost": 6, "goalDifference": 40, "points": 80 },
-              { "position": 1, "team": { "id": 86, "name": "Real Madrid CF", "tla": "RMA" }, "playedGames": 36, "won": 27, "draw": 4, "lost": 5, "goalDifference": 48, "points": 85 }
+              { "position": 1, "team": { "id": 86, "name": "Real Madrid CF", "tla": "RMA", "crest": "https://crests.football-data.org/86.png" }, "playedGames": 36, "won": 27, "draw": 4, "lost": 5, "goalDifference": 48, "points": 85 }
             ] }
           ]
         }
@@ -230,6 +230,15 @@ public class FootballDataClientTests
         Assert.Equal("PD", table.Code);
         Assert.Equal("La Liga", table.Name);                       // aus competition.name
         Assert.Equal(2, table.Rows.Count(r => r.IsOwnTeam));       // beide getrackten Vereine markiert
+
+        // Wappen-URL wird aus dem team.crest-Feld übernommen (für den /crests-Proxy).
+        var madrid = table.Rows.Single(r => r.Position == 1);
+        Assert.Equal("https://crests.football-data.org/86.png", madrid.CrestUrl);
+        Assert.Null(table.Rows.Single(r => r.Position == 2).CrestUrl); // Barça-Zeile ohne crest → null
+
+        // Getrackter Verein trägt sein Wappen auch in der Team-Sicht.
+        var madridTeam = snapshot.Teams.Single(t => t.TeamName == "Real Madrid");
+        Assert.Equal("https://crests.football-data.org/86.png", madridTeam.CrestUrl);
     }
 
     [Fact]

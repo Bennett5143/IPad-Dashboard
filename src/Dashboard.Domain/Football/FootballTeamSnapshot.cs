@@ -9,4 +9,6 @@ public sealed record FootballTeamSnapshot(
     IReadOnlyList<Match> RecentResults,
     IReadOnlyList<Match> Upcoming,
     TablePosition? Standing,
-    IReadOnlyList<LeagueRow>? Table = null);
+    IReadOnlyList<LeagueRow>? Table = null,
+    // Wappen des getrackten Vereins (über den /crests-Proxy geladen); null wenn unbekannt.
+    string? CrestUrl = null);

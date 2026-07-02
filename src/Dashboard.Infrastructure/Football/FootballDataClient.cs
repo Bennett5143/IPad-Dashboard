@@ -161,11 +161,13 @@ public sealed class FootballDataClient : IFootballProvider
             IReadOnlyList<LeagueRow> table = standingsByComp.TryGetValue(team.CompetitionCode, out var standings)
                 ? ExtractRows(standings, [team.TeamId])
                 : [];
-            var standing = table.FirstOrDefault(r => r.IsOwnTeam) is { } own
+            var ownRow = table.FirstOrDefault(r => r.IsOwnTeam);
+            var standing = ownRow is { } own
                 ? new TablePosition(own.Position, own.PlayedGames, own.Points)
                 : null;
 
-            teams.Add(new FootballTeamSnapshot(team.Name, recent, upcoming, standing, table));
+            teams.Add(new FootballTeamSnapshot(
+                team.Name, recent, upcoming, standing, table, CrestUrl: ownRow?.CrestUrl));
             weekFixtures.AddRange(teamMatches.Select(ToFixtureKey));
         }
 
@@ -307,7 +309,7 @@ public sealed class FootballDataClient : IFootballProvider
     }
 
     private static TeamRef ToTeamRef(FdTeam team) =>
-        new(team.Id ?? 0, OpponentName(team), team.Tla);
+        new(team.Id ?? 0, OpponentName(team), team.Tla, NullIfBlank(team.Crest));
 
     // On-Pitch-Tore (regulär + Verlängerung) von einem etwaigen Elfmeterschießen trennen, da
     // fullTime bei Schießen die Elfmeter MIT enthält.
@@ -362,5 +364,9 @@ public sealed class FootballDataClient : IFootballProvider
         entry.Lost,
         entry.GoalDifference,
         entry.Points,
-        IsOwnTeam: entry.Team.Id is int id && ownTeamIds.Contains(id));
+        IsOwnTeam: entry.Team.Id is int id && ownTeamIds.Contains(id),
+        CrestUrl: NullIfBlank(entry.Team.Crest));
+
+    private static string? NullIfBlank(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 }
