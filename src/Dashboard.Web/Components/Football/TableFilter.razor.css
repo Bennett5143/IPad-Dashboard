@@ -1,0 +1,55 @@
+.table-filter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.table-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Zweite, kleinere Pill-Ebene unter den Haupt-Tabs (Liga-/Gruppen-Auswahl). */
+.table-pill {
+    background: transparent;
+    border: 1px solid var(--glass-rim);
+    border-radius: 999px;
+    padding: 2px var(--space-3);
+    color: var(--color-fg-secondary);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+}
+
+.table-pill:hover {
+    color: var(--color-fg-primary);
+    border-color: var(--color-accent);
+}
+
+.table-pill.is-active {
+    color: var(--color-fg-primary);
+    background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+    border-color: var(--color-accent);
+}
+
+/* Eine einzelne Tabelle bekommt eine sinnvolle Maximalbreite, damit sie auf dem iPad nicht
+   unnötig in die Breite läuft. */
+.tf-card {
+    max-width: 520px;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow);
+}
+
+.tf-heading {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    color: var(--color-fg-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-3);
+}

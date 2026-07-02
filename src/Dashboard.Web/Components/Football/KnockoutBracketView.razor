@@ -10,10 +10,18 @@
                 {
                     <div class="bracket-tie @(tie.TwoLegs ? "is-two-legs" : null)">
                         <div class="bracket-team @(IsWinner(tie, tie.Home) ? "is-winner" : null)">
+                            @if (ShowCrests && FootballFormatter.CrestSrc(tie.Home.CrestUrl) is { } homeSrc)
+                            {
+                                <img class="bt-crest" src="@homeSrc" alt="" width="16" height="16" loading="lazy" />
+                            }
                             <span class="bt-name">@Label(tie.Home)</span>
                             <span class="bt-score">@(tie.HomeAggregate?.ToString() ?? "")</span>
                         </div>
                         <div class="bracket-team @(IsWinner(tie, tie.Away) ? "is-winner" : null)">
+                            @if (ShowCrests && FootballFormatter.CrestSrc(tie.Away.CrestUrl) is { } awaySrc)
+                            {
+                                <img class="bt-crest" src="@awaySrc" alt="" width="16" height="16" loading="lazy" />
+                            }
                             <span class="bt-name">@Label(tie.Away)</span>
                             <span class="bt-score">@(tie.AwayAggregate?.ToString() ?? "")</span>
                         </div>
@@ -34,6 +42,9 @@
 
 @code {
     [Parameter, EditorRequired] public KnockoutBracket Bracket { get; set; } = default!;
+
+    /// <summary>Wappen/Flaggen vor den Teamnamen zeigen (über den /crests-Proxy).</summary>
+    [Parameter] public bool ShowCrests { get; set; } = true;
 
     private static bool IsWinner(KnockoutTie tie, TeamRef team) =>
         tie.Winner is { } winner && winner.Id == team.Id;
