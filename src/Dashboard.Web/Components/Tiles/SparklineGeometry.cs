@@ -55,5 +55,21 @@ public static class SparklineGeometry
         return sb.ToString();
     }
 
+    /// <summary>
+    /// SVG-<c>points</c>-String für die gefüllte Fläche unter der Sparkline: die Linie plus die
+    /// beiden unteren Ecken (<c>0,height</c> … <c>width,height</c>), sodass sich ein geschlossenes
+    /// Polygon zum Verlaufs-Fill ergibt. Leer, wenn die Linie leer ist (&lt; 2 vorhandene Werte).
+    /// </summary>
+    public static string ToAreaPolygonPoints(IReadOnlyList<double?> values, double width, double height, double pad = 2)
+    {
+        var line = ToPolylinePoints(values, width, height, pad);
+        if (line.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        return $"0,{Fmt(height)} {line} {Fmt(width)},{Fmt(height)}";
+    }
+
     private static string Fmt(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 }

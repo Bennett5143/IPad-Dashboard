@@ -29,4 +29,18 @@ public class SparklineGeometryTests
         // mittlerer Wert fehlt → Punkte bei Index 0 und 2
         Assert.Equal("2,30 118,2", SparklineGeometry.ToPolylinePoints([0d, null, 10d], 120, 32, pad: 2));
     }
+
+    [Fact]
+    public void Area_WrapsLine_WithBaseCorners()
+    {
+        // Linie "2,30 118,2" + untere Ecken 0,32 und 120,32 → geschlossenes Polygon
+        Assert.Equal("0,32 2,30 118,2 120,32", SparklineGeometry.ToAreaPolygonPoints([0d, 10d], 120, 32, pad: 2));
+    }
+
+    [Fact]
+    public void Area_ReturnsEmpty_WhenLineEmpty()
+    {
+        Assert.Equal(string.Empty, SparklineGeometry.ToAreaPolygonPoints([5d], 120, 32));
+        Assert.Equal(string.Empty, SparklineGeometry.ToAreaPolygonPoints([null, 5d], 120, 32));
+    }
 }

@@ -1,4 +1,8 @@
 <svg class="sparkline @CssClass" viewBox="0 0 120 32" preserveAspectRatio="none" role="img" aria-hidden="true">
+    @if (_area.Length > 0 && GradientId is not null)
+    {
+        <polygon class="sparkline-area" points="@_area" fill="url(#@GradientId)" />
+    }
     @if (_points.Length > 0)
     {
         <polyline points="@_points" fill="none" vector-effect="non-scaling-stroke" />
@@ -9,8 +13,16 @@
     [Parameter, EditorRequired] public IReadOnlyList<double?> Values { get; set; } = [];
     [Parameter] public string? CssClass { get; set; }
 
-    private string _points = string.Empty;
+    /// <summary>Gradient-Id (ohne <c>#</c>) aus <see cref="ChartGradients"/>, z. B. <c>gGreen</c>.
+    /// Ist er gesetzt, wird zusätzlich die Fläche unter der Kurve mit dem Verlauf gefüllt.</summary>
+    [Parameter] public string? GradientId { get; set; }
 
-    protected override void OnParametersSet() =>
+    private string _points = string.Empty;
+    private string _area = string.Empty;
+
+    protected override void OnParametersSet()
+    {
         _points = SparklineGeometry.ToPolylinePoints(Values, 120, 32);
+        _area = GradientId is null ? string.Empty : SparklineGeometry.ToAreaPolygonPoints(Values, 120, 32);
+    }
 }
