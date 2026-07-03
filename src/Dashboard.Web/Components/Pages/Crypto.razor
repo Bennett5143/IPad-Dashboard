@@ -1,87 +1,96 @@
 @page "/crypto"
+@layout DetailLayout
 @implements IDisposable
 @inject CryptoState CryptoState
 @rendermode InteractiveServer
 
 <PageTitle>Krypto</PageTitle>
 
-<h1 class="page-title">Krypto</h1>
+<PageHeader Title="Krypto" Accent="var(--accent-brown)" Meta="@Meta" />
 
-<div class="crypto-page">
+<div class="detail-body">
     @if (_snapshot is null)
     {
-        <p class="crypto-page-empty">Krypto-Daten gerade nicht verfügbar.</p>
+        <p class="crypto-empty">Krypto-Daten gerade nicht verfügbar.</p>
     }
     else
     {
-        @if (_snapshot.Sentiment is { } sentiment)
-        {
-            <section class="crypto-sentiment">
-                <div class="crypto-sentiment-value @CryptoFormatter.MoodClass(sentiment.Mood)">@sentiment.Value</div>
-                <div class="crypto-sentiment-body">
-                    <span class="crypto-sentiment-label">Fear &amp; Greed Index</span>
-                    <span class="crypto-sentiment-class @CryptoFormatter.MoodClass(sentiment.Mood)">
-                        @sentiment.Classification · @CryptoFormatter.MoodLabel(sentiment.Mood)
-                    </span>
-                    <div class="crypto-gauge" role="img"
-                         aria-label="Fear and Greed Index @sentiment.Value von 100">
-                        <div class="crypto-gauge-fill @CryptoFormatter.MoodClass(sentiment.Mood)"
-                             style="width:@(sentiment.Value)%"></div>
+        <div class="crypto-detail">
+            @if (_snapshot.Sentiment is { } sentiment)
+            {
+                <section class="fng-card">
+                    <div class="fng-score">
+                        <span class="fng-num">@sentiment.Value</span>
+                        <span class="mono-label fng-cap">Fear &amp; Greed</span>
                     </div>
-                </div>
-            </section>
-        }
+                    <div class="fng-body">
+                        <span class="fng-class">@sentiment.Classification</span>
+                        <div class="fng-bar" role="img" aria-label="Fear and Greed Index @sentiment.Value von 100">
+                            <div class="fng-fill" style="width:@(sentiment.Value)%"></div>
+                        </div>
+                        <div class="fng-scale">
+                            <span>Angst</span><span>Neutral</span><span>Gier</span>
+                        </div>
+                    </div>
+                </section>
+            }
 
-        @if (_snapshot.Coins.Count > 0)
-        {
-            <table class="crypto-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Coin</th>
-                        <th scope="col" class="num">Preis</th>
-                        <th scope="col" class="num">24 h</th>
-                        <th scope="col" class="trend">7 Tage</th>
-                        <th scope="col" class="num">Marktkap.</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var coin in _snapshot.Coins)
+            @if (_snapshot.Coins.Count > 0)
+            {
+                <section class="coin-table">
+                    <div class="coin-head">
+                        <span>Coin</span>
+                        <span class="r">Preis</span>
+                        <span class="r">24 h</span>
+                        <span class="r">7 Tage</span>
+                        <span class="r">Marktkap.</span>
+                    </div>
+                    @for (var i = 0; i < _snapshot.Coins.Count && i < 6; i++)
                     {
-                        <tr>
-                            <th scope="row" class="crypto-coin">
-                                <span class="crypto-coin-symbol">@coin.Symbol</span>
-                                <span class="crypto-coin-name">@coin.Name</span>
-                            </th>
-                            <td class="num">@CryptoFormatter.Price(coin.PriceEur)</td>
-                            <td class="num @CryptoFormatter.MoodClass(coin.Direction)">
-                                @CryptoFormatter.Percent(coin.Change24hPct)
-                            </td>
-                            <td class="trend">
-                                <Sparkline Values="coin.Sparkline7d"
-                                           CssClass="@CryptoFormatter.MoodClass(coin.Direction)" />
-                            </td>
-                            <td class="num">@CryptoFormatter.MarketCap(coin.MarketCap)</td>
-                        </tr>
+                        var c = _snapshot.Coins[i];
+                        var up = c.Change24hPct >= 0;
+                        var tag = c.Symbol.Length <= 3 ? c.Symbol : c.Symbol[..3];
+                        <div class="coin-row">
+                            <span class="coin-id">
+                                <span class="chip coin-chip chip--@(ChipColors[i % ChipColors.Length])">@tag</span>
+                                <span class="coin-names">
+                                    <span class="coin-sym">@c.Symbol</span>
+                                    <span class="coin-name">@c.Name</span>
+                                </span>
+                            </span>
+                            <span class="r coin-price">@CryptoFormatter.Price(c.PriceEur)</span>
+                            <span class="r">
+                                <span class="coin-chg @(up ? "up" : "down")">@CryptoFormatter.Percent(c.Change24hPct)</span>
+                            </span>
+                            <span class="r">
+                                <Sparkline Values="c.Sparkline7d" GradientId="@(up ? "gGreen" : "gCoral")"
+                                           CssClass="@($"coin-spark {(up ? "coin-spark--up" : "coin-spark--down")}")" />
+                            </span>
+                            <span class="r coin-cap">@CryptoFormatter.MarketCap(c.MarketCap)</span>
+                        </div>
                     }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p class="crypto-page-empty">Keine Coins konfiguriert.</p>
-        }
+                </section>
+            }
+            else
+            {
+                <p class="crypto-empty">Keine Coins konfiguriert.</p>
+            }
 
-        <p class="crypto-updated">
-            Stand @LocalTime(_snapshot.RetrievedAtUtc)@(_isStale ? " · veraltet" : string.Empty)
-        </p>
+            <span class="mono-label coin-foot">Stand @LocalTime(_snapshot.RetrievedAtUtc)@(_isStale ? " · veraltet" : string.Empty) · CoinGecko</span>
+        </div>
     }
 </div>
 
 @code {
     private static readonly TimeZoneInfo BerlinTz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+    private static readonly string[] ChipColors = ["brown", "teal", "gold", "green", "coral"];
 
     private CryptoSnapshot? _snapshot;
     private bool _isStale;
+
+    private string Meta => _snapshot is null
+        ? "EUR · COINGECKO"
+        : $"EUR · STAND {LocalTime(_snapshot.RetrievedAtUtc)} · COINGECKO";
 
     protected override void OnInitialized()
     {

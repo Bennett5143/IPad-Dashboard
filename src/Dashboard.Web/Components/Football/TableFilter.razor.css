@@ -1,55 +1,47 @@
 .table-filter {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
 }
 
 .table-filter-pills {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2);
+    gap: 8px;
 }
 
 /* Zweite, kleinere Pill-Ebene unter den Haupt-Tabs (Liga-/Gruppen-Auswahl). */
 .table-pill {
     background: transparent;
-    border: 1px solid var(--glass-rim);
-    border-radius: 999px;
-    padding: 2px var(--space-3);
-    color: var(--color-fg-secondary);
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-sm);
-    letter-spacing: 0.04em;
+    border: 1px solid #17231b;
+    border-radius: 8px;
+    padding: 5px 13px;
+    color: var(--color-fg-muted);
+    font-family: var(--font-family-base);
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
 }
 
-.table-pill:hover {
-    color: var(--color-fg-primary);
-    border-color: var(--color-accent);
-}
-
 .table-pill.is-active {
-    color: var(--color-fg-primary);
-    background: color-mix(in srgb, var(--color-accent) 22%, transparent);
-    border-color: var(--color-accent);
+    background: rgba(226, 180, 95, 0.14);
+    color: var(--accent-gold-light);
+    border-color: #4a3f1f;
+    font-weight: 600;
 }
 
-/* Eine einzelne Tabelle bekommt eine sinnvolle Maximalbreite, damit sie auf dem iPad nicht
-   unnötig in die Breite läuft. */
 .tf-card {
-    max-width: 520px;
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    background: var(--tile-gold);
+    border: 1px solid #26241b;
+    overflow: hidden;
 }
 
 .tf-heading {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
-    color: var(--color-fg-primary);
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    color: var(--accent-gold-light);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-3);
+    letter-spacing: 0.18em;
+    padding: 14px 20px 8px;
 }
