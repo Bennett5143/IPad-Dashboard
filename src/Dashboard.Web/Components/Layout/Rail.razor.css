@@ -1,0 +1,88 @@
+.rail {
+    width: 208px;
+    flex: none;
+    background: #0b0f0a;
+    border-right: 1px solid #17231b;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 14px;
+    gap: 6px;
+    overflow-y: auto;
+}
+
+.rail-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 6px 14px;
+}
+
+.rail-brand-chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--accent-green-chip);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.rail-brand-label {
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-green-light);
+    font-weight: 600;
+}
+
+.rail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.rail-group-label {
+    font-family: var(--font-family-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #4c5f53;
+    padding: 8px 12px 4px;
+}
+
+/* NavLink rendert ein <a>; ::deep, weil das Element aus der Kindkomponente kommt. */
+.rail ::deep .rail-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 9px;
+    text-align: left;
+    text-decoration: none;
+    font-family: var(--font-family-base);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-fg-secondary);
+}
+
+.rail ::deep .rail-item .rail-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    flex: none;
+    background: #33473b;
+}
+
+.rail ::deep .rail-item.active {
+    background: #15241b;
+    color: var(--color-fg-primary);
+    font-weight: 600;
+}
+
+.rail ::deep .rail-item.active .rail-dot {
+    background: var(--accent-green);
+}

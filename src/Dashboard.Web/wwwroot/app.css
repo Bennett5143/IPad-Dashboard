@@ -220,6 +220,21 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
    Layout-Utilities (themeneutral)
    ============================================================ */
 
+/* Detail-Seiten: Content-Bereich unter dem PageHeader füllt die Resthöhe (fill-height).
+   Standard No-Scroll; .is-scroll erlaubt vertikales Scrollen für inhaltsreiche Seiten. */
+.detail-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--space-6) var(--space-5);
+    overflow: hidden;
+}
+
+.detail-body.is-scroll {
+    overflow-y: auto;
+}
+
 /* Ganze Kachel als Tap-Ziel: Anchor füllt die Grid-Zelle, das Tile darin 100 % Höhe. */
 .tile-tap {
     display: block;

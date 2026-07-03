@@ -1,0 +1,32 @@
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 32px 14px;
+    flex: none;
+}
+
+.page-header-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.page-header-accent {
+    width: 11px;
+    height: 26px;
+    border-radius: 4px;
+    flex: none;
+}
+
+.page-header-meta {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--color-fg-faint);
+    text-align: right;
+}
