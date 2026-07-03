@@ -2,25 +2,168 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    padding: var(--space-4);
-}
-
-.runs-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-4);
-}
-
-.runs-header h1 {
-    font-family: var(--font-family-display);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-fg-primary);
 }
 
 .runs-msg {
     color: var(--color-fg-muted);
+}
+
+.runs-page a {
+    color: var(--accent-green-light);
+}
+
+/* Section-Überschriften → Mono-Label */
+.runs-page h2 {
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-green-light);
+}
+
+/* ---- Jahresrückblick ---- */
+.review {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: 22px 24px;
+    border-radius: 16px;
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
+}
+
+.review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.year-buttons {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.year-buttons button {
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #17231b;
+    color: var(--color-fg-muted);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.year-buttons button.active {
+    background: var(--accent-green-chip);
+    border-color: #245039;
+    color: var(--accent-green-light);
+    font-weight: 600;
+}
+
+.review-stats,
+.review-records {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin: 0;
+}
+
+.review-stats div,
+.review-records div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.review-stats dt,
+.review-records dt {
+    order: 2;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    color: var(--color-fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.review-stats dd,
+.review-records dd {
+    order: 1;
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--color-fg-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.review-stats div:first-child dd {
+    color: var(--accent-green-light);
+}
+
+.review-stats div:last-child dd {
+    color: var(--accent-gold);
+}
+
+.review-records dd {
+    font-size: 18px;
+}
+
+.review-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 90px;
+}
+
+.review-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+}
+
+.review-bar-track {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.review-bar-fill {
+    width: 100%;
+    min-height: 2px;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #5fce97, #2f7d54);
+}
+
+.review-bar-label {
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    color: var(--color-fg-faint);
+}
+
+/* ---- Karten für Routen + Lauf-Liste ---- */
+.routes,
+.runs-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: 20px 22px;
+    border-radius: 16px;
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
+}
+
+.routes-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-fg-muted);
+    max-width: 70ch;
+    margin: 0;
 }
 
 .runs-controls {
@@ -29,23 +172,22 @@
 }
 
 .runs-controls button {
-    padding: var(--space-2) var(--space-4);
-    border-radius: 999px;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    color: var(--color-fg-secondary);
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #17231b;
+    color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
 }
 
 .runs-controls button.active {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04140c;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: var(--glow-accent);
+    background: var(--accent-green-chip);
+    border-color: #245039;
+    color: var(--accent-green-light);
+    font-weight: 600;
 }
 
+/* ---- Tabellen ---- */
 .runs-table {
     width: 100%;
     border-collapse: collapse;
@@ -55,10 +197,14 @@
 
 .runs-table th {
     text-align: left;
-    color: var(--color-fg-muted);
-    font-weight: var(--font-weight-normal, 400);
-    padding: var(--space-2) var(--space-3);
-    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-fg-faint);
+    font-weight: 400;
+    padding: 12px;
+    border-bottom: 1px solid #17231b;
 }
 
 .runs-table th.num,
@@ -71,164 +217,29 @@
 }
 
 .runs-row td {
-    padding: var(--space-2) var(--space-3);
-    border-bottom: 1px solid var(--color-border);
+    padding: 12px;
+    border-top: 1px solid #131e17;
     color: var(--color-fg-secondary);
 }
 
 .runs-row:hover td {
     background: var(--color-surface-sunken);
-    color: var(--color-fg-primary);
 }
 
 .run-name {
     color: var(--color-fg-primary);
 }
 
-/* ---- Jahresrückblick ---- */
-.review {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
-}
-
-.review-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-4);
-    flex-wrap: wrap;
-}
-
-.review-head h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-}
-
-.year-buttons {
-    display: flex;
-    gap: var(--space-2);
-}
-
-.year-buttons button {
-    padding: 2px var(--space-3);
-    border-radius: 999px;
-    background: var(--color-surface-sunken);
-    border: 1px solid var(--glass-rim);
+.runs-table td.mono {
+    font-family: var(--font-family-mono);
+    font-size: 13px;
     color: var(--color-fg-secondary);
-    font-size: var(--font-size-sm);
-    font-variant-numeric: tabular-nums;
 }
 
-.year-buttons button.active {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04140c;
-    font-weight: var(--font-weight-semibold);
+.runs-table td.pace {
+    color: var(--accent-green-light);
 }
 
-.review-stats,
-.review-records {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-    gap: var(--space-3);
-    margin: 0;
-}
-
-.review-stats div,
-.review-records div {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.review-stats dt,
-.review-records dt {
-    font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.review-stats dd,
-.review-records dd {
-    margin: 0;
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: var(--color-fg-primary);
-    font-variant-numeric: tabular-nums;
-}
-
-.review-records dd {
-    font-size: var(--font-size-md, 1rem);
-}
-
-.review-bars {
-    display: flex;
-    align-items: flex-end;
-    gap: var(--space-2);
-    height: 110px;
-}
-
-.review-bar {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-1);
-    height: 100%;
-}
-
-.review-bar-track {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    background: var(--color-surface-sunken);
-    border-radius: var(--radius-sm, 6px);
-    overflow: hidden;
-}
-
-.review-bar-fill {
-    width: 100%;
-    min-height: 2px;
-    background: linear-gradient(180deg, var(--color-accent), var(--color-accent-2));
-}
-
-.review-bar-label {
-    font-size: var(--font-size-xs, 0.7rem);
-    color: var(--color-fg-muted);
-}
-
-.runs-list-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-}
-
-.routes {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.routes h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-}
-
-.routes-hint {
-    font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
-    max-width: 70ch;
-    margin: 0;
+.runs-table td.hr {
+    color: var(--accent-coral);
 }

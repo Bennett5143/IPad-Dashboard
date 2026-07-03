@@ -1,4 +1,5 @@
 @page "/whoop"
+@layout DetailLayout
 @rendermode InteractiveServer
 @inject IWhoopProvider Whoop
 @inject IWhoopMetricStore Metrics
@@ -9,11 +10,9 @@
 
 <PageTitle>WHOOP – Auswertungen</PageTitle>
 
-<div class="insights">
-    <header class="insights-header">
-        <h1>WHOOP · letzte @WindowDays Tage</h1>
-    </header>
+<PageHeader Title="WHOOP" Accent="var(--accent-green)" Meta="@($"LETZTE {WindowDays} TAGE")" />
 
+<div class="detail-body is-scroll insights">
     @if (!_connected)
     {
         <p class="insights-msg">WHOOP nicht verbunden – <a href="/whoop/connect">jetzt verbinden</a>.</p>
