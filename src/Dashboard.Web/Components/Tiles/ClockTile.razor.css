@@ -1,36 +1,82 @@
-.clock-tile {
+/* Breites Uhr-Banner: große Zeit links, Datum + KW rechts, grüner Radial-Glow. */
+.clock-banner {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
-    gap: var(--space-2);
-    position: relative; /* Positionskontext für den Status-Punkt (FA-11.04) */
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
 }
 
-.clock-tile time {
+.clock-glow {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(95, 206, 151, 0.13), transparent 70%);
+    right: -60px;
+    top: -100px;
+    pointer-events: none;
+}
+
+.clock-now {
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
-    font-size: var(--font-size-xl);
+    position: relative;
+}
+
+.clock-time {
+    font-size: 66px;
+    font-weight: 600;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.clock-seconds {
+    font-family: var(--font-family-mono);
+    font-size: 14px;
+    color: var(--color-fg-faint);
+}
+
+.clock-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    position: relative;
 }
 
 .clock-date {
-    color: var(--color-fg-secondary);
-    font-family: var(--font-family-display);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.clock-chip {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--accent-green-chip);
+    color: var(--accent-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clock-date-text {
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    color: #c9d6cd;
 }
 
-/* HUD-Herzstück: große, leuchtende Digitalzeit */
-.clock-time {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold, 700);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    text-shadow: 0 0 18px rgba(58, 157, 99, 0.35);
-}
-
-.clock-separator {
+.clock-sub {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--color-fg-muted);
 }
