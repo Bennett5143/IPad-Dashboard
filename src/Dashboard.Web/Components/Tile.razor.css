@@ -1,16 +1,17 @@
+/* Flache, solide Kachel-Hülle je Domäne. Die Domänenfarbe steuert ein Modifier
+   (tile--teal/gold/brown/crypto); Default ist Grün. --tile-accent(-light) werden lokal
+   gesetzt, damit Akzent-Tick und Label ohne zusätzliche Regeln mitfärben. */
 .tile {
+    --tile-accent: var(--accent-green);
+    --tile-accent-light: var(--accent-green-light);
+
     position: relative;
     isolation: isolate;
 
-    /* Liquid Glass: durchscheinendes Panel – das Raster/die Lichter dahinter
-       schimmern weich durch (Backdrop-Blur), helle Glanzkante oben. */
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--glass-shadow);
-    padding: var(--space-3);
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-tile);
+    padding: var(--space-4);
 
     display: flex;
     flex-direction: column;
@@ -22,16 +23,31 @@
     overflow: hidden;
 }
 
-/* Neon-Hairline an der Oberkante – das „HUD-Panel"-Signet jeder Kachel */
-.tile::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 4%, rgba(58, 157, 99, 0.65), rgba(43, 180, 127, 0.4) 70%, transparent 96%);
-    pointer-events: none;
+.tile--teal {
+    --tile-accent: var(--accent-teal);
+    --tile-accent-light: var(--accent-teal-light);
+    background: var(--tile-teal);
+}
+
+.tile--gold {
+    --tile-accent: var(--accent-gold);
+    --tile-accent-light: var(--accent-gold-light);
+    background: var(--tile-gold);
+    border-color: #2c2814;
+}
+
+.tile--brown {
+    --tile-accent: var(--accent-brown);
+    --tile-accent-light: var(--accent-brown-light);
+    background: var(--tile-brown);
+    border-color: #2c2416;
+}
+
+.tile--crypto {
+    --tile-accent: var(--accent-brown);
+    --tile-accent-light: var(--accent-brown-light);
+    background: var(--tile-crypto);
+    border-color: #26251b;
 }
 
 .tile-header {
@@ -41,33 +57,31 @@
     flex-shrink: 0;
 }
 
-/* Akzent-Tick vor der Überschrift */
+/* Akzent-Tick vor der Überschrift, in der Domänenfarbe */
 .tile-header::before {
     content: "";
     width: 3px;
     height: 0.95em;
     border-radius: 2px;
-    background: linear-gradient(180deg, var(--color-accent), var(--color-accent-2));
-    box-shadow: var(--glow-accent);
+    background: var(--tile-accent);
     flex-shrink: 0;
 }
 
 .tile-icon {
     display: inline-flex;
     align-items: center;
-    color: var(--color-fg-muted);
-    font-size: var(--font-size-base);
+    color: var(--tile-accent);
     flex-shrink: 0;
 }
 
-/* Einheitliche Kachel-Überschrift: Display-Typo, Versalien, weit gesperrt */
+/* Einheitliche Kachel-Überschrift: Mono-Label, Versalien, weit gesperrt, Domänen-Hellfarbe */
 .tile-title {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-base);
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
     font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-secondary);
+    color: var(--tile-accent-light);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.18em;
 }
 
 .tile-body {
