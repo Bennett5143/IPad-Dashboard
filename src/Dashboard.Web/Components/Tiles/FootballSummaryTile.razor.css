@@ -1,69 +1,67 @@
-.football-summary {
+.football-tile {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    height: 100%;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 8px;
+    overflow: hidden;
 }
 
-.football-summary-empty {
-    color: var(--color-fg-muted);
-    font-style: italic;
-}
-
-.football-summary-count {
+.football-count {
     display: flex;
     align-items: baseline;
-    gap: var(--space-3);
+    gap: 10px;
 }
 
-.football-summary-number {
-    font-family: var(--font-family-display);
-    font-size: 3.4rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--color-fg-primary);
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 16px rgba(58, 157, 99, 0.22);
+.football-number {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 0.85;
+    color: var(--accent-gold);
 }
 
-.football-summary-label {
-    font-size: var(--font-size-base);
-    color: var(--color-fg-secondary);
+.football-count-label {
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: #8a7a52;
+    max-width: 6em;
 }
 
-.football-summary-hint {
-    font-size: var(--font-size-sm);
+.football-hint {
+    font-size: 11px;
     color: var(--color-fg-muted);
 }
 
-.football-summary-alert {
+.football-alert {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 6px;
     min-width: 0;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-warning) 35%, transparent);
 }
 
-.football-summary-alert-tag {
-    flex: none;
-    font-size: var(--font-size-xs, 0.7rem);
-    font-weight: var(--font-weight-semibold);
+.football-alert-tag {
+    font-family: var(--font-family-mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-warning);
+    color: var(--accent-gold-light);
+    background: var(--accent-gold-chip);
+    padding: 2px 6px;
+    border-radius: 5px;
+    flex: none;
 }
 
-.football-summary-alert-text {
-    min-width: 0;
+.football-alert-text {
+    font-size: 11px;
+    color: var(--color-fg-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--color-fg-primary);
+}
+
+.football-empty {
+    color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
 }

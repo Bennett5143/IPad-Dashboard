@@ -1,20 +1,45 @@
-.fitness-summary {
+.fitness-tile {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    height: 100%;
-    justify-content: center;
+    gap: 12px;
 }
 
+/* 2×2-Ring-Raster; jeder Ring liegt neben seinem Label (Row-Layout via ::deep). */
 .fitness-rings {
+    flex: 1;
+    min-height: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-2) var(--space-4);
-    place-items: center;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+}
+
+.fitness-rings ::deep .ring {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+}
+
+.fitness-rings ::deep .ring-disc {
+    width: 58px;
+    max-width: 58px;
+    flex: none;
+}
+
+.fitness-rings ::deep .ring-value {
+    font-family: var(--font-family-base);
+    font-size: 14px;
+}
+
+.fitness-rings ::deep .ring-label {
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: #8aa090;
 }
 
 .fitness-hint {
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
-    text-align: center;
 }

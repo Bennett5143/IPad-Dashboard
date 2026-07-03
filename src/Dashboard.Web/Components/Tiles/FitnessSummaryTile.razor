@@ -5,26 +5,26 @@
 @* Fitness-Summary: vier Kennzahlen als Fortschritts-Kreise – WHOOP Recovery / Schlaf /
    Strain + heute gemachte Habits. Ganze Kachel tippbar → /whoop (Insights-Hub). *@
 <a class="tile-tap @CssClass" href="/whoop">
-    <Tile Title="Fitness">
-        <Icon>
-            <span class="fitness-summary-emoji" aria-hidden="true">💪</span>
-        </Icon>
-        <ChildContent>
-            <div class="fitness-summary">
-                <div class="fitness-rings">
-                    <MetricRing Label="Recovery" Center="@WhoopFormatter.RecoveryScore(_whoop?.Recovery)"
-                                Fraction="@RecoveryFraction" ColorClass="@RecoveryColor" />
-                    <MetricRing Label="Schlaf" Center="@SleepText" Fraction="@SleepFraction" />
-                    <MetricRing Label="Strain" Center="@WhoopFormatter.Strain(_whoop?.DayStrain)" Fraction="@StrainFraction" />
-                    <MetricRing Label="Habits" Center="@HabitsText" Fraction="@HabitsFraction" />
-                </div>
-
-                @if (_whoop is null)
-                {
-                    <small class="fitness-hint">WHOOP nicht verbunden</small>
-                }
+    <Tile>
+        <div class="fitness-tile">
+            <span class="cap">
+                <span class="chip chip--green">
+                    <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="2" /></svg>
+                </span>
+                <span class="mono-label mono-label--green">Fitness</span>
+            </span>
+            <div class="fitness-rings">
+                <MetricRing Label="Recov" Center="@WhoopFormatter.RecoveryScore(_whoop?.Recovery)" Fraction="@RecoveryFraction" Color="var(--accent-gold)" />
+                <MetricRing Label="Schlaf" Center="@SleepText" Fraction="@SleepFraction" Color="var(--accent-green)" />
+                <MetricRing Label="Strain" Center="@WhoopFormatter.Strain(_whoop?.DayStrain)" Fraction="@StrainFraction" Color="var(--accent-teal)" />
+                <MetricRing Label="Habits" Center="@HabitsText" Fraction="@HabitsFraction" Color="var(--accent-brown)" />
             </div>
-        </ChildContent>
+
+            @if (_whoop is null)
+            {
+                <small class="fitness-hint">WHOOP nicht verbunden</small>
+            }
+        </div>
     </Tile>
 </a>
 
@@ -71,15 +71,8 @@
         }
     }
 
-    // Recovery 0–100 %, farbcodiert nach WHOOP-Ampel.
+    // Recovery 0–100 %.
     private double RecoveryFraction => _whoop?.Recovery is { } r ? r.ScorePercent / 100.0 : 0;
-    private string RecoveryColor => _whoop?.Recovery?.Level switch
-    {
-        WhoopRecoveryLevel.High => "is-high",
-        WhoopRecoveryLevel.Medium => "is-medium",
-        WhoopRecoveryLevel.Low => "is-low",
-        _ => string.Empty
-    };
 
     // Schlaf-Performance 0–100 %.
     private string SleepText => _whoop?.Sleep is { } s ? $"{s.PerformancePercent}%" : "–";

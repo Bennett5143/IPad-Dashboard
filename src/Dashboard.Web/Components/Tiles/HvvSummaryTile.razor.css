@@ -1,78 +1,67 @@
-.hvv-summary {
+.hvv-tile {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 10px;
+    overflow: hidden;
 }
 
-.hvv-summary-empty {
-    color: var(--color-fg-muted);
-    font-style: italic;
-}
-
-.hvv-summary-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+.hvv-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 6px;
 }
 
-.hvv-summary-list li {
-    display: grid;
-    grid-template-columns: auto 1fr auto;   /* line | direction | when */
-    align-items: baseline;
-    gap: var(--space-2);
-    font-variant-numeric: tabular-nums;
+.hvv-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.hvv-sum-line {
-    font-family: var(--font-family-display);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-lg);
-    color: var(--color-fg-primary);
-    background: var(--color-surface-sunken);
-    border-radius: var(--radius-md);
-    padding: 0 var(--space-2);
-    min-width: 2.6rem;
+.hvv-line {
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+    font-size: 12px;
+    background: #16241c;
+    color: var(--accent-green-light);
+    padding: 2px 8px;
+    border-radius: 6px;
+    min-width: 38px;
     text-align: center;
+    flex: none;
 }
 
-.hvv-sum-dir {
+.hvv-dir {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
     color: var(--color-fg-secondary);
-    min-width: 0;                 /* lässt die 1fr-Spalte schrumpfen → Ellipsis greift */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.hvv-sum-when {
-    display: inline-flex;
-    align-items: baseline;
-    gap: var(--space-1);
-    justify-self: end;
-}
-
-.hvv-sum-when time {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
+.hvv-when {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 15px;
     color: var(--color-fg-primary);
+    flex: none;
 }
 
-.hvv-sum-delay {
-    font-size: var(--font-size-sm);
-    color: var(--color-error);
+.hvv-when.is-next {
+    color: var(--accent-green);
 }
 
-.hvv-sum-plan {
-    font-size: var(--font-size-sm);
+.hvv-delay {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
     color: var(--color-fg-muted);
 }
 
-.hvv-summary-list li.is-planned {
-    color: var(--color-fg-secondary);
-}
-
-.hvv-summary-list li.is-planned .hvv-sum-when time {
-    font-weight: var(--font-weight-regular);
+.hvv-empty {
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-sm);
 }
