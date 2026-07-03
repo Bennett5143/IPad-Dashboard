@@ -1,12 +1,99 @@
 @page "/weather"
+@layout DetailLayout
+@implements IDisposable
+@inject WeatherState WeatherState
 @rendermode InteractiveServer
 
 <PageTitle>Wetter</PageTitle>
 
-<h1 class="page-title">Wetter</h1>
+<PageHeader Title="Wetter" Accent="var(--accent-teal)" Meta="@_meta" />
 
-<div class="weather-page">
-    <WeatherTile Variant="WeatherTile.WeatherVariant.Today" />
-    <WeatherTile Variant="WeatherTile.WeatherVariant.Hourly" />
-    <WeatherTile Variant="WeatherTile.WeatherVariant.Tomorrow" />
+<div class="detail-body">
+    @if (_snapshot is null)
+    {
+        <p class="weather-empty">Wetterdaten gerade nicht verfügbar.</p>
+    }
+    else
+    {
+        var hourly = _snapshot.Hourly;
+        var hourlyTemps = hourly.Select(h => (double?)h.Temperature).ToList();
+        var ticks = hourly.Take(8).ToList();
+
+        <div class="weather-detail">
+            <div class="weather-cards">
+                <div class="wx-card">
+                    <span class="mono-label mono-label--teal">Jetzt</span>
+                    <div class="wx-now">
+                        <span class="wx-now-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
+                        <span class="wx-now-cond">@_snapshot.Current.Description</span>
+                    </div>
+                    <div class="wx-chips">
+                        <span class="wx-chip">Min/Max @WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
+                        <span class="wx-chip wx-chip--teal">Regen @WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
+                        <span class="wx-chip">Wind @WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</span>
+                        <span class="wx-chip">Gefühlt @WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</span>
+                    </div>
+                </div>
+
+                @if (_snapshot.Tomorrow is { } tomorrow)
+                {
+                    <div class="wx-card">
+                        <span class="mono-label mono-label--teal">Morgen</span>
+                        <div class="wx-now">
+                            <span class="wx-now-temp wx-now-temp--sm">@WeatherFormatter.Temperature(tomorrow.MaxTemperature)</span>
+                            <span class="wx-now-cond">@tomorrow.Description</span>
+                        </div>
+                        <div class="wx-chips">
+                            <span class="wx-chip">Min/Max @WeatherFormatter.Temperature(tomorrow.MinTemperature) / @WeatherFormatter.Temperature(tomorrow.MaxTemperature)</span>
+                            <span class="wx-chip wx-chip--teal">Regen @WeatherFormatter.Precipitation(tomorrow.PrecipitationProbability)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="wx-card wx-hourly">
+                <span class="mono-label mono-label--teal">Stündlich</span>
+                <div class="wx-chart-wrap">
+                    <Sparkline Values="hourlyTemps" GradientId="gTeal" CssClass="wx-day-chart" />
+                </div>
+                <div class="wx-ticks">
+                    @foreach (var h in ticks)
+                    {
+                        <div class="wx-tick">
+                            <span class="wx-tick-temp">@WeatherFormatter.Temperature(h.Temperature)</span>
+                            <span class="wx-tick-hour">@($"{h.Time:HH}h")</span>
+                            <span class="wx-tick-rain">@WeatherFormatter.Precipitation(h.PrecipitationProbability)</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+@code {
+    private WeatherSnapshot? _snapshot;
+    private string _meta = "HAMBURG";
+
+    protected override void OnInitialized()
+    {
+        WeatherState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        _snapshot = WeatherState.Current;
+        _meta = _snapshot is null
+            ? "HAMBURG"
+            : $"HAMBURG · STAND {WeatherFormatter.UpdatedAt(_snapshot.RetrievedAtUtc)}";
+    }
+
+    public void Dispose() => WeatherState.Changed -= OnChanged;
+}
