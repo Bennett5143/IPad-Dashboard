@@ -1,4 +1,5 @@
 @page "/status"
+@layout DetailLayout
 @rendermode InteractiveServer
 @using Microsoft.Extensions.Diagnostics.HealthChecks
 @inject IEnumerable<ISliceStatusSource> Sources
@@ -15,108 +16,112 @@
 
 <PageTitle>Status</PageTitle>
 
-<div class="status">
-    <header class="status-header">
-        <h1>Status</h1>
-    </header>
+<PageHeader Title="Status" Accent="var(--accent-green)" Meta="@_meta" />
 
+<div class="detail-body is-scroll">
     @if (_loading)
     {
         <p class="status-msg">Sammle Status …</p>
     }
     else
     {
-        <section>
-            <h2>Datenquellen</h2>
-            <ul class="status-list">
-                @foreach (var row in _slices)
-                {
-                    <li>
-                        <span class="status-light @row.CssClass" aria-hidden="true"></span>
-                        <span class="status-name">@row.Label</span>
-                        <span class="status-state">@row.StateLabel</span>
-                        <span class="status-when">@row.UpdatedLabel</span>
-                    </li>
-                }
-            </ul>
-        </section>
-
-        <section>
-            <h2>Strava</h2>
-            <dl class="status-facts">
-                <div><dt>Verbindung</dt><dd>@(_stravaConnected ? "verbunden" : "nicht verbunden")</dd></div>
-                <div><dt>Letzter Sync</dt><dd>@_stravaLastSync</dd></div>
-                @if (_stravaError is not null)
-                {
-                    <div><dt>Letzter Fehler</dt><dd class="status-error-text">@_stravaError</dd></div>
-                }
-                <div><dt>Läufe</dt><dd>@_runCount</dd></div>
-                <div><dt>Streams</dt><dd>@_streamsLabel</dd></div>
-                <div><dt>Metrik-Re-Sync</dt><dd>@_detailsLabel</dd></div>
-            </dl>
-        </section>
-
-        <section>
-            <h2>WHOOP</h2>
-            <dl class="status-facts">
-                <div><dt>Verbindung</dt><dd>@(_whoopConnected ? "verbunden" : "nicht verbunden")</dd></div>
-                <div><dt>Tageswerte</dt><dd>@_whoopDailyLabel</dd></div>
-                <div><dt>Workouts</dt><dd>@_whoopWorkoutLabel</dd></div>
-            </dl>
-        </section>
-
-        <section>
-            <h2>System</h2>
-            @if (_system is null)
-            {
-                <p class="status-msg">Host-Metriken sind nur unter Linux (Raspberry Pi) verfügbar.</p>
-            }
-            else
-            {
-                <dl class="status-facts">
-                    @if (_system.CpuTemperatureCelsius is { } temp)
-                    {
-                        <div><dt>CPU-Temperatur</dt><dd>@temp.ToString("0.0") °C</dd></div>
-                    }
-                    @if (_system is { MemoryUsedMegabytes: { } used, MemoryTotalMegabytes: { } total })
-                    {
-                        <div><dt>RAM</dt><dd>@used.ToString("0") / @total.ToString("0") MB</dd></div>
-                    }
-                    @if (_system.LoadAverage1Min is { } load)
-                    {
-                        <div><dt>Load (1 min)</dt><dd>@load.ToString("0.00")</dd></div>
-                    }
-                </dl>
-            }
-        </section>
-
-        <section>
-            <h2>Datenbank</h2>
-            <dl class="status-facts">
-                <div><dt>PostgreSQL</dt><dd>@_dbLabel</dd></div>
-            </dl>
-        </section>
-
-        <section>
-            <h2>Letzte Warnungen &amp; Fehler</h2>
-            @if (_logs.Count == 0)
-            {
-                <p class="status-msg">Keine Warnungen seit dem Start.</p>
-            }
-            else
-            {
-                <ul class="status-log">
-                    @foreach (var entry in _logs)
+        <div class="status-stack">
+            <section class="status-card">
+                <span class="mono-label mono-label--green">Datenquellen</span>
+                <ul class="status-list">
+                    @foreach (var row in _slices)
                     {
                         <li>
-                            <span class="log-level @LevelCss(entry.Level)">@entry.Level</span>
-                            <span class="log-time">@RelativeTime(entry.TimestampUtc)</span>
-                            <span class="log-message">@entry.Message</span>
+                            <span class="status-light @row.CssClass" aria-hidden="true"></span>
+                            <span class="status-name">@row.Label</span>
+                            <span class="status-state">@row.StateLabel</span>
+                            <span class="status-when">@row.UpdatedLabel</span>
                         </li>
                     }
                 </ul>
-            }
-        </section>
+            </section>
+
+            <div class="status-cols">
+                <section class="status-card">
+                    <span class="mono-label mono-label--brown">Strava</span>
+                    <dl class="status-facts">
+                        <div><dt>Verbindung</dt><dd>@(_stravaConnected ? "verbunden" : "nicht verbunden")</dd></div>
+                        <div><dt>Letzter Sync</dt><dd>@_stravaLastSync</dd></div>
+                        @if (_stravaError is not null)
+                        {
+                            <div><dt>Letzter Fehler</dt><dd class="status-error-text">@_stravaError</dd></div>
+                        }
+                        <div><dt>Läufe</dt><dd>@_runCount</dd></div>
+                        <div><dt>Streams</dt><dd>@_streamsLabel</dd></div>
+                        <div><dt>Metrik-Re-Sync</dt><dd>@_detailsLabel</dd></div>
+                    </dl>
+                </section>
+
+                <section class="status-card">
+                    <span class="mono-label mono-label--green">WHOOP</span>
+                    <dl class="status-facts">
+                        <div><dt>Verbindung</dt><dd>@(_whoopConnected ? "verbunden" : "nicht verbunden")</dd></div>
+                        <div><dt>Tageswerte</dt><dd>@_whoopDailyLabel</dd></div>
+                        <div><dt>Workouts</dt><dd>@_whoopWorkoutLabel</dd></div>
+                    </dl>
+                </section>
+            </div>
+
+            <div class="status-cols">
+                <section class="status-card">
+                    <span class="mono-label mono-label--teal">System</span>
+                    @if (_system is null)
+                    {
+                        <p class="status-msg">Host-Metriken sind nur unter Linux (Raspberry Pi) verfügbar.</p>
+                    }
+                    else
+                    {
+                        <dl class="status-facts">
+                            @if (_system.CpuTemperatureCelsius is { } temp)
+                            {
+                                <div><dt>CPU-Temperatur</dt><dd>@temp.ToString("0.0") °C</dd></div>
+                            }
+                            @if (_system is { MemoryUsedMegabytes: { } used, MemoryTotalMegabytes: { } total })
+                            {
+                                <div><dt>RAM</dt><dd>@used.ToString("0") / @total.ToString("0") MB</dd></div>
+                            }
+                            @if (_system.LoadAverage1Min is { } load)
+                            {
+                                <div><dt>Load (1 min)</dt><dd>@load.ToString("0.00")</dd></div>
+                            }
+                        </dl>
+                    }
+                </section>
+
+                <section class="status-card">
+                    <span class="mono-label mono-label--teal">Datenbank</span>
+                    <dl class="status-facts">
+                        <div><dt>PostgreSQL</dt><dd>@_dbLabel</dd></div>
+                    </dl>
+                </section>
+            </div>
+
+            <section class="status-card">
+                <span class="mono-label">Letzte Warnungen &amp; Fehler</span>
+                @if (_logs.Count == 0)
+                {
+                    <p class="status-msg">Keine Warnungen seit dem Start.</p>
+                }
+                else
+                {
+                    <ul class="status-log">
+                        @foreach (var entry in _logs)
+                        {
+                            <li>
+                                <span class="log-level @LevelCss(entry.Level)">@entry.Level</span>
+                                <span class="log-time">@RelativeTime(entry.TimestampUtc)</span>
+                                <span class="log-message">@entry.Message</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        </div>
     }
 </div>
 
@@ -125,6 +130,7 @@
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
     private bool _loading = true;
+    private string _meta = "ALLE SYSTEME";
     private IReadOnlyList<StatusSliceRow> _slices = [];
     private bool _stravaConnected;
     private string _stravaLastSync = "–";
@@ -147,6 +153,7 @@
 
         _slices = StatusViewBuilder.BuildSliceRows(
             Sources.Select(s => (s.SliceName, s.HasData, s.IsStale, s.LastUpdatedUtc)), now);
+        _meta = $"{Sources.Count(s => s.HasData && !s.IsStale)}/{Sources.Count()} QUELLEN";
 
         try
         {

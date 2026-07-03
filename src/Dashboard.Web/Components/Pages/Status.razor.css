@@ -1,78 +1,77 @@
-.status {
+.status-stack {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    min-height: 100dvh;
-    padding: var(--space-4);
-    max-width: 720px;
+    gap: 14px;
 }
 
-.status-header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-4);
-}
-
-.status-header h1 {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+.status-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
 }
 
 .status-msg {
     color: var(--color-fg-muted);
+    font-size: var(--font-size-sm);
 }
 
-.status section h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-    margin-bottom: var(--space-2);
+/* Flache Karte je Sektion. */
+.status-card {
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
+/* Datenquellen-Liste: Statuspunkt, Name, Zustand, Mono-Zeit; Zeilen per border-top getrennt. */
 .status-list {
     list-style: none;
     margin: 0;
-    padding: var(--space-3);
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
 }
 
 .status-list li {
     display: grid;
-    grid-template-columns: auto 7rem 7rem 1fr;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
-    gap: var(--space-3);
-    font-size: var(--font-size-sm);
+    gap: 14px;
+    padding: 10px 0;
+    border-top: 1px solid #131e17;
+    font-size: 14px;
+}
+
+.status-list li:first-child {
+    border-top: none;
 }
 
 .status-light {
-    width: 0.7rem;
-    height: 0.7rem;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--color-fg-muted);
 }
 
 .status-light.status-ok {
-    background: var(--color-success);
+    background: var(--accent-green);
+    animation: dashpulse 2.6s infinite;
 }
 
 .status-light.status-warn {
-    background: var(--color-warning);
+    background: var(--accent-gold);
 }
 
 .status-light.status-idle {
-    background: var(--color-fg-muted);
+    background: var(--color-fg-faint);
+}
+
+@keyframes dashpulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 .status-name {
@@ -81,92 +80,99 @@
 
 .status-state {
     color: var(--color-fg-secondary);
+    font-size: 13px;
 }
 
 .status-when {
-    color: var(--color-fg-muted);
-    font-variant-numeric: tabular-nums;
+    color: var(--color-fg-faint);
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    text-align: right;
+    min-width: 80px;
 }
 
+/* Key/Value-Fakten. */
 .status-facts {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
     margin: 0;
-    padding: var(--space-3);
-    border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
 }
 
 .status-facts div {
     display: grid;
     grid-template-columns: 11rem 1fr;
-    gap: var(--space-3);
-    font-size: var(--font-size-sm);
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid #131e17;
+    font-size: 14px;
+}
+
+.status-facts div:first-child {
+    border-top: none;
 }
 
 .status-facts dt {
-    color: var(--color-fg-muted);
+    color: var(--color-fg-secondary);
 }
 
 .status-facts dd {
     margin: 0;
     color: var(--color-fg-primary);
-    font-variant-numeric: tabular-nums;
+    font-family: var(--font-family-mono);
+    font-size: 13px;
 }
 
 .status-error-text {
     color: var(--color-error);
 }
 
+/* Warnungen & Fehler. */
 .status-log {
     list-style: none;
     margin: 0;
-    padding: var(--space-3);
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
-    font-size: var(--font-size-sm);
+    font-size: 14px;
 }
 
 .status-log li {
     display: grid;
     grid-template-columns: 4.5rem 6rem 1fr;
-    gap: var(--space-3);
+    gap: 14px;
     align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px solid #131e17;
+}
+
+.status-log li:first-child {
+    border-top: none;
 }
 
 .log-level {
+    font-family: var(--font-family-mono);
     text-transform: uppercase;
-    font-size: var(--font-size-xs, 0.7rem);
+    font-size: 11px;
+    font-weight: var(--font-weight-semibold);
     letter-spacing: 0.05em;
 }
 
 .log-level.log-warn {
-    color: var(--color-warning);
+    color: var(--accent-gold);
 }
 
 .log-level.log-error {
-    color: var(--color-error);
+    color: var(--accent-coral);
 }
 
 .log-level.log-info {
-    color: var(--color-fg-muted);
+    color: var(--color-fg-faint);
 }
 
 .log-time {
-    color: var(--color-fg-muted);
-    font-variant-numeric: tabular-nums;
+    color: var(--color-fg-faint);
+    font-family: var(--font-family-mono);
+    font-size: 11px;
 }
 
 .log-message {
