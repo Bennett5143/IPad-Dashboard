@@ -2,9 +2,9 @@
    Design Tokens (CSS Custom Properties)
    ============================================================
    Single source of truth für Farben, Spacing, Typografie.
-   Thema: futuristisches Kiosk-HUD („Command Center") – fast
-   schwarzer, grünstichiger Grund mit feinem Raster, mäßiges Waldgrün
-   als Akzent, Display-Typo für Kennzahlen. Kompakte Skala, damit die
+   Thema: „Command Center" – fast schwarzer, grünstichiger Grund mit
+   flachen, soliden Gradient-Kacheln und einer Mehrfarb-Akzentpalette
+   je Domäne (Grün/Teal/Gold/Braun/Koralle). Kompakte Skala, damit die
    Hauptansicht ohne Scrollen auf 768 px Höhe (iPad 9,7" quer) passt.
    ============================================================ */
 
@@ -12,38 +12,53 @@
     color-scheme: dark;
 
     /* Farben: Surface-Levels (Hintergrund-Hierarchie) */
-    --color-surface-base:    #060a07;  /* Seiten-Hintergrund (fast schwarz, grünstichig) */
-    --color-surface-raised:  #0d1410;  /* Panel-/Tile-Hintergrund */
-    --color-surface-sunken:  #131d16;  /* innere Boxen/Chips */
+    --color-surface-base:    #060907;  /* Seiten-Hintergrund (fast schwarz, grünstichig) */
+    --color-surface-frame:   #0a0f0c;  /* Geräte-/Kiosk-Rahmen, Rail */
+    --color-surface-raised:  #111a13;  /* Panel-/Tile-Hintergrund */
+    --color-surface-sunken:  #141d17;  /* innere Boxen/Chips */
 
     /* Farben: Vordergrund (Text) */
-    --color-fg-primary:      #eaf3ec;
-    --color-fg-secondary:    #a3b8a9;
-    --color-fg-muted:        #647a69;
+    --color-fg-primary:      #e8efe9;
+    --color-fg-secondary:    #9fb2a5;
+    --color-fg-muted:        #7f9587;
+    --color-fg-faint:        #5f7367;  /* Mono-Labels, Tertiärtext */
 
-    /* Farben: Akzent & Status (Waldgrün-Set) */
-    --color-accent:          #3a9d63;  /* mäßiges Waldgrün – Links, aktive Controls */
-    --color-accent-2:        #2bb47f;  /* helleres Wald-/Teal-Grün – Verlaufs-Partner */
-    --color-success:         #57f5c2;  /* helles Mint – bewusst vom Akzent abgesetzt */
-    --color-warning:         #ffd166;
-    --color-error:           #ff5470;
+    /* Domänen-Akzente – Haupt / Hell (Label) / Chip-Hintergrund */
+    --accent-green:  #5fce97;  --accent-green-light: #8fe0b4;  --accent-green-chip: rgba(95, 206, 151, 0.14);
+    --accent-teal:   #4fbdb0;  --accent-teal-light:  #7fd6cb;  --accent-teal-chip:  rgba(79, 189, 176, 0.16);
+    --accent-gold:   #e2b45f;  --accent-gold-light:  #eccb8c;  --accent-gold-chip:  rgba(226, 180, 95, 0.16);
+    --accent-brown:  #c47b38;  --accent-brown-light: #e3a068;  --accent-brown-chip: rgba(196, 120, 52, 0.16);
+    --accent-coral:  #e07d6f;  --accent-coral-light: #eca79c;  --accent-coral-chip: rgba(224, 125, 111, 0.13);
+
+    /* Semantische Aliase (von bestehenden Komponenten genutzt) auf die neue Palette gemappt */
+    --color-accent:          var(--accent-green);        /* Links, aktive Controls */
+    --color-accent-2:        var(--accent-teal);         /* Verlaufs-Partner */
+    --color-success:         var(--accent-green-light);
+    --color-warning:         var(--accent-gold);
+    --color-error:           var(--accent-coral);
 
     /* Marken-Farbe Strava (Connect-Button, bewusst kein Statuston) */
     --color-strava:          #fc4c02;
 
-    --color-border:          #1f3328;
+    --color-border:          #1e2c21;
 
-    /* Glow-Effekte (sparsam einsetzen: große Zahlen, aktive Controls) */
-    --glow-accent:  0 0 14px rgba(58, 157, 99, 0.30);
-    --glow-success: 0 0 14px rgba(87, 245, 194, 0.30);
+    /* Kachel-Gradients je Domäne (flach, solid – kein Glas) */
+    --tile-green:  linear-gradient(150deg, #111a13, #0d130f);
+    --tile-teal:   linear-gradient(160deg, #101f1b, #0c1310);
+    --tile-gold:   linear-gradient(150deg, #171407, #100d08);
+    --tile-brown:  linear-gradient(150deg, #17130c, #100d09);
+    --tile-crypto: linear-gradient(150deg, #17130c, #0d120e);
 
-    /* Liquid Glass: durchscheinende Panels mit Blur, heller Glanzkante & Tiefe */
-    --glass-bg:        rgba(20, 34, 26, 0.55);
-    --glass-bg-strong: rgba(16, 30, 22, 0.74);
-    --glass-blur:      blur(18px) saturate(140%);
-    --glass-rim:       rgba(255, 255, 255, 0.12);
-    --glass-sheen:     linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 45%);
-    --glass-shadow:    0 8px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    /* Kompat-Shims: bis alle Komponenten auf die flachen Tokens migriert sind,
+       bleiben die alten Glass-/Glow-Namen als flache No-Ops erhalten. */
+    --glass-bg:        var(--color-surface-raised);
+    --glass-bg-strong: var(--color-surface-frame);
+    --glass-blur:      none;
+    --glass-rim:       var(--color-border);
+    --glass-sheen:     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 45%);
+    --glass-shadow:    0 8px 30px rgba(0, 0, 0, 0.45);
+    --glow-accent:     none;
+    --glow-success:    none;
 
     /* Spacing-Scale (4px-Basis, modulare Schritte) */
     --space-1: 0.25rem;  /*  4px */
@@ -54,10 +69,12 @@
     --space-6: 2rem;     /* 32px */
     --space-7: 3rem;     /* 48px */
 
-    /* Typografie – Space Grotesk für Text, Rajdhani für Display/Kennzahlen */
+    /* Typografie – Space Grotesk für Text/Zahlen, JetBrains Mono für Labels/Zeiten.
+       --font-family-display bleibt als Alias (jetzt Space Grotesk) für Bestandskomponenten. */
     --font-family-base: "Space Grotesk", -apple-system, BlinkMacSystemFont,
                         "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-family-display: "Rajdhani", "Space Grotesk", -apple-system, sans-serif;
+    --font-family-display: var(--font-family-base);
+    --font-family-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --font-size-sm:   0.8125rem; /* 13px */
     --font-size-base: 0.9375rem; /* 15px */
@@ -74,8 +91,10 @@
     --line-height-base:  1.45;
 
     /* Radien & Schatten */
-    --radius-md: 0.5rem;   /*  8px */
-    --radius-lg: 0.75rem;  /* 12px */
+    --radius-md:   0.5rem;    /*  8px – Chips/Buttons */
+    --radius-lg:   0.875rem;  /* 14px – Karten */
+    --radius-tile: 1.125rem;  /* 18px – Kacheln */
+    --radius-xl:   1.375rem;  /* 22px – Geräterahmen */
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
@@ -106,16 +125,12 @@ body {
     line-height: var(--line-height-base);
     color: var(--color-fg-primary);
 
-    /* Command-Center-Grund: farbige Licht-Blobs (cyan/violett) hinter dem Glas +
-       feines Blueprint-Raster. background-attachment:fixed → ruhige, gemeinsame
-       „Szene", die alle Glas-Panels einheitlich brechen. */
+    /* Command-Center-Grund: zwei weiche Licht-Blobs – grün oben-rechts, braun
+       unten-links. background-attachment:fixed → ruhige, gemeinsame „Szene". */
     background-color: var(--color-surface-base);
     background-image:
-        radial-gradient(950px 650px at 80% -12%, rgba(34, 140, 80, 0.30), transparent 60%),
-        radial-gradient(820px 640px at 4% 110%, rgba(40, 110, 78, 0.20), transparent 60%),
-        linear-gradient(rgba(74, 200, 130, 0.030) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(74, 200, 130, 0.030) 1px, transparent 1px);
-    background-size: auto, auto, 34px 34px, 34px 34px;
+        radial-gradient(1100px 640px at 84% -10%, rgba(50, 130, 88, 0.16), transparent 58%),
+        radial-gradient(900px 560px at 8% 108%, rgba(150, 104, 64, 0.10), transparent 60%);
     background-attachment: fixed;
 }
 
@@ -204,6 +219,65 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 /* ============================================================
    Layout-Utilities (themeneutral)
    ============================================================ */
+
+/* Detail-Seiten: Content-Bereich unter dem PageHeader füllt die Resthöhe (fill-height).
+   Standard No-Scroll; .is-scroll erlaubt vertikales Scrollen für inhaltsreiche Seiten. */
+.detail-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--space-6) var(--space-5);
+    overflow: hidden;
+}
+
+.detail-body.is-scroll {
+    overflow-y: auto;
+}
+
+/* ===== Wiederkehrende Kachel-Bausteine: Icon-Chip + Mono-Label ===== */
+/* Quadratischer Chip mit Domänen-Hintergrund; das SVG erbt die Domänenfarbe via currentColor. */
+.chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.chip-lg {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+}
+
+.chip--green { background: var(--accent-green-chip); color: var(--accent-green); }
+.chip--teal  { background: var(--accent-teal-chip);  color: var(--accent-teal); }
+.chip--gold  { background: var(--accent-gold-chip);  color: var(--accent-gold); }
+.chip--brown { background: var(--accent-brown-chip); color: var(--accent-brown); }
+.chip--coral { background: var(--accent-coral-chip); color: var(--accent-coral); }
+
+/* Kopfzeile einer Kachel/Karte: Chip + Label nebeneinander. */
+.cap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.mono-label {
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+}
+
+.mono-label--green { color: var(--accent-green-light); }
+.mono-label--teal  { color: var(--accent-teal-light); }
+.mono-label--gold  { color: var(--accent-gold-light); }
+.mono-label--brown { color: var(--accent-brown-light); }
 
 /* Ganze Kachel als Tap-Ziel: Anchor füllt die Grid-Zelle, das Tile darin 100 % Höhe. */
 .tile-tap {

@@ -1,10 +1,96 @@
-.hvv-page {
+.hvv-grid {
+    flex: 1;
+    min-height: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-4);
-    align-items: start;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
-.hvv-page-empty {
+.hvv-card {
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+}
+
+.hvv-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.hvv-station {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.hvv-station-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    flex: none;
+}
+
+.hvv-station-meta {
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--color-fg-faint);
+}
+
+.hvv-deps {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+}
+
+.hvv-dep {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-top: 1px solid #17231b;
+}
+
+.hvv-line {
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+    font-size: 13px;
+    background: #16241c;
+    color: var(--accent-green-light);
+    padding: 3px 9px;
+    border-radius: 6px;
+    min-width: 46px;
+    text-align: center;
+}
+
+.hvv-dir {
+    flex: 1;
+    font-size: 14px;
+    color: var(--color-fg-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hvv-when {
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--color-fg-primary);
+}
+
+.hvv-when.is-next {
+    color: var(--accent-green);
+}
+
+.hvv-empty {
     color: var(--color-fg-muted);
 }

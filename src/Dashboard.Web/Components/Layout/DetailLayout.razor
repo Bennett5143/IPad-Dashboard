@@ -1,0 +1,11 @@
+@inherits LayoutComponentBase
+
+@* Kiosk-Detail-Shell: feste linke Rail (208px) + Content-Spalte, die exakt die Viewport-Höhe
+   füllt. Die Seite rendert darin PageHeader (flex:none) + einen .detail-body-Content-Bereich. *@
+<div class="detail-shell">
+    <Rail />
+    <ChartGradients />
+    <div class="detail-content">
+        @Body
+    </div>
+</div>

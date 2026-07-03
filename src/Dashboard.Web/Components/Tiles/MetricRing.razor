@@ -3,7 +3,7 @@
 @* Wiederverwendbarer Fortschritts-Kreis: Wert in der Mitte, der Ring füllt sich nach
    Fraction (0..1). SVG-Ring via stroke-dasharray/-offset; Ringfarbe über ColorClass
    (Default = Akzent, sonst is-high/is-medium/is-low für die Recovery-Ampel). *@
-<div class="ring @ColorClass">
+<div class="ring @ColorClass" style="@(Color is null ? null : $"--ring-color:{Color}")">
     <div class="ring-disc">
         <svg class="ring-svg" viewBox="0 0 100 100" aria-hidden="true">
             <circle class="ring-track" cx="50" cy="50" r="44" />
@@ -22,6 +22,10 @@
     [Parameter, EditorRequired] public string Center { get; set; } = string.Empty;
     [Parameter] public double Fraction { get; set; }
     [Parameter] public string? ColorClass { get; set; }
+
+    /// <summary>Freie Ringfarbe (CSS-Farbe/Token, z. B. <c>var(--accent-gold)</c>). Überschreibt den
+    /// Default-Akzent; die <see cref="ColorClass"/>-Ampel (is-high/-medium/-low) sticht weiterhin vor.</summary>
+    [Parameter] public string? Color { get; set; }
 
     private const double Radius = 44;
 

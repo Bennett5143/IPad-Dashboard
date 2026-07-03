@@ -1,15 +1,24 @@
 @implements IAsyncDisposable
 @inject DailyQuoteService QuoteService
 
-<Tile CssClass="@CssClass">
+<Tile CssClass="@($"{CssClass} tile--brown")">
     <div class="quote-tile">
+        <span class="cap">
+            <span class="chip chip--brown">
+                <svg width="15" height="15" viewBox="0 0 16 16">
+                    <rect x="3" y="4" width="3.6" height="4.5" rx="1" fill="currentColor" />
+                    <rect x="9" y="4" width="3.6" height="4.5" rx="1" fill="currentColor" />
+                </svg>
+            </span>
+            <span class="mono-label mono-label--brown">Zitat</span>
+        </span>
         @if (_quote is null)
         {
             <p class="quote-empty">Noch kein Zitat verfügbar.</p>
         }
         else
         {
-            <blockquote>
+            <blockquote class="quote-body">
                 <p class="quote-text">@_quote.Text</p>
                 @if (!string.IsNullOrWhiteSpace(_quote.Author))
                 {

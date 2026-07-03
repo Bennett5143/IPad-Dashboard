@@ -1,0 +1,23 @@
+@* Einheitlicher Detailseiten-Header: H1 (Fokusziel von FocusOnNavigate) mit farbigem
+   Domänen-Akzentbalken links und optionalem Mono-Meta-Label rechts. *@
+<header class="page-header">
+    <h1 class="page-header-title">
+        <span class="page-header-accent" style="background:@Accent" aria-hidden="true"></span>
+        @Title
+    </h1>
+    @if (!string.IsNullOrWhiteSpace(Meta))
+    {
+        <span class="page-header-meta">@Meta</span>
+    }
+</header>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Mono-Meta rechts im Header (z. B. <c>HAMBURG · STAND 14:30</c>).</summary>
+    [Parameter] public string? Meta { get; set; }
+
+    /// <summary>Farbe des Akzentbalkens (Domänenfarbe, z. B. <c>var(--accent-teal)</c>).
+    /// Default = Grün.</summary>
+    [Parameter] public string Accent { get; set; } = "var(--accent-green)";
+}

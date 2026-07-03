@@ -1,0 +1,11 @@
+/* Basis der Sparkline. Der Linien-Stroke (Farbe/Breite) wird vom Verwender per
+   ::deep auf .sparkline gesetzt und vererbt sich auf die Polyline. Die Flächen-
+   Füllung kommt aus fill="url(#…)"; ihr Rand wird hier bewusst unterdrückt, damit
+   ein am SVG gesetzter stroke nicht auch die Grundlinie der Fläche nachzieht. */
+.sparkline {
+    display: block;
+}
+
+.sparkline-area {
+    stroke: none;
+}

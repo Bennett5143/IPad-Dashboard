@@ -1,20 +1,33 @@
 .quote-tile {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    height: 100%;
-    gap: var(--space-2);
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.quote-body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .quote-text {
-    font-style: italic;
-    font-size: var(--font-size-lg);
-    color: var(--color-fg-primary);
-    line-height: var(--line-height-base);
+    font-size: 13px;
+    line-height: 1.4;
+    color: #ddd3c4;
+    margin: 0;
+    text-wrap: pretty;
 }
 
 .quote-author {
-    text-align: right;
-    color: var(--color-fg-secondary);
-    font-size: var(--font-size-base);
+    font-size: 11px;
+    color: #a67d49;
+    font-style: italic;
+}
+
+.quote-empty {
+    color: var(--color-fg-muted);
+    font-size: var(--font-size-sm);
 }

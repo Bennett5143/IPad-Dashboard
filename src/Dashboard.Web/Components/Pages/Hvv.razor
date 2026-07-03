@@ -1,23 +1,53 @@
 @page "/hvv"
+@layout DetailLayout
 @implements IDisposable
 @inject HvvState HvvState
 @rendermode InteractiveServer
 
 <PageTitle>Abfahrten</PageTitle>
 
-<h1 class="page-title">Abfahrten</h1>
+<PageHeader Title="Abfahrten" Accent="var(--accent-green)" Meta="@($"{_count} HALTESTELLEN")" />
 
-<div class="hvv-page">
+<div class="detail-body">
     @if (_count == 0)
     {
-        <p class="hvv-page-empty">Keine Haltestellen konfiguriert.</p>
+        <p class="hvv-empty">Keine Haltestellen konfiguriert.</p>
     }
     else
     {
-        @for (var i = 0; i < _count; i++)
-        {
-            <HvvTile StationIndex="i" />
-        }
+        <div class="hvv-grid">
+            @foreach (var station in HvvState.Current!.Stations)
+            {
+                var deps = station.Departures.OrderBy(d => d.ExpectedTime).Take(7).ToList();
+
+                <div class="hvv-card">
+                    <div class="hvv-card-head">
+                        <span class="hvv-station">
+                            <span class="hvv-station-dot"></span>@station.StationName
+                        </span>
+                        <span class="hvv-station-meta">@(station.Available ? "HALTESTELLE" : "KEINE DATEN")</span>
+                    </div>
+                    <div class="hvv-deps">
+                        @if (deps.Count == 0)
+                        {
+                            <p class="hvv-empty">Keine Abfahrten im Zeitfenster.</p>
+                        }
+                        else
+                        {
+                            @for (var i = 0; i < deps.Count; i++)
+                            {
+                                var d = deps[i];
+                                <div class="hvv-dep">
+                                    <span class="hvv-line">@d.LineName</span>
+                                    <span class="hvv-dir">@d.Direction</span>
+                                    <span class="hvv-when @(i == 0 ? "is-next" : null)">@HvvFormatter.Time(d)</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        </div>
     }
 </div>
 

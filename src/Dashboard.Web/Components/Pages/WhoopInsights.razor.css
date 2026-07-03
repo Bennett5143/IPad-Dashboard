@@ -1,24 +1,23 @@
+/* Content-Bereich unter dem PageHeader: die .detail-body-Utility liefert Höhe/Scroll/Padding,
+   .insights fügt nur die vertikale Sektions-Rhythmik hinzu. */
 .insights {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    min-height: 100dvh;
-    padding: var(--space-4);
-}
-
-.insights-header {
-    display: flex;
-    align-items: baseline;
     gap: var(--space-4);
 }
 
-.insights-header h1 {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
+/* Sektions-Überschriften im Command-Center-Look: Mono, Versalien, grün-hell. */
+.insights h2 {
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem;
     font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    color: var(--accent-green-light);
+    margin-bottom: var(--space-2);
+}
+
+.insights h2 .tod-window,
+.insights h2 .sleep-date {
+    color: var(--color-fg-faint);
 }
 
 .insights-msg {
@@ -41,11 +40,8 @@
     gap: var(--space-2);
     padding: var(--space-3);
     border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
 }
 
 .metric-head {
@@ -114,13 +110,6 @@
     stroke: var(--color-accent);
 }
 
-.sleep h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-    margin-bottom: var(--space-2);
-}
-
 .sleep-date {
     color: var(--color-fg-muted);
 }
@@ -131,11 +120,8 @@
     gap: var(--space-3);
     padding: var(--space-3);
     border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
 }
 
 .sleep-meta {
@@ -216,12 +202,6 @@
     gap: var(--space-3);
 }
 
-.tod h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-}
-
 .tod-window {
     color: var(--color-fg-muted);
     font-size: var(--font-size-sm);
@@ -241,11 +221,8 @@
     gap: var(--space-2);
     padding: var(--space-3);
     border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    background: var(--tile-green);
+    border: 1px solid var(--color-border);
 }
 
 .tod-head {
@@ -338,12 +315,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-}
-
-.load h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
 }
 
 .load .tod-card {
@@ -508,13 +479,6 @@
 .tod-matrix td.cell-3 {
     background: rgba(58, 157, 99, 0.62);
     color: var(--color-surface-base);
-}
-
-.runs h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
-    margin-bottom: var(--space-2);
 }
 
 .run-list {

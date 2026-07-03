@@ -27,7 +27,7 @@
 
 .ring-fill {
     fill: none;
-    stroke: var(--color-accent);
+    stroke: var(--ring-color, var(--color-accent));
     stroke-width: 9;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.4s ease;

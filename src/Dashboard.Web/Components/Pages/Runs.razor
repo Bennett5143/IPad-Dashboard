@@ -1,5 +1,5 @@
 @page "/runs"
-@layout MainLayout
+@layout DetailLayout
 @rendermode InteractiveServer
 @inject IRunRepository RunRepository
 @inject IRouteClusterStore RouteClusters
@@ -9,11 +9,10 @@
 
 <PageTitle>Läufe</PageTitle>
 
-<div class="runs-page">
-    <header class="runs-header">
-        <h1>Läufe</h1>
-    </header>
+<PageHeader Title="Läufe" Accent="var(--accent-green)" Meta="@Meta" />
 
+<div class="detail-body is-scroll">
+    <div class="runs-page">
     @if (!_connected)
     {
         <p class="runs-msg">Noch nicht mit Strava verbunden – <a href="/strava/connect">jetzt verbinden</a>.</p>
@@ -91,10 +90,10 @@
                         {
                             <tr class="runs-row" @onclick="() => OpenCluster(cluster.Id)">
                                 <td class="run-name">@cluster.Name</td>
-                                <td class="num">@cluster.Members</td>
-                                <td class="num">@cluster.Distance</td>
-                                <td class="num">@cluster.Pace</td>
-                                <td class="num">@cluster.BestTime</td>
+                                <td class="num mono">@cluster.Members</td>
+                                <td class="num mono">@cluster.Distance</td>
+                                <td class="num mono pace">@cluster.Pace</td>
+                                <td class="num mono">@cluster.BestTime</td>
                             </tr>
                         }
                     </tbody>
@@ -124,18 +123,19 @@
                     @foreach (var row in _rows)
                     {
                         <tr @onclick="() => Open(row.Id)" class="runs-row">
-                            <td>@row.Date</td>
+                            <td class="mono">@row.Date</td>
                             <td class="run-name">@row.Name</td>
-                            <td class="num">@row.Distance</td>
-                            <td class="num">@row.Pace</td>
-                            <td class="num">@row.HeartRate</td>
-                            <td class="num">@row.Elevation</td>
+                            <td class="num mono">@row.Distance</td>
+                            <td class="num mono pace">@row.Pace</td>
+                            <td class="num mono hr">@row.HeartRate</td>
+                            <td class="num mono">@row.Elevation</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </section>
     }
+    </div>
 </div>
 
 @code {
@@ -145,6 +145,9 @@
     private IReadOnlyList<RunListRow> _rows = [];
     private RunReviewView? _review;
     private IReadOnlyList<RouteClusterRow> _clusters = [];
+
+    // Mono-Meta im PageHeader: das gewählte Rückblicksjahr, sonst das aktuelle Jahr.
+    private string Meta => (_review?.Year ?? Clock.UtcNow.Year).ToString();
 
     protected override async Task OnInitializedAsync()
     {

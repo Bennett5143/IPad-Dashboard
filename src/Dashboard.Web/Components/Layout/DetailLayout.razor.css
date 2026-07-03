@@ -1,0 +1,21 @@
+.detail-shell {
+    display: flex;
+    height: 100dvh;
+    overflow: hidden;
+    background-color: var(--color-surface-base);
+    color: var(--color-fg-primary);
+
+    /* Kiosk: keine Textauswahl, kein Overscroll (wie KioskLayout). */
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+}
+
+.detail-content {
+    flex: 1;
+    min-width: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}

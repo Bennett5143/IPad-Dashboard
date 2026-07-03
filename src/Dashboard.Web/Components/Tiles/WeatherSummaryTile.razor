@@ -4,35 +4,61 @@
 @* Wetter-Summary: groß & prägnant – aktuelle Temperatur, heute Min/Max, Regenwahrscheinlichkeit.
    Ganze Kachel tippbar → /weather (Verlauf + Morgen + Extras). *@
 <a class="tile-tap @CssClass" href="/weather">
-    <Tile Title="Wetter">
-        <Icon>
-            <span class="weather-summary-emoji" aria-hidden="true">@HeaderEmoji</span>
-        </Icon>
-        <ChildContent>
-            <div class="weather-summary">
-                @if (_snapshot is null)
-                {
-                    <p class="weather-summary-empty">Wetterdaten gerade nicht verfügbar.</p>
-                }
-                else
-                {
-                    <div class="weather-hero">
-                        <span class="weather-hero-glyph" aria-hidden="true">@WeatherFormatter.Emoji(_snapshot.Current.Condition)</span>
-                        <span class="weather-hero-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
-                    </div>
-                    <div class="weather-stats">
-                        <div class="weather-stat">
-                            <span class="weather-stat-value">@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
-                            <span class="weather-stat-label">Min / Max</span>
+    <Tile CssClass="tile--teal">
+        <div class="weather-hero-tile">
+            @if (_snapshot is null)
+            {
+                <span class="cap">
+                    <span class="chip chip-lg chip--teal">
+                        <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+                    </span>
+                    <span class="mono-label mono-label--teal">Wetter · Hamburg</span>
+                </span>
+                <p class="weather-empty">Wetterdaten gerade nicht verfügbar.</p>
+            }
+            else
+            {
+                var hourly = _snapshot.Hourly;
+                var temps = hourly.Select(h => (double?)h.Temperature).ToList();
+                var ticks = hourly.Where((_, i) => i % 2 == 0).Take(6).ToList();
+
+                <span class="weather-glow" aria-hidden="true"></span>
+                <div class="weather-top">
+                    <span class="cap">
+                        <span class="chip chip-lg chip--teal">
+                            <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+                        </span>
+                        <span class="mono-label mono-label--teal">Wetter · Hamburg</span>
+                    </span>
+                    <span class="weather-cond">@_snapshot.Current.Description</span>
+                </div>
+
+                <div class="weather-big">
+                    <span class="weather-temp">@($"{Math.Round(_snapshot.Current.Temperature, MidpointRounding.AwayFromZero):0}")</span>
+                    <span class="weather-unit">°C</span>
+                </div>
+
+                <div class="weather-chips">
+                    <span class="wx-chip">@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
+                    <span class="wx-chip wx-chip--teal">Regen @WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
+                    <span class="wx-chip">Wind @WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</span>
+                </div>
+
+                <div class="weather-spacer"></div>
+
+                <span class="mono-label weather-chart-cap">Tagesverlauf</span>
+                <Sparkline Values="temps" GradientId="gTeal" CssClass="weather-chart" />
+                <div class="weather-ticks">
+                    @foreach (var h in ticks)
+                    {
+                        <div class="weather-tick">
+                            <span class="weather-tick-temp">@WeatherFormatter.Temperature(h.Temperature)</span>
+                            <span class="weather-tick-hour">@($"{h.Time:HH}h")</span>
                         </div>
-                        <div class="weather-stat">
-                            <span class="weather-stat-value">@WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
-                            <span class="weather-stat-label">Regen</span>
-                        </div>
-                    </div>
-                }
-            </div>
-        </ChildContent>
+                    }
+                </div>
+            }
+        </div>
     </Tile>
 </a>
 
@@ -54,6 +80,4 @@
     });
 
     public void Dispose() => WeatherState.Changed -= OnChanged;
-
-    private string HeaderEmoji => _snapshot is null ? "⛅" : WeatherFormatter.Emoji(_snapshot.Current.Condition);
 }

@@ -2,13 +2,25 @@
 @inject IClock Clock
 
 <Tile CssClass="@CssClass">
-    <div class="clock-tile">
-        <time datetime="@_display.Iso">
-            <span class="clock-date">@_display.Date</span>
-            <span class="clock-separator">·</span>
-            <span class="clock-time">@_display.Time</span>
-        </time>
-        <StatusIndicator />
+    <div class="clock-banner">
+        <span class="clock-glow" aria-hidden="true"></span>
+        <div class="clock-now">
+            <time datetime="@_display.Iso" class="clock-time">@_display.TimeHm</time>
+            <span class="clock-seconds">:@_display.Seconds</span>
+        </div>
+        <div class="clock-meta">
+            <span class="clock-date">
+                <span class="clock-chip" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4" />
+                        <line x1="8" y1="8" x2="8" y2="4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                        <line x1="8" y1="8" x2="10.5" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    </svg>
+                </span>
+                <span class="clock-date-text">@_display.LongDate</span>
+            </span>
+            <span class="clock-sub">Hamburg · @_display.Week</span>
+        </div>
     </div>
 </Tile>
 

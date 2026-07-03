@@ -5,40 +5,44 @@
 @* Fußball-Summary: Zähler „interessante Spiele diese Woche" + (ab 15.8) Fabrizio-Alert-Badge.
    Ganze Kachel tippbar → /football (Top-5-Tabellen + getrackte Vereine). *@
 <a class="tile-tap @CssClass" href="/football">
-    <Tile Title="Fußball">
-        <Icon>
-            <span class="football-emoji" aria-hidden="true">⚽</span>
-        </Icon>
-        <ChildContent>
-            <div class="football-summary">
-                @if (_snapshot is null)
+    <Tile CssClass="tile--gold">
+        <div class="football-tile">
+            <span class="cap">
+                <span class="chip chip--gold">
+                    <svg width="15" height="15" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="5.2" fill="none" stroke="currentColor" stroke-width="1.5" />
+                        <polygon points="8,5 10.2,7 9.3,9.6 6.7,9.6 5.8,7" fill="currentColor" />
+                    </svg>
+                </span>
+                <span class="mono-label mono-label--gold">Fußball</span>
+            </span>
+            @if (_snapshot is null)
+            {
+                <p class="football-empty">Fußballdaten gerade nicht verfügbar.</p>
+            }
+            else
+            {
+                <div class="football-count">
+                    <span class="football-number">@_snapshot.InterestingGamesThisWeek</span>
+                    <span class="football-count-label">
+                        @(_snapshot.InterestingGamesThisWeek == 1 ? "Spiel diese Woche" : "Spiele diese Woche")
+                    </span>
+                </div>
+
+                @if (_snapshot.InterestingGamesThisWeek == 0)
                 {
-                    <p class="football-summary-empty">Fußballdaten gerade nicht verfügbar.</p>
+                    <span class="football-hint">Saisonpause – keine Spiele deiner Vereine</span>
                 }
-                else
+
+                @if (_alert is not null)
                 {
-                    <div class="football-summary-count">
-                        <span class="football-summary-number">@_snapshot.InterestingGamesThisWeek</span>
-                        <span class="football-summary-label">
-                            @(_snapshot.InterestingGamesThisWeek == 1 ? "Spiel diese Woche" : "Spiele diese Woche")
-                        </span>
+                    <div class="football-alert" title="@_alert.Headline">
+                        <span class="football-alert-tag">Fabrizio</span>
+                        <span class="football-alert-text">@_alert.Headline</span>
                     </div>
-
-                    @if (_snapshot.InterestingGamesThisWeek == 0)
-                    {
-                        <span class="football-summary-hint">Saisonpause – keine Spiele deiner Vereine</span>
-                    }
-
-                    @if (_alert is not null)
-                    {
-                        <div class="football-summary-alert" title="@_alert.Headline">
-                            <span class="football-summary-alert-tag">Fabrizio</span>
-                            <span class="football-summary-alert-text">@_alert.Headline</span>
-                        </div>
-                    }
                 }
-            </div>
-        </ChildContent>
+            }
+        </div>
     </Tile>
 </a>
 

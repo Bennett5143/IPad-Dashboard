@@ -1,20 +1,9 @@
 .heatmap-page {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-}
-
-.heatmap-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-4);
-}
-
-.heatmap-header h1 {
-    font-family: var(--font-family-display);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    gap: 14px;
 }
 
 .heatmap-connect {
@@ -23,12 +12,9 @@
     align-items: flex-start;
     gap: var(--space-4);
     padding: var(--space-6);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--glass-shadow);
+    background: var(--tile-teal);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
 }
 
 .btn-connect {
@@ -39,7 +25,6 @@
     border-radius: 999px;
     text-decoration: none;
     font-weight: var(--font-weight-semibold);
-    box-shadow: 0 0 18px rgba(252, 76, 2, 0.35);
 }
 
 .heatmap-controls {
@@ -48,29 +33,34 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
+    flex: none;
 }
 
-.range-buttons {
+.range-buttons,
+.layer-buttons {
     display: flex;
-    gap: var(--space-2);
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: none;
 }
 
-.range-buttons button {
-    padding: var(--space-2) var(--space-4);
-    border-radius: 999px;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    color: var(--color-fg-secondary);
-    font-size: var(--font-size-sm);
+.range-buttons button,
+.layer-buttons button {
+    padding: 6px 13px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #17231b;
+    color: var(--color-fg-muted);
+    font-size: 12px;
+    font-weight: var(--font-weight-medium);
 }
 
-.range-buttons button.active {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04140c;
+.range-buttons button.active,
+.layer-buttons button.active {
+    background: var(--accent-teal-chip);
+    color: var(--accent-teal-light);
+    border-color: #245049;
     font-weight: var(--font-weight-semibold);
-    box-shadow: var(--glow-accent);
 }
 
 .heatmap-stats {
@@ -81,82 +71,58 @@
 .heatmap-stats .stat {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .stat-value {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 600;
     color: var(--color-fg-primary);
     font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 .stat-label {
-    font-size: var(--font-size-sm);
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--color-fg-muted);
 }
 
+/* Karte füllt die Resthöhe (Leaflet liest die tatsächliche Pixelhöhe des flex-Kindes). */
 .heatmap-map {
+    flex: 1;
+    min-height: 0;
     width: 100%;
-    height: 70vh;
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
     overflow: hidden;
-    box-shadow: var(--shadow-md);
-    background: var(--color-surface-base); /* dunkler Grund, passend zur dunklen Karte */
+    background: var(--color-surface-base);
 }
 
-/* Leaflets Default-Kartenhintergrund ist hellgrau (#ddd) und scheint dort durch, wo gerade
-   keine Kachel liegt (ladend oder fehlend) → helle/„weiße" Flecken. Dunkel setzen, passend
-   zur invertierten Karte, damit Lücken nicht aufblitzen. */
+/* Leaflets heller Default-Grund darf in Kachel-Lücken nicht durchblitzen. */
 ::deep .leaflet-container {
     background: #0b1110;
 }
 
-/* Die hellen OSM-Kacheln ans dunkle HUD anpassen. Filter bewusst auf die GESAMTE Kachel-Ebene
-   (ein composited Layer) statt auf jede Kachel einzeln – sonst lässt Safari beim Pannen/Zoomen
-   einen Teilbereich ungefiltert (heller Block). Die Lauf-Routen liegen in der overlay-pane und
-   bleiben dadurch unberührt. */
+/* Helle OSM-Kacheln ans dunkle Theme angleichen (ganze Kachel-Ebene, nicht je Kachel). */
 ::deep .leaflet-tile-pane {
     filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.95);
 }
 
-.layer-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-}
-
-.layer-buttons button {
-    padding: var(--space-2) var(--space-4);
-    border-radius: 999px;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    color: var(--color-fg-secondary);
-    font-size: var(--font-size-sm);
-}
-
-.layer-buttons button.active {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04140c;
-    font-weight: var(--font-weight-semibold);
-    box-shadow: var(--glow-accent);
-}
-
-/* Lauf-Popup (Tap auf eine Route) – an das dunkle HUD-Theme angepasst.
-   Leaflet rendert ins Karten-Pane innerhalb der Komponente, daher ::deep. */
+/* Lauf-Popup (Tap auf eine Route) – dunkles Theme. */
 ::deep .run-popup-wrap .leaflet-popup-content-wrapper {
     background: var(--color-surface-raised);
     color: var(--color-fg-primary);
-    border: 1px solid var(--glass-rim);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--glass-shadow);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
 }
 
 ::deep .run-popup-wrap .leaflet-popup-tip {
     background: var(--color-surface-raised);
-    border: 1px solid var(--glass-rim);
+    border: 1px solid var(--color-border);
 }
 
 ::deep .run-popup-wrap .leaflet-popup-content {
@@ -171,7 +137,6 @@
 }
 
 ::deep .run-popup strong {
-    font-family: var(--font-family-display);
     color: var(--color-fg-primary);
 }
 
@@ -181,26 +146,24 @@
 
 ::deep .run-popup-more {
     margin-top: 2px;
-    color: var(--color-accent);
+    color: var(--accent-teal);
     font-size: var(--font-size-sm);
+}
+
+.heatmap-legend,
+.heatmap-hint,
+.sync-info {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    color: var(--color-fg-faint);
+    flex: none;
 }
 
 .heatmap-legend {
-    color: var(--color-fg-secondary);
-    font-size: var(--font-size-sm);
-}
-
-.heatmap-hint {
     color: var(--color-fg-muted);
-    font-size: var(--font-size-sm);
 }
 
-.sync-info {
-    color: var(--color-fg-muted);
-    font-size: var(--font-size-sm);
-}
-
-/* Runden-Ansicht: Banner statt Zeitraum-Buttons (FA-8.17 / Runde antippbar). */
+/* Runden-Ansicht: Banner statt Zeitraum-Buttons. */
 .cluster-banner {
     display: flex;
     align-items: center;
@@ -210,13 +173,11 @@
 }
 
 .cluster-reset {
-    padding: var(--space-2) var(--space-4);
-    border-radius: 999px;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    color: var(--color-accent);
-    font-size: var(--font-size-sm);
+    padding: 6px 13px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #17231b;
+    color: var(--accent-teal-light);
+    font-size: 12px;
     cursor: pointer;
 }
