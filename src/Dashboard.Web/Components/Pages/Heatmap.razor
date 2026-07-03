@@ -13,11 +13,10 @@
 
 <PageTitle>Lauf-Heatmap</PageTitle>
 
-<div class="heatmap-page">
-    <header class="heatmap-header">
-        <h1>Lauf-Heatmap</h1>
-    </header>
+<PageHeader Title="Lauf-Heatmap" Accent="var(--accent-teal)" Meta="@MetaText" />
 
+<div class="detail-body">
+    <div class="heatmap-page">
     @if (!_connected)
     {
         <div class="heatmap-connect">
@@ -65,6 +64,7 @@
         <p class="heatmap-hint">Tipp auf eine Route zeigt Lauf-Details.</p>
         <p class="sync-info">@SyncInfo</p>
     }
+    </div>
 </div>
 
 @code {
@@ -186,6 +186,15 @@
     private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
 
     private string LayerCss(string layer) => layer == _layer ? "active" : string.Empty;
+
+    private string MetaText => Cluster is not null
+        ? "STANDARD-RUNDE"
+        : _range switch
+        {
+            RunTimeRange.FourWeeks => "4 WOCHEN",
+            RunTimeRange.All => "ALLE",
+            _ => "12 MONATE"
+        };
 
     private string LegendText => _layer switch
     {

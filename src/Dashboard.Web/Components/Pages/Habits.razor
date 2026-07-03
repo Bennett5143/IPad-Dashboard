@@ -1,97 +1,100 @@
 @page "/habits"
-@layout MainLayout
+@layout DetailLayout
 @rendermode InteractiveServer
 @inject IHabitEntryRepository HabitRepo
 @inject IClock Clock
 
 <PageTitle>Habit-Verlauf</PageTitle>
 
-<div class="habits-page">
-    <header class="habits-header">
-        <h1>Habit-Verlauf</h1>
-    </header>
+<PageHeader Title="Habits" Accent="var(--accent-green)" Meta="LETZTE 30 WOCHEN" />
 
-    <div class="habit-tabs" role="group" aria-label="Habit">
-        <button class="@(_kind is null ? "active" : null)" @onclick="() => Select(null)">Alle</button>
-        @foreach (var kind in _kinds)
+<div class="detail-body">
+    <div class="habits-page">
+        <div class="habit-tabs" role="group" aria-label="Habit">
+            <button class="@(_kind is null ? "active" : null)" @onclick="() => Select(null)">Alle</button>
+            @foreach (var kind in _kinds)
+            {
+                <button class="@(_kind == kind ? "active" : null)" @onclick="() => Select(kind)">
+                    @HabitsHeatmapBuilder.Label(kind)
+                </button>
+            }
+        </div>
+
+        @if (_view is not null)
         {
-            <button class="@(_kind == kind ? "active" : null)" @onclick="() => Select(kind)">
-                @HabitsHeatmapBuilder.Label(kind)
-            </button>
+            <div class="habit-card habit-summary">
+                <div class="stat"><span class="stat-value">@_view.YearTotal</span><span class="stat-label">@(_year) gesamt</span></div>
+                <div class="stat"><span class="stat-value">@_view.CurrentWeek</span><span class="stat-label">diese Woche</span></div>
+                @if (_kind is not null)
+                {
+                    <Explainable Id="MetricId.HabitStreaks"><ChildContent>
+                    <div class="stat">
+                        <span class="stat-value stat-value--gold">@_weeklyStreak.Current</span>
+                        <span class="stat-label">Wochen-Serie · Rekord @_weeklyStreak.Longest</span>
+                    </div>
+                    </ChildContent></Explainable>
+                }
+                else
+                {
+                    <Explainable Id="MetricId.HabitStreaks"><ChildContent>
+                    <div class="stat">
+                        <span class="stat-value stat-value--gold">@_dailyStreak.Current</span>
+                        <span class="stat-label">Tage-Serie · Rekord @_dailyStreak.Longest</span>
+                    </div>
+                    </ChildContent></Explainable>
+                }
+            </div>
+
+            <div class="habit-card">
+                <span class="mono-label mono-label--green">Verlauf · 30 Wochen</span>
+                <Explainable Id="MetricId.HabitHeatmap"><ChildContent>
+                <div class="heat-scroll">
+                    <div class="heat-months">
+                        @foreach (var month in _view.Months)
+                        {
+                            <span class="heat-month" style="grid-column: @(month.Week + 1)">@month.Label</span>
+                        }
+                    </div>
+                    <div class="heat-grid">
+                        @foreach (var cell in _view.Cells)
+                        {
+                            <span class="heat-cell lvl-@cell.Bucket"
+                                  style="grid-column: @(cell.Week + 1); grid-row: @(cell.Weekday + 1)"
+                                  title="@cell.Title"></span>
+                        }
+                    </div>
+                </div>
+
+                <div class="heat-legend">
+                    <span>weniger</span>
+                    <span class="heat-cell lvl-0"></span>
+                    <span class="heat-cell lvl-1"></span>
+                    <span class="heat-cell lvl-2"></span>
+                    <span class="heat-cell lvl-3"></span>
+                    <span class="heat-cell lvl-4"></span>
+                    <span>mehr</span>
+                </div>
+                </ChildContent></Explainable>
+            </div>
+
+            <section class="habit-card weeks">
+                <span class="mono-label mono-label--green">Letzte 12 Wochen</span>
+                <div class="week-bars">
+                    @foreach (var bar in _view.WeeklyBars)
+                    {
+                        <div class="week-bar" title="Woche ab @bar.Label: @bar.Count">
+                            <span class="week-bar-count">@bar.Count</span>
+                            <div class="week-bar-track">
+                                <div class="week-bar-fill"
+                                     style="height: @(bar.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                            </div>
+                            <span class="week-bar-label">@bar.Label</span>
+                        </div>
+                    }
+                </div>
+            </section>
         }
     </div>
-
-    @if (_view is not null)
-    {
-        <div class="habit-summary">
-            <div class="stat"><span class="stat-value">@_view.YearTotal</span><span class="stat-label">@(_year) gesamt</span></div>
-            <div class="stat"><span class="stat-value">@_view.CurrentWeek</span><span class="stat-label">diese Woche</span></div>
-            @if (_kind is { } selected)
-            {
-                <Explainable Id="MetricId.HabitStreaks"><ChildContent>
-                <div class="stat">
-                    <span class="stat-value">@_weeklyStreak.Current</span>
-                    <span class="stat-label">Wochen-Serie · Rekord @_weeklyStreak.Longest</span>
-                </div>
-                </ChildContent></Explainable>
-            }
-            else
-            {
-                <Explainable Id="MetricId.HabitStreaks"><ChildContent>
-                <div class="stat">
-                    <span class="stat-value">@_dailyStreak.Current</span>
-                    <span class="stat-label">Tage-Serie · Rekord @_dailyStreak.Longest</span>
-                </div>
-                </ChildContent></Explainable>
-            }
-        </div>
-
-        <Explainable Id="MetricId.HabitHeatmap"><ChildContent>
-        <div class="heat-scroll">
-            <div class="heat-months">
-                @foreach (var month in _view.Months)
-                {
-                    <span class="heat-month" style="grid-column: @(month.Week + 1)">@month.Label</span>
-                }
-            </div>
-            <div class="heat-grid">
-                @foreach (var cell in _view.Cells)
-                {
-                    <span class="heat-cell lvl-@cell.Bucket"
-                          style="grid-column: @(cell.Week + 1); grid-row: @(cell.Weekday + 1)"
-                          title="@cell.Title"></span>
-                }
-            </div>
-        </div>
-
-        <div class="heat-legend">
-            <span>weniger</span>
-            <span class="heat-cell lvl-0"></span>
-            <span class="heat-cell lvl-1"></span>
-            <span class="heat-cell lvl-2"></span>
-            <span class="heat-cell lvl-3"></span>
-            <span class="heat-cell lvl-4"></span>
-            <span>mehr</span>
-        </div>
-        </ChildContent></Explainable>
-
-        <section class="weeks">
-            <h2>Letzte 12 Wochen</h2>
-            <div class="week-bars">
-                @foreach (var bar in _view.WeeklyBars)
-                {
-                    <div class="week-bar" title="Woche ab @bar.Label: @bar.Count">
-                        <div class="week-bar-track">
-                            <div class="week-bar-fill"
-                                 style="height: @(bar.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
-                        </div>
-                        <span class="week-bar-count">@bar.Count</span>
-                        <span class="week-bar-label">@bar.Label</span>
-                    </div>
-                }
-            </div>
-        </section>
-    }
 </div>
 
 @code {
