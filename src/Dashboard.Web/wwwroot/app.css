@@ -235,6 +235,50 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     overflow-y: auto;
 }
 
+/* ===== Wiederkehrende Kachel-Bausteine: Icon-Chip + Mono-Label ===== */
+/* Quadratischer Chip mit Domänen-Hintergrund; das SVG erbt die Domänenfarbe via currentColor. */
+.chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.chip-lg {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+}
+
+.chip--green { background: var(--accent-green-chip); color: var(--accent-green); }
+.chip--teal  { background: var(--accent-teal-chip);  color: var(--accent-teal); }
+.chip--gold  { background: var(--accent-gold-chip);  color: var(--accent-gold); }
+.chip--brown { background: var(--accent-brown-chip); color: var(--accent-brown); }
+.chip--coral { background: var(--accent-coral-chip); color: var(--accent-coral); }
+
+/* Kopfzeile einer Kachel/Karte: Chip + Label nebeneinander. */
+.cap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.mono-label {
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+}
+
+.mono-label--green { color: var(--accent-green-light); }
+.mono-label--teal  { color: var(--accent-teal-light); }
+.mono-label--gold  { color: var(--accent-gold-light); }
+.mono-label--brown { color: var(--accent-brown-light); }
+
 /* Ganze Kachel als Tap-Ziel: Anchor füllt die Grid-Zelle, das Tile darin 100 % Höhe. */
 .tile-tap {
     display: block;
