@@ -1,6 +1,5 @@
 using System.Net;
 
-using Dashboard.Domain.Calendar;
 using Dashboard.Infrastructure.Calendar;
 
 using Microsoft.Extensions.Logging.Abstractions;

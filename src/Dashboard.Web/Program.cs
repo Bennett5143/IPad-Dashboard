@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
+using Dashboard.Domain.Calendar;
 using Dashboard.Infrastructure;
+using Dashboard.Infrastructure.Calendar;
 using Dashboard.Infrastructure.Crests;
 using Dashboard.Infrastructure.Crypto;
 using Dashboard.Infrastructure.Football;
@@ -13,8 +15,6 @@ using Dashboard.Infrastructure.Status;
 using Dashboard.Infrastructure.Strava;
 using Dashboard.Infrastructure.Tiles;
 using Dashboard.Infrastructure.Time;
-using Dashboard.Domain.Calendar;
-using Dashboard.Infrastructure.Calendar;
 using Dashboard.Infrastructure.Weather;
 using Dashboard.Infrastructure.Whoop;
 using Dashboard.Web.Components;
