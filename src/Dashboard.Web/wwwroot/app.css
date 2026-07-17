@@ -233,25 +233,25 @@ button {
 }
 
 a {
-    color: var(--color-accent);
+    color: var(--accent);
 }
 
 input, select, textarea {
     font: inherit;
-    color: var(--color-fg-primary);
-    background-color: var(--color-surface-sunken);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    accent-color: var(--color-accent);
+    color: var(--ink);
+    background-color: var(--track);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    accent-color: var(--accent);
 }
 
 input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--accent);
     outline-offset: 1px;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 5px; }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 /* ============================================================
@@ -260,7 +260,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 .placeholder-hint {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-style: italic;
 }
 
@@ -285,33 +285,32 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 .dialog-backdrop {
     position: fixed; inset: 0;
-    background: rgba(2, 4, 9, 0.7);
+    background: rgba(35, 32, 26, 0.35);
     display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 .dialog {
-    background: var(--glass-sheen), var(--glass-bg-strong);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    border-radius: var(--radius-lg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     padding: var(--space-5);
     width: min(90vw, 480px); max-height: 85vh; overflow-y: auto;
-    box-shadow: var(--glass-shadow);
+    box-shadow: none;
 }
 .dialog-title  { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); font-family: var(--font-family-display); text-transform: uppercase; letter-spacing: 0.04em; }
-.dialog-error  { color: var(--color-error); font-size: var(--font-size-sm); margin: var(--space-3) 0 0; }
+.dialog-error  { color: var(--bear); font-size: var(--font-size-sm); margin: var(--space-3) 0 0; }
 .dialog-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 .dialog-actions button {
     flex: 1; min-width: 120px; padding: 0.6rem 1rem;
-    border: none; border-radius: var(--radius-md); cursor: pointer;
+    border: 1px solid var(--rule); border-radius: 6px; cursor: pointer;
     font: inherit; font-weight: var(--font-weight-semibold);
-    background: var(--color-surface-sunken); color: var(--color-fg-primary);
+    background: var(--track); color: var(--ink);
 }
 .dialog-actions button:first-child {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-    color: #04140c;
-    box-shadow: var(--glow-accent);
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+    box-shadow: none;
 }
 .dialog-actions button:disabled { opacity: 0.6; cursor: default; }
 
@@ -352,11 +351,12 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     border-radius: 9px;
 }
 
-.chip--green { background: var(--accent-green-chip); color: var(--accent-green); }
-.chip--teal  { background: var(--accent-teal-chip);  color: var(--accent-teal); }
-.chip--gold  { background: var(--accent-gold-chip);  color: var(--accent-gold); }
-.chip--brown { background: var(--accent-brown-chip); color: var(--accent-brown); }
-.chip--coral { background: var(--accent-coral-chip); color: var(--accent-coral); }
+/* Domain tints collapse to one neutral chip — color carries information only. */
+.chip--green,
+.chip--teal,
+.chip--gold,
+.chip--brown,
+.chip--coral { background: var(--track); color: var(--ink); }
 
 /* Kopfzeile einer Kachel/Karte: Chip + Label nebeneinander. */
 .cap {
@@ -370,13 +370,13 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     font-size: 0.625rem; /* 10px */
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
-.mono-label--green { color: var(--accent-green-light); }
-.mono-label--teal  { color: var(--accent-teal-light); }
-.mono-label--gold  { color: var(--accent-gold-light); }
-.mono-label--brown { color: var(--accent-brown-light); }
+.mono-label--green,
+.mono-label--teal,
+.mono-label--gold,
+.mono-label--brown { color: var(--muted); }
 
 /* Ganze Kachel als Tap-Ziel: Anchor füllt die Grid-Zelle, das Tile darin 100 % Höhe. */
 .tile-tap {
@@ -396,7 +396,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     gap: var(--space-1);
     height: 100%;
     text-align: center;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 .summary-placeholder-text {
     font-family: var(--font-family-display);

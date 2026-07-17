@@ -16,18 +16,18 @@
 .quote-text {
     font-size: 13px;
     line-height: 1.4;
-    color: #ddd3c4;
+    color: var(--ink);
     margin: 0;
     text-wrap: pretty;
 }
 
 .quote-author {
     font-size: 11px;
-    color: #a67d49;
+    color: var(--muted);
     font-style: italic;
 }
 
 .quote-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-sm);
 }

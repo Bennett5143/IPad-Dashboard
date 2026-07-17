@@ -10,10 +10,10 @@
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-fg-faint);
+    color: var(--muted);
     font-weight: 400;
     padding: 10px 12px;
-    border-bottom: 1px solid #17231b;
+    border-bottom: 1px solid var(--rule);
 }
 
 .league-table th.num,
@@ -23,8 +23,8 @@
 
 .league-table td {
     padding: 9px 12px;
-    border-top: 1px solid #131e17;
-    color: var(--color-fg-secondary);
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
     font-size: 14px;
 }
 
@@ -33,33 +33,33 @@
 }
 
 .league-table td.pts {
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-weight: 600;
 }
 
 /* Positions-Spalte nach Rang eingefärbt (Ligakontext: 1–4 grün, 5–6 gold, sonst neutral).
    Zeilen liegen in Positionsreihenfolge, daher greift nth-child. */
 .league-table tbody td:first-child {
-    color: #8aa090;
+    color: var(--muted);
     font-weight: 600;
 }
 
 .league-table tbody tr:nth-child(-n + 4) td:first-child {
-    color: var(--accent-green-light);
+    color: var(--good);
 }
 
 .league-table tbody tr:nth-child(n + 5):nth-child(-n + 6) td:first-child {
-    color: var(--accent-gold-light);
+    color: var(--muted);
 }
 
 /* Getrackter Verein hervorgehoben. */
 .league-table tr.is-own td {
-    background: rgba(95, 206, 151, 0.07);
-    color: var(--color-fg-primary);
+    background: var(--track);
+    color: var(--ink);
 }
 
 .league-table tr.is-own .team-name {
-    color: var(--accent-green-light);
+    color: var(--accent);
     font-weight: 700;
 }
 

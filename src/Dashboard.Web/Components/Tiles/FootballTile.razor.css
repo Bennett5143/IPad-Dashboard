@@ -6,7 +6,7 @@
 }
 
 .football-unavailable {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-style: italic;
 }
 
@@ -40,28 +40,28 @@
     font-family: var(--font-family-display);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
+    color: var(--ink);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .football-position {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
 .football-position.is-button {
     cursor: pointer;
     background: transparent;
-    border: 1px solid var(--glass-rim);
+    border: 1px solid var(--rule);
     border-radius: 999px;
     padding: 1px var(--space-2);
 }
 
 .football-position.is-button:hover {
-    color: var(--color-fg-primary);
-    border-color: var(--color-accent);
+    color: var(--ink);
+    border-color: var(--accent);
 }
 
 /* Ligatabelle als Tap-Overlay (FA-4.06) */
@@ -73,9 +73,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-4);
-    background: rgba(3, 8, 5, 0.72);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    background: color-mix(in srgb, var(--ink) 40%, transparent);
 }
 
 .table-modal {
@@ -83,10 +81,10 @@
     max-height: 86vh;
     overflow-y: auto;
     padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    box-shadow: none;
 }
 
 .table-modal-head {
@@ -99,13 +97,13 @@
 
 .table-modal-head h3 {
     font-family: var(--font-family-display);
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 .table-close {
     background: transparent;
     border: none;
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-lg);
     cursor: pointer;
 }
@@ -119,10 +117,10 @@
 
 .league-table th {
     text-align: left;
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-weight: var(--font-weight-normal, 400);
     padding: var(--space-1) var(--space-2);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .league-table th.num,
@@ -132,18 +130,18 @@
 
 .league-table td {
     padding: var(--space-1) var(--space-2);
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-fg-secondary);
+    border-bottom: 1px solid var(--rule);
+    color: var(--muted);
 }
 
 .league-table td.pts {
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-weight: var(--font-weight-semibold);
 }
 
 .league-table tr.is-own td {
-    background: rgba(58, 157, 99, 0.1);
-    color: var(--color-fg-primary);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--ink);
 }
 
 /* Wochen-Kalender (FA-4.05) */
@@ -153,7 +151,7 @@
     background: transparent;
     border: none;
     padding: 0;
-    color: var(--color-accent);
+    color: var(--accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     cursor: pointer;
@@ -173,21 +171,21 @@
     grid-template-columns: 5.5rem 1fr;
     gap: var(--space-3);
     padding-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .week-day-label {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
 .week-day.is-today .week-day-label {
-    color: var(--color-accent);
+    color: var(--accent);
     font-weight: var(--font-weight-semibold);
 }
 
 .week-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .week-matches {
@@ -208,16 +206,16 @@
 }
 
 .week-time {
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
 
 .week-vs {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .week-comp {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-xs, 0.7rem);
     text-align: right;
 }
@@ -225,7 +223,7 @@
 .football-label {
     margin-top: var(--space-1);
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .match-list {
@@ -247,25 +245,25 @@
 }
 
 .match-date {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
 .match-opp {
-    color: var(--color-fg-primary);
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .match-venue {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .match-comp {
     grid-column: 2;
     font-size: 0.75rem;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .match-score {
@@ -277,27 +275,27 @@
     border-radius: var(--radius-md);
     font-variant-numeric: tabular-nums;
     font-weight: var(--font-weight-medium);
-    background-color: var(--color-surface-sunken);
-    color: var(--color-fg-secondary);
+    background-color: var(--track);
+    color: var(--muted);
 }
 
 .match-score.outcome-win {
-    background-color: color-mix(in srgb, var(--color-success) 18%, transparent);
-    color: var(--color-success);
+    background-color: color-mix(in srgb, var(--good) 18%, transparent);
+    color: var(--good);
 }
 
 .match-score.outcome-draw {
-    background-color: color-mix(in srgb, var(--color-warning) 18%, transparent);
-    color: var(--color-warning);
+    background-color: color-mix(in srgb, var(--rec-mid) 18%, transparent);
+    color: var(--rec-mid);
 }
 
 .match-score.outcome-loss {
-    background-color: color-mix(in srgb, var(--color-error) 18%, transparent);
-    color: var(--color-error);
+    background-color: color-mix(in srgb, var(--bear) 18%, transparent);
+    color: var(--bear);
 }
 
 .football-stale {
     margin-top: auto;
-    color: var(--color-warning);
+    color: var(--rec-mid);
     font-size: var(--font-size-sm);
 }

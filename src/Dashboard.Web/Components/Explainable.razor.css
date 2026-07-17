@@ -2,16 +2,16 @@
 .explainable {
     display: grid;
     cursor: pointer;
-    border-radius: var(--radius-lg);
+    border-radius: 6px;
     transition: box-shadow 120ms ease;
 }
 
 .explainable:hover {
-    box-shadow: 0 0 0 1px var(--glass-rim);
+    box-shadow: 0 0 0 1px var(--rule);
 }
 
 .explainable:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
 
@@ -40,10 +40,10 @@
     width: 1.8rem;
     height: 1.8rem;
     padding: 0;
-    border: 1px solid var(--glass-rim);
+    border: 1px solid var(--rule);
     border-radius: 50%;
-    background: var(--color-surface-sunken);
-    color: var(--color-fg-secondary);
+    background: var(--track);
+    color: var(--muted);
     font-size: var(--font-size-sm);
     line-height: 1;
     cursor: pointer;
@@ -51,7 +51,7 @@
 
 .metric-dialog-close:hover,
 .metric-dialog-close:focus-visible {
-    color: var(--color-fg-primary);
+    color: var(--ink);
     outline: none;
 }
 
@@ -70,7 +70,7 @@
 
 .metric-dialog-summary {
     margin: var(--space-3) 0 0;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     font-size: var(--font-size-base);
     line-height: 1.5;
 }
@@ -81,7 +81,7 @@
 
 .metric-dialog-block p {
     margin: var(--space-1) 0 0;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     line-height: 1.5;
 }
 
@@ -90,7 +90,7 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .metric-dialog-axes {
@@ -102,7 +102,7 @@
 }
 
 .metric-dialog-axes li {
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     line-height: 1.4;
 }
 
@@ -114,9 +114,9 @@
     block-size: 1.25rem;
     margin-right: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--color-surface-sunken);
-    border: 1px solid var(--glass-rim);
-    color: var(--color-accent);
+    background: var(--track);
+    border: 1px solid var(--rule);
+    color: var(--ink);
     font-family: var(--font-family-display);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);

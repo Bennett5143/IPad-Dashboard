@@ -2,8 +2,8 @@
     /* Exakt Viewport-Höhe und hartes Clipping: die Hauptansicht scrollt nie. */
     height: 100dvh;
     overflow: hidden;
-    background-color: var(--color-surface-base);
-    color: var(--color-fg-primary);
+    background-color: var(--bg);
+    color: var(--ink);
 
     /* Kiosk-Verhalten: keine Text-Selektion per Long-Press,
        kein „Look up"-Callout, kein gummibandartiges Over-Scroll. */
