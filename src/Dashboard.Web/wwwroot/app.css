@@ -107,6 +107,11 @@
    tokens, selected by `data-theme`. Command Center (:root above) stays
    the default until pages opt in, so both looks can be A/B'd.
 
+   The attribute is matched on `:root` (for the eventual global switch,
+   slice 7) AND on any element (so a single page can opt in for the
+   spike/A-B without theming the rest of the app — the tokens then
+   cascade only into that element's subtree).
+
    Ramp: --bg --ink --muted --faint --rule --track --accent/--good.
    Rule: color carries information only — the single accent (forest
    green) is for links/active selection; every other color is a
@@ -114,7 +119,8 @@
    zone, bull/bear). See PRD "e-ink / Papier Redesign" §2.
    ============================================================ */
 
-:root[data-theme="eink"] {
+:root[data-theme="eink"],
+[data-theme="eink"] {
     color-scheme: light;
 
     --bg:     #f5f2eb;  /* paper ground */
@@ -135,7 +141,8 @@
     --bear:     #c05f4f;  /* price down */
 }
 
-:root[data-theme="night"] {
+:root[data-theme="night"],
+[data-theme="night"] {
     color-scheme: dark;
 
     --bg:     #121210;
@@ -167,7 +174,9 @@
 }
 
 :root[data-theme="eink"] a,
-:root[data-theme="night"] a {
+:root[data-theme="night"] a,
+[data-theme="eink"] a,
+[data-theme="night"] a {
     color: var(--accent);
 }
 
