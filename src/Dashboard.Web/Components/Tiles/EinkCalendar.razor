@@ -1,9 +1,13 @@
+@using Dashboard.Domain.Calendar
+@implements IDisposable
 @inject IClock Clock
+@inject CalendarState CalendarState
 
 @* e-ink calendar (home, full width): mini month grid (today in accent, event dots)
    + hourly day timeline. The timeline window is dynamic — it spans from the first
    thing that still matters today to the last, so free gaps stay visible (PRD §3).
-   Dummy data for the spike; the calendar slice wires a real source later. *@
+   Reads live events from CalendarState; falls back to placeholder events until a
+   calendar source is configured. *@
 <div class="eink-calendar">
     <section class="cal-month">
         <h2 class="cal-month-title">@_monthTitle</h2>
@@ -73,19 +77,55 @@
 
     private sealed record DayCell(DateOnly? Date, bool IsToday, bool HasEvent);
     private sealed record HourLine(string Label, double Pct);
-    private sealed record EventBlock(CalendarEvent Event, double TopPct, double HeightPct);
+    private sealed record LocalEvent(string Title, DateTime Start, DateTime End)
+    {
+        public TimeSpan Duration => End - Start;
+    }
+    private sealed record EventBlock(LocalEvent Event, double TopPct, double HeightPct);
 
     protected override void OnInitialized()
     {
+        CalendarState.Changed += OnChanged;
+        Rebuild();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        Rebuild();
+        StateHasChanged();
+    });
+
+    private void Rebuild()
+    {
+        _cells.Clear();
+        _hourLines.Clear();
+        _blocks.Clear();
+        _nowPct = null;
+
         var now = TimeZoneInfo.ConvertTime(Clock.UtcNow, BerlinTz).DateTime;
         var today = DateOnly.FromDateTime(now);
-        var events = DummyEvents(today);
+        var events = LoadEvents(today);
 
         BuildMonth(today, events);
         BuildTimeline(now, today, events);
     }
 
-    private void BuildMonth(DateOnly today, IReadOnlyList<CalendarEvent> events)
+    // Live events from the calendar source, projected to Berlin local time; dummy fallback
+    // until a source is configured (CalendarState has no snapshot yet).
+    private List<LocalEvent> LoadEvents(DateOnly today)
+    {
+        var snapshot = CalendarState.Current;
+        var source = snapshot?.Events is { Count: > 0 } live ? live : DummyEvents(today);
+
+        return source
+            .Select(e => new LocalEvent(
+                e.Title,
+                TimeZoneInfo.ConvertTime(e.Start, BerlinTz).DateTime,
+                TimeZoneInfo.ConvertTime(e.End, BerlinTz).DateTime))
+            .ToList();
+    }
+
+    private void BuildMonth(DateOnly today, IReadOnlyList<LocalEvent> events)
     {
         _monthTitle = today.ToDateTime(TimeOnly.MinValue).ToString("MMMM yyyy", De);
 
@@ -109,7 +149,7 @@
         }
     }
 
-    private void BuildTimeline(DateTime now, DateOnly today, IReadOnlyList<CalendarEvent> events)
+    private void BuildTimeline(DateTime now, DateOnly today, IReadOnlyList<LocalEvent> events)
     {
         var todays = events
             .Where(e => DateOnly.FromDateTime(e.Start) == today)
@@ -159,10 +199,15 @@
     private static string Top(double pct) => $"top:{Pc(pct)}";
     private static string Pc(double pct) => pct.ToString("0.###", Inv) + "%";
 
-    // --- Placeholder data (replaced by the calendar data-source slice) ---------
+    // --- Placeholder data (used until a calendar source is configured) ---------
     private static List<CalendarEvent> DummyEvents(DateOnly today)
     {
-        DateTime At(DateOnly d, int h, int m) => d.ToDateTime(new TimeOnly(h, m));
+        DateTimeOffset At(DateOnly d, int h, int m)
+        {
+            var local = d.ToDateTime(new TimeOnly(h, m));
+            return new DateTimeOffset(local, BerlinTz.GetUtcOffset(local));
+        }
+
         var events = new List<CalendarEvent>
         {
             new("Standup", At(today, 9, 0), At(today, 9, 30)),
@@ -184,4 +229,6 @@
 
         return events;
     }
+
+    public void Dispose() => CalendarState.Changed -= OnChanged;
 }

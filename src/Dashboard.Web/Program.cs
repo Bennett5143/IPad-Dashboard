@@ -13,6 +13,8 @@ using Dashboard.Infrastructure.Status;
 using Dashboard.Infrastructure.Strava;
 using Dashboard.Infrastructure.Tiles;
 using Dashboard.Infrastructure.Time;
+using Dashboard.Domain.Calendar;
+using Dashboard.Infrastructure.Calendar;
 using Dashboard.Infrastructure.Weather;
 using Dashboard.Infrastructure.Whoop;
 using Dashboard.Web.Components;
@@ -90,6 +92,20 @@ try
         http.Timeout = TimeSpan.FromSeconds(10);
     });
     builder.Services.AddHostedService<WeatherRefreshService>();
+
+    // Calendar (published ICS subscription source; PRD §6)
+    var calendarOptions = builder.Configuration
+        .GetSection(CalendarOptions.SectionName)
+        .Get<CalendarOptions>() ?? new CalendarOptions();
+
+    builder.Services.Configure<CalendarOptions>(
+        builder.Configuration.GetSection(CalendarOptions.SectionName));
+    builder.Services.AddSingleton<CalendarState>();
+    builder.Services.AddHttpClient<ICalendarProvider, IcsCalendarClient>(http =>
+    {
+        http.Timeout = TimeSpan.FromSeconds(calendarOptions.HttpTimeoutSeconds);
+    });
+    builder.Services.AddHostedService<CalendarRefreshService>();
 
     // Football
     var footballOptions = builder.Configuration
@@ -215,6 +231,7 @@ try
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CryptoState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<HvvState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WhoopState>());
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CalendarState>());
     builder.Services.AddSingleton<ISystemMetricsProvider>(OperatingSystem.IsLinux()
         ? new LinuxSystemMetricsProvider()
         : new NullSystemMetricsProvider());
