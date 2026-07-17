@@ -1,0 +1,187 @@
+@inject IClock Clock
+
+@* e-ink calendar (home, full width): mini month grid (today in accent, event dots)
+   + hourly day timeline. The timeline window is dynamic — it spans from the first
+   thing that still matters today to the last, so free gaps stay visible (PRD §3).
+   Dummy data for the spike; the calendar slice wires a real source later. *@
+<div class="eink-calendar">
+    <section class="cal-month">
+        <h2 class="cal-month-title">@_monthTitle</h2>
+        <div class="cal-grid">
+            @foreach (var wd in Weekdays)
+            {
+                <span class="cal-wd">@wd</span>
+            }
+            @foreach (var cell in _cells)
+            {
+                @if (cell.Date is null)
+                {
+                    <span class="cal-day cal-day--blank"></span>
+                }
+                else
+                {
+                    <span class="cal-day @(cell.IsToday ? "is-today" : null)">
+                        <span class="cal-day-num">@cell.Date.Value.Day</span>
+                        @if (cell.HasEvent)
+                        {
+                            <span class="cal-dot" aria-hidden="true"></span>
+                        }
+                    </span>
+                }
+            }
+        </div>
+    </section>
+
+    <section class="cal-timeline">
+        <div class="cal-track">
+            @foreach (var hour in _hourLines)
+            {
+                <div class="cal-hourline" style="@Top(hour.Pct)">
+                    <span class="cal-hourlabel">@hour.Label</span>
+                </div>
+            }
+            @if (_nowPct is { } nowPct)
+            {
+                <div class="cal-now" style="@Top(nowPct)"></div>
+            }
+            @foreach (var ev in _blocks)
+            {
+                <div class="cal-event" style="@($"top:{Pc(ev.TopPct)};height:{Pc(ev.HeightPct)}")">
+                    <span class="cal-event-time">@ev.Event.Start.ToString("HH:mm")</span>
+                    <span class="cal-event-title">@ev.Event.Title</span>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+    private static readonly System.Globalization.CultureInfo De =
+        System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+    private static readonly System.Globalization.CultureInfo Inv =
+        System.Globalization.CultureInfo.InvariantCulture;
+
+    private static readonly string[] Weekdays = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
+
+    private string _monthTitle = "";
+    private readonly List<DayCell> _cells = new();
+    private readonly List<HourLine> _hourLines = new();
+    private readonly List<EventBlock> _blocks = new();
+    private double? _nowPct;
+
+    private sealed record DayCell(DateOnly? Date, bool IsToday, bool HasEvent);
+    private sealed record HourLine(string Label, double Pct);
+    private sealed record EventBlock(CalendarEvent Event, double TopPct, double HeightPct);
+
+    protected override void OnInitialized()
+    {
+        var now = TimeZoneInfo.ConvertTime(Clock.UtcNow, BerlinTz).DateTime;
+        var today = DateOnly.FromDateTime(now);
+        var events = DummyEvents(today);
+
+        BuildMonth(today, events);
+        BuildTimeline(now, today, events);
+    }
+
+    private void BuildMonth(DateOnly today, IReadOnlyList<CalendarEvent> events)
+    {
+        _monthTitle = today.ToDateTime(TimeOnly.MinValue).ToString("MMMM yyyy", De);
+
+        var first = new DateOnly(today.Year, today.Month, 1);
+        var daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
+        var lead = ((int)first.DayOfWeek + 6) % 7; // Mon-first
+
+        var daysWithEvents = events
+            .Select(e => DateOnly.FromDateTime(e.Start))
+            .ToHashSet();
+
+        for (var i = 0; i < lead; i++)
+        {
+            _cells.Add(new DayCell(null, false, false));
+        }
+
+        for (var d = 1; d <= daysInMonth; d++)
+        {
+            var date = new DateOnly(today.Year, today.Month, d);
+            _cells.Add(new DayCell(date, date == today, daysWithEvents.Contains(date)));
+        }
+    }
+
+    private void BuildTimeline(DateTime now, DateOnly today, IReadOnlyList<CalendarEvent> events)
+    {
+        var todays = events
+            .Where(e => DateOnly.FromDateTime(e.Start) == today)
+            .OrderBy(e => e.Start)
+            .ToList();
+
+        // Dynamic window: from the earlier of "now" and the first event, to the
+        // later of "now" and the last event, floored/ceiled to the hour with a
+        // small buffer. Fall back to a sensible daytime band when nothing is on.
+        int startHour, endHour;
+        if (todays.Count > 0)
+        {
+            var earliest = Math.Min(now.Hour, todays.Min(e => e.Start).Hour);
+            var latest = Math.Max(now.Hour + 1, todays.Max(e => e.End).AddMinutes(59).Hour + 1);
+            startHour = Math.Clamp(earliest, 0, 23);
+            endHour = Math.Clamp(latest, startHour + 1, 24);
+        }
+        else
+        {
+            startHour = Math.Clamp(now.Hour - 1, 8, 23);
+            endHour = Math.Clamp(startHour + 8, startHour + 1, 24);
+        }
+
+        var totalMin = (endHour - startHour) * 60.0;
+
+        for (var h = startHour; h <= endHour; h++)
+        {
+            var pct = (h - startHour) * 60.0 / totalMin * 100.0;
+            _hourLines.Add(new HourLine($"{h:00}", pct));
+        }
+
+        var nowMin = (now.Hour - startHour) * 60.0 + now.Minute;
+        if (nowMin >= 0 && nowMin <= totalMin)
+        {
+            _nowPct = nowMin / totalMin * 100.0;
+        }
+
+        foreach (var e in todays)
+        {
+            var startMin = (e.Start.Hour - startHour) * 60.0 + e.Start.Minute;
+            var top = Math.Clamp(startMin / totalMin * 100.0, 0, 100);
+            var height = Math.Max(e.Duration.TotalMinutes / totalMin * 100.0, 4); // keep short events visible
+            _blocks.Add(new EventBlock(e, top, height));
+        }
+    }
+
+    private static string Top(double pct) => $"top:{Pc(pct)}";
+    private static string Pc(double pct) => pct.ToString("0.###", Inv) + "%";
+
+    // --- Placeholder data (replaced by the calendar data-source slice) ---------
+    private static List<CalendarEvent> DummyEvents(DateOnly today)
+    {
+        DateTime At(DateOnly d, int h, int m) => d.ToDateTime(new TimeOnly(h, m));
+        var events = new List<CalendarEvent>
+        {
+            new("Standup", At(today, 9, 0), At(today, 9, 30)),
+            new("Vorlesung: Algorithmen", At(today, 11, 0), At(today, 12, 30)),
+            new("Gym", At(today, 14, 0), At(today, 15, 0)),
+            new("Team-Sync", At(today, 16, 30), At(today, 17, 30)),
+            new("Abendessen", At(today, 19, 30), At(today, 21, 0)),
+        };
+
+        // A few other days this month so the month grid shows event dots.
+        foreach (var offset in new[] { -4, -2, 1, 3, 6 })
+        {
+            var d = today.AddDays(offset);
+            if (d.Month == today.Month)
+            {
+                events.Add(new CalendarEvent("Termin", At(d, 10, 0), At(d, 11, 0)));
+            }
+        }
+
+        return events;
+    }
+}

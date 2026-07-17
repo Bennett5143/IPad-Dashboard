@@ -7,13 +7,13 @@
 
 ## 2. Home spike (behind data-theme="eink")
 
-- [ ] 2.1 Rebuild `Home.razor(.css)` as a no-scroll bento grid for 1024×768, no tile headings (except calendar month title)
-- [ ] 2.2 Top-left: analog clock (only moving element) + digital `HH:MM` (no date) + three WHOOP rings (Recovery colored by zone, Strain/Sleep in ink)
-- [ ] 2.3 Top-right weather: current conditions (glyph, large temp, description, feels-like, H/T high-low, wind) + labeled sunset (icon + label + time)
-- [ ] 2.4 Hourly weather cards side by side: time → icon → temp → rain % (rain ≥30% in ink); H/T prefixes on high/low
-- [ ] 2.5 Bottom calendar region: mini month grid (today in accent, event dots) + hourly day timeline (hour lines, blocks at real time/duration, visible gaps), dummy data
-- [ ] 2.6 Make the timeline window dynamic (from "now" / first–last appointment + buffer)
-- [ ] 2.7 A/B on the real iPad 6: verify no-scroll, contrast, and readability of clock/cards/timeline
+- [x] 2.1 Rebuild `Home.razor(.css)` as a no-scroll bento grid for 1024×768, no tile headings (except calendar month title) — new `EinkHome` behind `?eink=1`, Command Center stays default
+- [x] 2.2 Top-left: analog clock (only moving element) + digital `HH:MM` (no date) + three WHOOP rings (Recovery colored by zone, Strain/Sleep in ink) — `AnalogClock` + reused `MetricRing`
+- [x] 2.3 Top-right weather: current conditions (glyph, large temp, description, feels-like, H/T high-low, wind) + labeled sunset (icon + label + time) — `EinkWeather`
+- [x] 2.4 Hourly weather cards side by side: time → icon → temp → rain % (rain ≥30% in ink); H/T prefixes on high/low
+- [x] 2.5 Bottom calendar region: mini month grid (today in accent, event dots) + hourly day timeline (hour lines, blocks at real time/duration, visible gaps), dummy data — `EinkCalendar` + placeholder `CalendarEvent`
+- [x] 2.6 Make the timeline window dynamic (from "now" / first–last appointment + buffer)
+- [ ] 2.7 A/B on the real iPad 6: verify no-scroll, contrast, and readability of clock/cards/timeline (build passes + 1024×768 mock verified; on-device A/B via `/?eink=1` remains yours — DB/Docker not available locally)
 
 ## 3. Navigation refactor (hub & spoke)
 

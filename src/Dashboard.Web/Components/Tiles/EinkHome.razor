@@ -1,0 +1,61 @@
+@implements IDisposable
+@inject WhoopState WhoopState
+
+@* e-ink paper home (spike, behind data-theme="eink"): no-scroll bento for 1024x768.
+   Top-left = analog clock + 3 WHOOP rings (Recovery colored by zone, Strain/Sleep
+   in ink); top-right = weather; bottom (full width) = calendar. The icon rail and
+   the health status move here in the navigation slice. *@
+<div class="eink-home" data-theme="eink">
+    <section class="eink-tl">
+        <AnalogClock />
+        <div class="eink-rings">
+            <MetricRing Label="Recovery" Center="@WhoopFormatter.RecoveryScore(_whoop?.Recovery)"
+                        Fraction="@RecoveryFraction" Color="@RecoveryColor" />
+            <MetricRing Label="Strain" Center="@WhoopFormatter.Strain(_whoop?.DayStrain)"
+                        Fraction="@StrainFraction" Color="var(--ink)" />
+            <MetricRing Label="Sleep" Center="@SleepText"
+                        Fraction="@SleepFraction" Color="var(--ink)" />
+        </div>
+    </section>
+
+    <section class="eink-tr">
+        <EinkWeather />
+    </section>
+
+    <section class="eink-cal">
+        <EinkCalendar />
+    </section>
+</div>
+
+@code {
+    private WhoopSnapshot? _whoop;
+
+    protected override void OnInitialized()
+    {
+        WhoopState.Changed += OnWhoopChanged;
+        _whoop = WhoopState.Current;
+    }
+
+    private void OnWhoopChanged() => _ = InvokeAsync(() =>
+    {
+        _whoop = WhoopState.Current;
+        StateHasChanged();
+    });
+
+    // Recovery ring is the only colored one — the zone traffic light IS the data.
+    private double RecoveryFraction => _whoop?.Recovery is { } r ? r.ScorePercent / 100.0 : 0;
+    private string RecoveryColor => _whoop?.Recovery?.Level switch
+    {
+        WhoopRecoveryLevel.High => "var(--rec-high)",
+        WhoopRecoveryLevel.Medium => "var(--rec-mid)",
+        WhoopRecoveryLevel.Low => "var(--rec-low)",
+        _ => "var(--muted)",
+    };
+
+    private double StrainFraction => _whoop?.DayStrain is { } d ? Math.Clamp(d / 21.0, 0, 1) : 0;
+
+    private string SleepText => _whoop?.Sleep is { } s ? $"{s.PerformancePercent}%" : "–";
+    private double SleepFraction => _whoop?.Sleep is { } s ? s.PerformancePercent / 100.0 : 0;
+
+    public void Dispose() => WhoopState.Changed -= OnWhoopChanged;
+}
