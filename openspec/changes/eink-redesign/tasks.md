@@ -40,9 +40,9 @@
 
 ## 6. Calendar slice (CalDAV / ICS)
 
-- [ ] 6.1 Add `Infrastructure/Calendar/*`: an events model + a client supporting a published `.ics` URL and iCloud CalDAV (app-specific password)
-- [ ] 6.2 Add server-side fetch + cache (tiles/crests pattern); options/secrets in `appsettings.Local.json`
-- [ ] 6.3 Wire the Home calendar region (month grid + day timeline) to the live source, replacing dummy data; keep a dummy-data fallback when unconfigured
+- [x] 6.1 Add `Domain/Calendar/*` (CalendarEvent/Snapshot/State/ICalendarProvider) + `Infrastructure/Calendar/*` (`IcsCalendarClient` using **Ical.Net** for robust RRULE expansion). Chose **ICS-first** (published `.ics` subscription URL — no password); full CalDAV app-specific-password is structured-for (pluggable `ICalendarProvider`) but not implemented
+- [x] 6.2 Server-side fetch via `CalendarRefreshService` (`BackgroundService` + `PeriodicTimer`, MarkStale on failure, registered as `ISliceStatusSource`); non-secret options in `appsettings.json`, private `IcsUrls` in `appsettings.Local.json` (template added). Verified by 4 unit tests (recurrence, single event, fault tolerance, webcal normalization)
+- [x] 6.3 Wire the Home calendar region to `CalendarState` (month grid + day timeline), keeping the placeholder agenda as fallback until a source is configured. Live iCloud connection (your `.ics` URL) remains yours
 
 ## 7. Night theme
 
