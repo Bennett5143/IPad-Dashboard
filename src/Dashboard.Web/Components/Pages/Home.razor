@@ -5,10 +5,8 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-@* Home has two looks during the e-ink redesign: the current Command Center bento
-   (default) and the new paper spike, opted into with ?eink=1 so both can be A/B'd
-   on the device without theming the rest of the app. The paper home becomes the
-   default in a later slice. *@
+@* Home is the e-ink paper home by default; the previous Command Center bento stays
+   reachable with ?classic=1 for A/B until the redesign cleanup slice removes it. *@
 @if (_eink)
 {
     <EinkHome />
@@ -58,7 +56,8 @@ else
 
     protected override void OnInitialized()
     {
+        // e-ink is the default; ?classic=1 falls back to the old Command Center bento.
         var query = new Uri(Nav.Uri).Query;
-        _eink = query.Contains("eink=1", StringComparison.OrdinalIgnoreCase);
+        _eink = !query.Contains("classic=1", StringComparison.OrdinalIgnoreCase);
     }
 }

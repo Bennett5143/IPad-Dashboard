@@ -1,0 +1,30 @@
+.eink-rail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(24px, 6vw, 64px);
+}
+
+.eink-rail-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--ink);
+    border-radius: 6px;
+}
+
+.eink-rail-item svg {
+    width: 26px;
+    height: 26px;
+}
+
+.eink-btc {
+    font-family: var(--font-family-mono);
+}
+
+/* Health reads by shape, so keep it in muted ink like the rest — no state color. */
+.eink-rail-health {
+    color: var(--muted);
+}

@@ -17,11 +17,11 @@
 
 ## 3. Navigation refactor (hub & spoke)
 
-- [ ] 3.1 Remove the global navbar between subpages; rebuild `KioskLayout.razor(.css)`/NavMenu for hub-&-spoke
-- [ ] 3.2 Establish five isolated areas reachable only from Home (HVV, Fitness[/heatmap,/runs,/habits,/whoop], Football, Crypto, Status); return always via Home
-- [ ] 3.3 Add the icon-only bottom rail (Bus · Dumbbell · Football · Bitcoin · Health); Health opens Status
-- [ ] 3.4 Add new icons: frontal bus, thick dumbbell, football, bitcoin, pulse/flatline, weather set (sunny/cloudy/overcast/rain/sunset)
-- [ ] 3.5 Move the health status icon into the rail, de-colored (ink/muted), distinguished by shape (pulse=up, broken flatline=down), linking to Status
+- [x] 3.1 Remove the global navbar between subpages; rebuild for hub-&-spoke — area-scoped `Rail`/`SubpageNav` (back-to-Home only; no lateral jumps), shared `Area` helper; e-ink Home is now the default (`?classic=1` keeps the old bento for A/B)
+- [x] 3.2 Establish five isolated areas reachable only from Home (HVV, Fitness[/heatmap,/runs,/habits,/whoop], Football, Crypto, Status); return always via Home — Fitness links its own siblings, other areas are single spokes
+- [x] 3.3 Add the icon-only bottom rail (Bus · Dumbbell · Football · Bitcoin · Health); Health opens Status — `EinkRail` on `EinkHome`
+- [~] 3.4 New icons: frontal bus, thick dumbbell, football, bitcoin, pulse/flatline **done** as inline SVG in the rail; the weather-set SVGs (sunny/cloudy/overcast/rain/sunset) are **deferred to slice 4** (weather still uses emoji glyphs)
+- [x] 3.5 Move the health status icon into the rail, de-colored (ink/muted), distinguished by shape (pulse=up, broken flatline=down), linking to Status — driven by `ISliceStatusSource` staleness
 
 ## 4. Subpage restyle (shared components first)
 
