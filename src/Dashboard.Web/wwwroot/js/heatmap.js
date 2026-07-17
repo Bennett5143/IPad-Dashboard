@@ -168,7 +168,7 @@ function prepareRuns(runs, layer) {
     return perRun.map(({ pts, values }) => {
         if (!values) return { pts, colors: null };
         const colors = values.map(v => {
-            if (v == null || !isFinite(v)) return 'rgba(205,212,224,0.55)';
+            if (v == null || !isFinite(v)) return 'rgba(80,80,80,0.5)';
             if (layer === 'direction') return directionColor(v, dirScale);
             const x = clamp((v - lo) / (hi - lo || 1), 0, 1);
             return layer === 'heartrate' ? hrColor(x) : warmColor(x);
@@ -234,13 +234,15 @@ function defineLayer() {
             ctx.lineCap = 'round';
 
             if (this._layer === 'heat') {
-                ctx.globalCompositeOperation = 'lighter';
+                // Paper background: use normal compositing so overlapping runs build
+                // up toward denser amber (additive 'lighter' would wash out to white
+                // on a light ground). Amber #ff9628 stays the route color (data).
+                ctx.globalCompositeOperation = 'source-over';
                 ctx.lineWidth = 3;
-                ctx.strokeStyle = 'rgba(255,150,40,0.38)';
+                ctx.strokeStyle = 'rgba(255,150,40,0.5)';
                 for (const run of this._prepared) {
                     strokePath(ctx, run.pts, at);
                 }
-                ctx.globalCompositeOperation = 'source-over';
                 return;
             }
 
@@ -249,7 +251,7 @@ function defineLayer() {
             for (const run of this._prepared) {
                 const pts = run.pts;
                 if (!run.colors) {
-                    ctx.strokeStyle = 'rgba(205,212,224,0.55)'; // kein passender Stream
+                    ctx.strokeStyle = 'rgba(80,80,80,0.5)'; // kein passender Stream
                     strokePath(ctx, pts, at);
                     continue;
                 }

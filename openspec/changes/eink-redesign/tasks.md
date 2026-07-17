@@ -34,9 +34,9 @@
 
 ## 5. Heatmap to light
 
-- [ ] 5.1 Remove the dark Leaflet filter (or replace with a subtle paper filter) in `Heatmap.razor.css`/`wwwroot/js/heatmap.js`; set `::deep .leaflet-container { background: var(--bg) }`
-- [ ] 5.2 Keep the route amber `#ff9628`; verify contrast on the light background, adjust stroke width/opacity if needed
-- [ ] 5.3 Bump the `?v=N` cache-bust in `Heatmap.razor`
+- [x] 5.1 Replace the dark Leaflet invert-filter with a subtle paper filter (`sepia/saturate/brightness/contrast`), set `::deep .leaflet-container`/`.heatmap-map` background to `var(--bg)`, and migrate the rest of `Heatmap.razor.css` to the paper ramp (it was excluded from slice 4)
+- [x] 5.2 Route stays amber `#ff9628`; switched the `heat` layer from additive `lighter` compositing (washes out on light) to `source-over` and bumped opacity 0.38→0.5; darkened the no-stream fallback line from light gray to ink gray. Final contrast tuning on the iPad is yours
+- [x] 5.3 Cache-bust — no manual `?v=N` needed: `heatmap.js` is imported with `?v={AppAssets.Version}`, a fresh GUID per process start, so a server restart busts it automatically
 
 ## 6. Calendar slice (CalDAV / ICS)
 

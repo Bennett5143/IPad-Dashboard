@@ -12,11 +12,12 @@
     align-items: flex-start;
     gap: var(--space-4);
     padding: var(--space-6);
-    background: var(--tile-teal);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
 }
 
+/* Strava connect keeps its brand color on purpose (not a status tone). */
 .btn-connect {
     display: inline-block;
     padding: var(--space-3) var(--space-5);
@@ -47,19 +48,19 @@
 .range-buttons button,
 .layer-buttons button {
     padding: 6px 13px;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
-    border: 1px solid #17231b;
-    color: var(--color-fg-muted);
+    border: 1px solid var(--rule);
+    color: var(--muted);
     font-size: 12px;
     font-weight: var(--font-weight-medium);
 }
 
 .range-buttons button.active,
 .layer-buttons button.active {
-    background: var(--accent-teal-chip);
-    color: var(--accent-teal-light);
-    border-color: #245049;
+    background: var(--track);
+    color: var(--ink);
+    border-color: var(--accent);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -77,7 +78,7 @@
 .stat-value {
     font-size: 20px;
     font-weight: 600;
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
@@ -87,7 +88,7 @@
     font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 /* Karte füllt die Resthöhe (Leaflet liest die tatsächliche Pixelhöhe des flex-Kindes). */
@@ -95,34 +96,35 @@
     flex: 1;
     min-height: 0;
     width: 100%;
-    border-radius: 16px;
-    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    border: 1px solid var(--rule);
     overflow: hidden;
-    background: var(--color-surface-base);
+    background: var(--bg);
 }
 
-/* Leaflets heller Default-Grund darf in Kachel-Lücken nicht durchblitzen. */
+/* Leaflets Default-Grund darf in Kachel-Lücken nicht durchblitzen — Papier-Grund. */
 ::deep .leaflet-container {
-    background: #0b1110;
+    background: var(--bg);
 }
 
-/* Helle OSM-Kacheln ans dunkle Theme angleichen (ganze Kachel-Ebene, nicht je Kachel). */
+/* Helle OSM-Kacheln bleiben hell; ein dezenter Papier-Filter (leichte Entsättigung
+   + Wärme) gleicht sie an den Papier-Grund an, statt sie dunkel zu invertieren. */
 ::deep .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.95);
+    filter: sepia(0.12) saturate(0.82) brightness(1.02) contrast(0.96);
 }
 
-/* Lauf-Popup (Tap auf eine Route) – dunkles Theme. */
+/* Lauf-Popup (Tap auf eine Route) – flaches Papier. */
 ::deep .run-popup-wrap .leaflet-popup-content-wrapper {
-    background: var(--color-surface-raised);
-    color: var(--color-fg-primary);
-    border: 1px solid var(--color-border);
-    border-radius: 14px;
-    box-shadow: var(--shadow-md);
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: none;
 }
 
 ::deep .run-popup-wrap .leaflet-popup-tip {
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+    background: var(--bg);
+    border: 1px solid var(--rule);
 }
 
 ::deep .run-popup-wrap .leaflet-popup-content {
@@ -137,16 +139,16 @@
 }
 
 ::deep .run-popup strong {
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 ::deep .run-popup-date {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 ::deep .run-popup-more {
     margin-top: 2px;
-    color: var(--accent-teal);
+    color: var(--accent);
     font-size: var(--font-size-sm);
 }
 
@@ -155,12 +157,12 @@
 .sync-info {
     font-family: var(--font-family-mono);
     font-size: 11px;
-    color: var(--color-fg-faint);
+    color: var(--faint);
     flex: none;
 }
 
 .heatmap-legend {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 /* Runden-Ansicht: Banner statt Zeitraum-Buttons. */
@@ -169,15 +171,15 @@
     align-items: center;
     gap: var(--space-3);
     font-size: var(--font-size-sm);
-    color: var(--color-fg-secondary);
+    color: var(--muted);
 }
 
 .cluster-reset {
     padding: 6px 13px;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
-    border: 1px solid #17231b;
-    color: var(--accent-teal-light);
+    border: 1px solid var(--rule);
+    color: var(--accent);
     font-size: 12px;
     cursor: pointer;
 }
