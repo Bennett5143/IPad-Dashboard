@@ -1,9 +1,20 @@
 @page "/"
 @layout KioskLayout
 @rendermode InteractiveServer
+@inject NavigationManager Nav
 
 <PageTitle>Dashboard</PageTitle>
 
+@* Home has two looks during the e-ink redesign: the current Command Center bento
+   (default) and the new paper spike, opted into with ?eink=1 so both can be A/B'd
+   on the device without theming the rest of the app. The paper home becomes the
+   default in a later slice. *@
+@if (_eink)
+{
+    <EinkHome />
+}
+else
+{
 @* Bento-Hauptseite (12×4, iPad quer 1024×768, kein Scrollen): Uhr-Banner + Wetter-Hero +
    Fitness-Ringe + Abfahrten + System + Krypto + Fußball + Zitat. Jede Modul-Kachel ist
    tippbar → Detailseite. *@
@@ -40,3 +51,14 @@
         <QuoteTile CssClass="area-quote" />
     </TileBoundary>
 </div>
+}
+
+@code {
+    private bool _eink;
+
+    protected override void OnInitialized()
+    {
+        var query = new Uri(Nav.Uri).Query;
+        _eink = query.Contains("eink=1", StringComparison.OrdinalIgnoreCase);
+    }
+}
