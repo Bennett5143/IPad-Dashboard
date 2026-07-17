@@ -101,6 +101,77 @@
 }
 
 /* ============================================================
+   e-ink / Paper Themes  (Slice 1 — additive, behind data-theme)
+   ============================================================
+   TRMNL-inspired paper look. Two palettes over one set of new ramp
+   tokens, selected by `data-theme`. Command Center (:root above) stays
+   the default until pages opt in, so both looks can be A/B'd.
+
+   Ramp: --bg --ink --muted --faint --rule --track --accent/--good.
+   Rule: color carries information only — the single accent (forest
+   green) is for links/active selection; every other color is a
+   data-bearing token OUTSIDE the ramp (heatmap route, WHOOP recovery
+   zone, bull/bear). See PRD "e-ink / Papier Redesign" §2.
+   ============================================================ */
+
+:root[data-theme="eink"] {
+    color-scheme: light;
+
+    --bg:     #f5f2eb;  /* paper ground */
+    --ink:    #23201a;  /* text */
+    --muted:  #6f6a5d;  /* secondary text */
+    --faint:  #a9a291;  /* dither / grain */
+    --rule:   #cbc3b1;  /* hairline */
+    --track:  #e4dece;  /* ring / event fill */
+    --accent: #2f8256;  /* forest green — links, active selection */
+    --good:   var(--accent);
+
+    /* Data-bearing colors (outside the ramp), desaturated for paper. */
+    --route:    #ff9628;  /* heatmap route amber (data, fixed) */
+    --rec-high: #3f9e6a;  /* WHOOP recovery — green zone */
+    --rec-mid:  #c9a03a;  /* yellow zone */
+    --rec-low:  #c05f4f;  /* red zone */
+    --bull:     #2f8256;  /* price up */
+    --bear:     #c05f4f;  /* price down */
+}
+
+:root[data-theme="night"] {
+    color-scheme: dark;
+
+    --bg:     #121210;
+    --ink:    #ece6d8;
+    --muted:  #928b7c;
+    --faint:  #4c483f;
+    --rule:   #33302a;
+    --track:  #26241f;
+    --accent: #57c98a;
+    --good:   var(--accent);
+
+    --route:    #ff9628;
+    --rec-high: #57c98a;
+    --rec-mid:  #d8bd63;
+    --rec-low:  #db6b5b;
+    --bull:     #57c98a;
+    --bear:     #db6b5b;
+}
+
+/* When a paper theme is active, the ground becomes flat paper and the
+   Command-Center light-blobs are dropped. Component migration (slice 4)
+   points existing tiles at the ramp; here we only set the base surface,
+   text ink, and the single accent for links. */
+:root[data-theme="eink"] body,
+:root[data-theme="night"] body {
+    color: var(--ink);
+    background-color: var(--bg);
+    background-image: none;
+}
+
+:root[data-theme="eink"] a,
+:root[data-theme="night"] a {
+    color: var(--accent);
+}
+
+/* ============================================================
    Modern CSS Reset (minimal, kein Normalize.css nötig)
    ============================================================ */
 
@@ -182,6 +253,25 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     font-size: var(--font-size-sm);
     color: var(--color-fg-muted);
     font-style: italic;
+}
+
+/* ===== e-ink texture & surfaces (Slice 1) =====
+   Used by the paper themes; inert until a surface opts in. */
+
+/* 1-bit dither: a fine dot grid tinted with --faint. Use where a surface
+   needs texture instead of a solid decorative fill. */
+.dither {
+    background-image: radial-gradient(var(--faint) 0.5px, transparent 0.6px);
+    background-size: 3px 3px;
+}
+
+/* Flat paper surface: hairline rule, small radius, no shadow/gradient.
+   Component migration (slice 4) will point existing tiles here. */
+.paper-surface {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: none;
 }
 
 .dialog-backdrop {
