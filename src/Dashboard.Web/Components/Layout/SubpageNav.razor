@@ -1,17 +1,38 @@
 @using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Nav
 
-@* Einheitliche Quer-Navigation der Unterseiten (im MainLayout, daher auf jeder Unterseite). *@
+@* Hub-&-spoke top nav for MainLayout pages: only "back to Home", plus the Fitness
+   siblings when the current page is in the Fitness area. No lateral cross-area jumps. *@
 <nav class="subnav">
-    <a class="subnav-home" href="/">← Dashboard</a>
-    <div class="subnav-links">
-        <NavLink href="/weather" Match="NavLinkMatch.Prefix">Wetter</NavLink>
-        <NavLink href="/hvv" Match="NavLinkMatch.Prefix">Abfahrten</NavLink>
-        <NavLink href="/football" Match="NavLinkMatch.Prefix">Fußball</NavLink>
-        <NavLink href="/crypto" Match="NavLinkMatch.Prefix">Krypto</NavLink>
-        <NavLink href="/heatmap" Match="NavLinkMatch.Prefix">Heatmap</NavLink>
-        <NavLink href="/runs" Match="NavLinkMatch.Prefix">Läufe</NavLink>
-        <NavLink href="/habits" Match="NavLinkMatch.Prefix">Habits</NavLink>
-        <NavLink href="/whoop" Match="NavLinkMatch.Prefix">WHOOP</NavLink>
-        <NavLink href="/status" Match="NavLinkMatch.Prefix">Status</NavLink>
-    </div>
+    <a class="subnav-home" href="/">← Home</a>
+    @if (_fitness)
+    {
+        <div class="subnav-links">
+            @foreach (var (href, label) in Area.Fitness)
+            {
+                <NavLink href="@href" Match="NavLinkMatch.Prefix">@label</NavLink>
+            }
+        </div>
+    }
 </nav>
+
+@code {
+    private bool _fitness;
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+        UpdateArea();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateArea();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateArea() => _fitness = Area.IsFitness(Nav.ToBaseRelativePath(Nav.Uri));
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}
