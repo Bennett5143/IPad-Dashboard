@@ -1,66 +1,51 @@
 @using Microsoft.AspNetCore.Components.Routing
+@implements IDisposable
+@inject NavigationManager Nav
 
-@* Gruppierte, vertikale Kiosk-Navigation (linke Rail der Detailseiten). Ersetzt auf den
-   Kiosk-Seiten die flache SubpageNav; Aktiv-State kommt von NavLink (.active). *@
+@* Hub-&-spoke rail for detail pages: back to Home is the only cross-area move.
+   Fitness is the one area that also links its own sub-pages (WHOOP/Läufe/Heatmap/
+   Habits); every other area is a single spoke, so it just offers "back to Home". *@
 <nav class="rail">
-    <div class="rail-brand">
-        <span class="rail-brand-chip" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 16 16">
-                <rect x="3" y="3" width="4.4" height="4.4" rx="1" fill="#5fce97" />
-                <rect x="8.6" y="3" width="4.4" height="4.4" rx="1" fill="#c47b38" />
-                <rect x="3" y="8.6" width="4.4" height="4.4" rx="1" fill="#e2b45f" />
-                <rect x="8.6" y="8.6" width="4.4" height="4.4" rx="1" fill="#4fbdb0" />
-            </svg>
-        </span>
-        <span class="rail-brand-label">Kiosk</span>
+    <div class="rail-group">
+        <a class="rail-item rail-home" href="/">
+            <span class="rail-back" aria-hidden="true">←</span><span>Home</span>
+        </a>
     </div>
 
-    <div class="rail-group">
-        <NavLink class="rail-item" href="/" Match="NavLinkMatch.All">
-            <span class="rail-dot"></span><span>Übersicht</span>
-        </NavLink>
-    </div>
-
-    <div class="rail-group">
-        <span class="rail-group-label">Alltag</span>
-        <NavLink class="rail-item" href="/weather" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Wetter</span>
-        </NavLink>
-        <NavLink class="rail-item" href="/hvv" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Abfahrten</span>
-        </NavLink>
-    </div>
-
-    <div class="rail-group">
-        <span class="rail-group-label">Fitness</span>
-        <NavLink class="rail-item" href="/whoop" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>WHOOP</span>
-        </NavLink>
-        <NavLink class="rail-item" href="/runs" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Läufe</span>
-        </NavLink>
-        <NavLink class="rail-item" href="/heatmap" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Heatmap</span>
-        </NavLink>
-        <NavLink class="rail-item" href="/habits" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Habits</span>
-        </NavLink>
-    </div>
-
-    <div class="rail-group">
-        <span class="rail-group-label">Interessen</span>
-        <NavLink class="rail-item" href="/football" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Fußball</span>
-        </NavLink>
-        <NavLink class="rail-item" href="/crypto" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Krypto</span>
-        </NavLink>
-    </div>
-
-    <div class="rail-group">
-        <span class="rail-group-label">System</span>
-        <NavLink class="rail-item" href="/status" Match="NavLinkMatch.Prefix">
-            <span class="rail-dot"></span><span>Status</span>
-        </NavLink>
-    </div>
+    @if (_fitness)
+    {
+        <div class="rail-group">
+            <span class="rail-group-label">Fitness</span>
+            @foreach (var (href, label) in Area.Fitness)
+            {
+                <NavLink class="rail-item" href="@href" Match="NavLinkMatch.Prefix">
+                    <span class="rail-dot"></span><span>@label</span>
+                </NavLink>
+            }
+        </div>
+    }
 </nav>
+
+@code {
+    private bool _fitness;
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+        UpdateArea();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateArea();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateArea()
+    {
+        var relative = Nav.ToBaseRelativePath(Nav.Uri);
+        _fitness = Area.IsFitness(relative);
+    }
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

@@ -10,31 +10,28 @@
     overflow-y: auto;
 }
 
-.rail-brand {
+/* Back-to-Home is a plain <a> in this component (not a NavLink), so it is styled
+   directly — the fitness NavLinks below come from a child component and need ::deep. */
+.rail-home {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 0 6px 14px;
+    gap: 11px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-family: var(--font-family-base);
+    font-size: 14px;
+    color: var(--color-fg-secondary);
 }
 
-.rail-brand-chip {
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    background: var(--accent-green-chip);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
+.rail-home:hover {
+    color: var(--color-fg-primary);
 }
 
-.rail-brand-label {
-    font-family: var(--font-family-mono);
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent-green-light);
-    font-weight: 600;
+.rail-back {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .rail-group {
