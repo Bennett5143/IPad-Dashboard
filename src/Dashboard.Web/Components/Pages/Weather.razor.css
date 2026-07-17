@@ -13,9 +13,9 @@
 }
 
 .wx-card {
-    background: var(--tile-teal);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     padding: 24px;
 }
 
@@ -38,7 +38,7 @@
 
 .wx-now-cond {
     font-size: 16px;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
 }
 
 .wx-chips {
@@ -51,15 +51,15 @@
 .wx-chip {
     font-family: var(--font-family-mono);
     font-size: 12px;
-    color: var(--color-fg-secondary);
-    background: var(--color-surface-sunken);
+    color: var(--muted);
+    background: var(--track);
     padding: 5px 11px;
     border-radius: 8px;
 }
 
 .wx-chip--teal {
-    color: var(--accent-teal-light);
-    background: rgba(79, 189, 176, 0.12);
+    color: var(--ink);
+    background: var(--track);
 }
 
 .wx-hourly {
@@ -79,7 +79,7 @@
     width: 100%;
     height: 100%;
     display: block;
-    stroke: var(--accent-teal);
+    stroke: var(--ink);
     stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -108,15 +108,15 @@
 .wx-tick-hour {
     font-family: var(--font-family-mono);
     font-size: 11px;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .wx-tick-rain {
     font-family: var(--font-family-mono);
     font-size: 10px;
-    color: #4f8fa0;
+    color: var(--ink);
 }
 
 .weather-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }

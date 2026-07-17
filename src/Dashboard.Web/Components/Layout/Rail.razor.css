@@ -1,8 +1,8 @@
 .rail {
     width: 208px;
     flex: none;
-    background: #0b0f0a;
-    border-right: 1px solid #17231b;
+    background: var(--bg);
+    border-right: 1px solid var(--rule);
     display: flex;
     flex-direction: column;
     padding: 18px 14px;
@@ -22,11 +22,11 @@
     text-decoration: none;
     font-family: var(--font-family-base);
     font-size: 14px;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
 }
 
 .rail-home:hover {
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 .rail-back {
@@ -46,7 +46,7 @@
     font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #4c5f53;
+    color: var(--muted);
     padding: 8px 12px 4px;
 }
 
@@ -63,7 +63,7 @@
     font-family: var(--font-family-base);
     font-size: 14px;
     font-weight: 400;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
 }
 
 .rail ::deep .rail-item .rail-dot {
@@ -71,15 +71,15 @@
     height: 6px;
     border-radius: 2px;
     flex: none;
-    background: #33473b;
+    background: var(--faint);
 }
 
 .rail ::deep .rail-item.active {
-    background: #15241b;
-    color: var(--color-fg-primary);
+    background: var(--track);
+    color: var(--ink);
     font-weight: 600;
 }
 
 .rail ::deep .rail-item.active .rail-dot {
-    background: var(--accent-green);
+    background: var(--accent);
 }

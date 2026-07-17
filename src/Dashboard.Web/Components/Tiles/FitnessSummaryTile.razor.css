@@ -36,10 +36,10 @@
     font-family: var(--font-family-mono);
     font-size: 10px;
     letter-spacing: 0.06em;
-    color: #8aa090;
+    color: var(--muted);
 }
 
 .fitness-hint {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-sm);
 }

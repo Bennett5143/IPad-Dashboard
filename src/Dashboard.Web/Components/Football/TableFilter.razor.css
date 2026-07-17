@@ -13,10 +13,10 @@
 /* Zweite, kleinere Pill-Ebene unter den Haupt-Tabs (Liga-/Gruppen-Auswahl). */
 .table-pill {
     background: transparent;
-    border: 1px solid #17231b;
+    border: 1px solid var(--rule);
     border-radius: 8px;
     padding: 5px 13px;
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-family: var(--font-family-base);
     font-size: 13px;
     font-weight: 500;
@@ -24,23 +24,23 @@
 }
 
 .table-pill.is-active {
-    background: rgba(226, 180, 95, 0.14);
-    color: var(--accent-gold-light);
-    border-color: #4a3f1f;
+    background: var(--track);
+    color: var(--accent);
+    border-color: var(--accent);
     font-weight: 600;
 }
 
 .tf-card {
-    border-radius: 16px;
-    background: var(--tile-gold);
-    border: 1px solid #26241b;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
     overflow: hidden;
 }
 
 .tf-heading {
     font-family: var(--font-family-mono);
     font-size: 10px;
-    color: var(--accent-gold-light);
+    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     padding: 14px 20px 8px;

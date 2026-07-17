@@ -21,13 +21,13 @@
 }
 
 .crypto-pill.is-up {
-    color: var(--accent-green);
-    background: rgba(95, 206, 151, 0.13);
+    color: var(--bull);
+    background: var(--track);
 }
 
 .crypto-pill.is-down {
-    color: var(--accent-coral);
-    background: rgba(224, 125, 111, 0.13);
+    color: var(--bear);
+    background: var(--track);
 }
 
 .crypto-bottom {
@@ -53,14 +53,14 @@
 }
 
 .crypto-bottom ::deep .crypto-spark.is-up {
-    stroke: var(--accent-green);
+    stroke: var(--bull);
 }
 
 .crypto-bottom ::deep .crypto-spark.is-down {
-    stroke: var(--accent-coral);
+    stroke: var(--bear);
 }
 
 .crypto-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-sm);
 }

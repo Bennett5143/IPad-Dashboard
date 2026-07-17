@@ -22,8 +22,8 @@
     font-family: var(--font-family-mono);
     font-weight: 600;
     font-size: 12px;
-    background: #16241c;
-    color: var(--accent-green-light);
+    background: var(--track);
+    color: var(--ink);
     padding: 2px 8px;
     border-radius: 6px;
     min-width: 38px;
@@ -35,7 +35,7 @@
     flex: 1;
     min-width: 0;
     font-size: 13px;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -47,21 +47,21 @@
     gap: 6px;
     font-weight: 600;
     font-size: 15px;
-    color: var(--color-fg-primary);
+    color: var(--ink);
     flex: none;
 }
 
 .hvv-when.is-next {
-    color: var(--accent-green);
+    color: var(--accent);
 }
 
 .hvv-delay {
     font-family: var(--font-family-mono);
     font-size: 11px;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .hvv-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-sm);
 }

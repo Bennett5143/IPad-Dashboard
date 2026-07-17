@@ -21,14 +21,14 @@
 
 
 #components-reconnect-modal {
-    background-color: var(--color-surface-raised);
-    color: var(--color-fg-primary);
+    background-color: var(--bg);
+    color: var(--ink);
     width: 20rem;
     margin: 20vh auto;
     padding: 2rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: none;
     opacity: 0;
     transition: display 0.5s allow-discrete, overlay 0.5s allow-discrete;
     animation: components-reconnect-modal-fadeOutOpacity 0.5s both;
@@ -91,7 +91,7 @@
 
 #components-reconnect-modal button {
     border: 0;
-    background-color: var(--color-accent);
+    background-color: var(--accent);
     color: #fff;
     padding: var(--space-2) var(--space-5);
     border-radius: var(--radius-md);
@@ -110,7 +110,7 @@
 
     .components-rejoining-animation div {
         position: absolute;
-        border: 3px solid var(--color-accent);
+        border: 3px solid var(--accent);
         opacity: 1;
         border-radius: 50%;
         animation: components-rejoining-animation 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;

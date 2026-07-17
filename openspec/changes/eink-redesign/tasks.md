@@ -25,12 +25,12 @@
 
 ## 4. Subpage restyle (shared components first)
 
-- [ ] 4.1 Migrate shared components onto the new tokens: `Tile`, `StandingsTable`, `KnockoutBracketView`, `MetricRing`, `Sparkline`, `ChartFrame`, Insights cards
-- [ ] 4.2 Restyle `/hvv` and `/weather`
-- [ ] 4.3 Restyle `/football` and `/crypto`
-- [ ] 4.4 Restyle `/whoop`, `/runs`, `/runs/{id}`, `/habits`
-- [ ] 4.5 Restyle `/status`
-- [ ] 4.6 Verify each subpage: hairline/table look, mono numerals, accent only for state, flat surfaces, dither where filled
+- [x] 4.1 Migrate shared components onto the new tokens: `Tile`, `StandingsTable`, `KnockoutBracketView`, `MetricRing`, `ChartFrame`, Insights cards, `PageHeader`, `Explainable`, dialogs — via the multi-agent restyle workflow + `app.css` utilities/reset; `data-theme="eink"` now global on `<html>`
+- [x] 4.2 Restyle `/hvv` and `/weather`
+- [x] 4.3 Restyle `/football` and `/crypto`
+- [x] 4.4 Restyle `/whoop`, `/runs`, `/runs/{id}`, `/habits`
+- [x] 4.5 Restyle `/status`
+- [ ] 4.6 Verify each subpage: hairline/table look, mono numerals, accent only for state, flat surfaces (build green + independent grep = 0 Command-Center tokens/dark hex left; on-device visual check across pages remains yours). Also still open from 3.4: weather-set SVG icons (weather uses emoji)
 
 ## 5. Heatmap to light
 

@@ -7,9 +7,9 @@
 }
 
 .hvv-card {
-    background: var(--tile-green);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     padding: 20px 22px;
     display: flex;
     flex-direction: column;
@@ -34,7 +34,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--accent-green);
+    background: var(--ink);
     flex: none;
 }
 
@@ -42,7 +42,7 @@
     font-family: var(--font-family-mono);
     font-size: 10px;
     letter-spacing: 0.14em;
-    color: var(--color-fg-faint);
+    color: var(--muted);
 }
 
 .hvv-deps {
@@ -57,15 +57,15 @@
     align-items: center;
     gap: 12px;
     padding: 9px 0;
-    border-top: 1px solid #17231b;
+    border-top: 1px solid var(--rule);
 }
 
 .hvv-line {
     font-family: var(--font-family-mono);
     font-weight: 600;
     font-size: 13px;
-    background: #16241c;
-    color: var(--accent-green-light);
+    background: var(--track);
+    color: var(--ink);
     padding: 3px 9px;
     border-radius: 6px;
     min-width: 46px;
@@ -75,7 +75,7 @@
 .hvv-dir {
     flex: 1;
     font-size: 14px;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -84,13 +84,13 @@
 .hvv-when {
     font-weight: 600;
     font-size: 17px;
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 .hvv-when.is-next {
-    color: var(--accent-green);
+    color: var(--accent);
 }
 
 .hvv-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }

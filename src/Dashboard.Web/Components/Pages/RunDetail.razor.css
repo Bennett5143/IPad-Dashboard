@@ -13,23 +13,23 @@
 }
 
 .runs-back {
-    color: var(--color-accent);
+    color: var(--accent);
     text-decoration: none;
     font-size: var(--font-size-sm);
 }
 
 .runs-msg {
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .run-title {
     font-family: var(--font-family-display);
     font-size: var(--font-size-xl);
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 .run-subtitle {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-size: var(--font-size-sm);
     display: flex;
     align-items: center;
@@ -40,9 +40,9 @@
 .run-route-badge {
     padding: 1px var(--space-2);
     border-radius: 999px;
-    background: var(--color-surface-sunken);
-    border: 1px solid var(--glass-rim);
-    color: var(--color-accent);
+    background: var(--track);
+    border: 1px solid var(--rule);
+    color: var(--route);
     font-size: var(--font-size-xs, 0.75rem);
 }
 
@@ -52,12 +52,10 @@
     gap: var(--space-3);
     margin: var(--space-2) 0;
     padding: var(--space-3);
-    border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    box-shadow: none;
 }
 
 .run-stats div {
@@ -68,7 +66,7 @@
 
 .run-stats dt {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -78,7 +76,7 @@
     font-family: var(--font-family-display);
     font-size: var(--font-size-lg);
     font-weight: 700;
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
 
@@ -91,7 +89,7 @@
 .run-efforts h2 {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 .effort-chips {
@@ -106,21 +104,21 @@
     align-items: center;
     gap: 2px;
     padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-sunken);
-    border: 1px solid var(--glass-rim);
+    border-radius: 6px;
+    background: var(--track);
+    border: 1px solid var(--rule);
 }
 
 .effort-distance {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .effort-time {
     font-family: var(--font-family-display);
     font-size: var(--font-size-lg);
     font-weight: 700;
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
 
@@ -135,12 +133,10 @@
     flex-direction: column;
     gap: var(--space-1);
     padding: var(--space-3);
-    border-radius: var(--radius-lg);
-    background: var(--glass-sheen), var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-rim);
-    box-shadow: var(--glass-shadow);
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    box-shadow: none;
 }
 
 .run-profile-head {
@@ -151,21 +147,21 @@
 
 .run-profile-title {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-primary);
+    color: var(--ink);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .run-profile-hint {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .run-profile-range {
     display: flex;
     justify-content: space-between;
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
@@ -183,19 +179,19 @@
 }
 
 ::deep .sparkline.profile-pace polyline {
-    stroke: var(--color-accent);
+    stroke: var(--route);
 }
 
 ::deep .sparkline.profile-elevation polyline {
-    stroke: var(--color-accent-2);
+    stroke: var(--ink);
 }
 
 ::deep .sparkline.profile-heartrate polyline {
-    stroke: var(--color-error);
+    stroke: var(--bear);
 }
 
 .run-detail-link a {
-    color: var(--color-accent);
+    color: var(--accent);
     text-decoration: none;
     font-size: var(--font-size-sm);
 }
