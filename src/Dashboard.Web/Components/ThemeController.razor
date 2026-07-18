@@ -1,0 +1,75 @@
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@inject Dashboard.Domain.Time.IClock Clock
+@inject Dashboard.Domain.Weather.WeatherState WeatherState
+@inject IJSRuntime JS
+
+@* Renders nothing. Keeps the running kiosk's <html data-theme> in sync with day/night
+   (App.razor sets the initial value server-side so there's no flash). Re-evaluates once a
+   minute and whenever the weather (sun times) changes; only touches the DOM when the theme
+   actually flips. *@
+
+@code {
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    private string? _applied;
+    private PeriodicTimer? _timer;
+    private Task? _loop;
+    private readonly CancellationTokenSource _cts = new();
+
+    protected override void OnInitialized()
+    {
+        WeatherState.Changed += OnWeatherChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        await ApplyAsync();
+        _timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+        _loop = RunAsync(_cts.Token);
+    }
+
+    private async Task RunAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (await _timer!.WaitForNextTickAsync(ct))
+            {
+                await ApplyAsync();
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void OnWeatherChanged() => _ = InvokeAsync(ApplyAsync);
+
+    private async Task ApplyAsync()
+    {
+        var current = WeatherState.Current?.Current;
+        var theme = ThemeResolver.Resolve(Clock.UtcNow, current?.SunriseUtc, current?.SunsetUtc, BerlinTz);
+        if (theme == _applied) return;
+        _applied = theme;
+
+        try
+        {
+            await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", theme);
+        }
+        catch (JSDisconnectedException) { }
+        catch (InvalidOperationException) { } // JS not available (prerender)
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        WeatherState.Changed -= OnWeatherChanged;
+        _cts.Cancel();
+        _timer?.Dispose();
+        if (_loop is not null)
+        {
+            try { await _loop; } catch (OperationCanceledException) { }
+        }
+        _cts.Dispose();
+    }
+}
