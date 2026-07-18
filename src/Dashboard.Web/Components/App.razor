@@ -1,11 +1,13 @@
+@inject Dashboard.Domain.Time.IClock Clock
+@inject Dashboard.Domain.Weather.WeatherState WeatherState
 <!DOCTYPE html>
-<html lang="de" data-theme="eink">
+<html lang="de" data-theme="@_theme">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#f5f2eb" />
+    <meta name="color-scheme" content="@(_night ? "dark" : "light")" />
+    <meta name="theme-color" content="@(_night ? "#121210" : "#f5f2eb")" />
     <base href="/" />
     <ResourcePreloader />
     @* Command-Center-Typografie: Space Grotesk (Text/Kennzahlen) + JetBrains Mono
@@ -23,7 +25,25 @@
 <body>
     <Routes />
     <ReconnectModal />
+    <ThemeController />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
 </html>
+
+@code {
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
+    // Server-computed initial theme so the first paint is already day/night (no flash);
+    // ThemeController then keeps a running kiosk in sync over time.
+    private string _theme = ThemeResolver.Day;
+    private bool _night;
+
+    protected override void OnInitialized()
+    {
+        var current = WeatherState.Current?.Current;
+        _theme = ThemeResolver.Resolve(Clock.UtcNow, current?.SunriseUtc, current?.SunsetUtc, BerlinTz);
+        _night = _theme == ThemeResolver.Night;
+    }
+}

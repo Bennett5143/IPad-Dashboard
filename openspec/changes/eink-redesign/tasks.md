@@ -46,8 +46,8 @@
 
 ## 7. Night theme
 
-- [ ] 7.1 Finalize the night palette and verify every page renders correctly in it
-- [ ] 7.2 Implement the evening switch trigger (manual/clock/sunset — at minimum a deterministic switch) that swaps root `data-theme` without layout shift
+- [x] 7.1 Night palette (defined since slice 1) is reused as-is; since every surface is now token-based (slice 4), switching `data-theme` re-colors all pages. Full per-page night render check on the iPad remains yours
+- [x] 7.2 Sunset-driven switch (with a 06:00–21:00 local fallback until sun times load): `ThemeResolver` decides day/night; `App.razor` sets the initial `data-theme`/`color-scheme`/`theme-color` server-side (no flash) and `ThemeController` re-applies it via JS interop every minute + on weather change. Only token values swap, so no layout shift. 7 unit tests cover the boundaries
 
 ## 8. Cleanup
 
