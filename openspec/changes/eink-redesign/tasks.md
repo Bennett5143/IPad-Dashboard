@@ -51,8 +51,8 @@
 
 ## 8. Cleanup
 
-- [ ] 8.1 Remove the Command Center theme and `--glass-*`/`--glow-*`/`--shadow-*` shims plus dead CSS
-- [ ] 8.2 Final device verification at 1024×768: no-scroll holds, heatmap light + route legible, night switch clean
+- [x] 8.1 Removed the `?classic=1` escape hatch (Home is `EinkHome` only), deleted the 8 classic-only summary tiles + `TileBoundary` + dead `Home.razor.css`, unified the `PageHeader` accent to the single `--accent` (dropped per-page domain accents), and stripped the dead Command Center tokens from `app.css` (surface/fg/domain-accent/tile/glass/glow/shadow/border) — 0 references remain; only used base tokens (Strava brand, spacing, typography, radii) plus the two theme ramps are left
+- [ ] 8.2 Final device verification at 1024×768: no-scroll holds, heatmap light + route legible, night switch clean — **yours** (app needs Postgres to run; not available in this environment)
 
 ## 9. Verification
 
