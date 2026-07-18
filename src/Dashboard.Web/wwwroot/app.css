@@ -1,64 +1,14 @@
 /* ============================================================
    Design Tokens (CSS Custom Properties)
    ============================================================
-   Single source of truth für Farben, Spacing, Typografie.
-   Thema: „Command Center" – fast schwarzer, grünstichiger Grund mit
-   flachen, soliden Gradient-Kacheln und einer Mehrfarb-Akzentpalette
-   je Domäne (Grün/Teal/Gold/Braun/Koralle). Kompakte Skala, damit die
-   Hauptansicht ohne Scrollen auf 768 px Höhe (iPad 9,7" quer) passt.
+   Non-color base tokens (spacing, typography, radii) shared by both
+   paper themes. The color ramp lives in the data-theme blocks below
+   (eink = day, night). See PRD "e-ink / Papier Redesign".
    ============================================================ */
 
 :root {
-    color-scheme: dark;
-
-    /* Farben: Surface-Levels (Hintergrund-Hierarchie) */
-    --color-surface-base:    #060907;  /* Seiten-Hintergrund (fast schwarz, grünstichig) */
-    --color-surface-frame:   #0a0f0c;  /* Geräte-/Kiosk-Rahmen, Rail */
-    --color-surface-raised:  #111a13;  /* Panel-/Tile-Hintergrund */
-    --color-surface-sunken:  #141d17;  /* innere Boxen/Chips */
-
-    /* Farben: Vordergrund (Text) */
-    --color-fg-primary:      #e8efe9;
-    --color-fg-secondary:    #9fb2a5;
-    --color-fg-muted:        #7f9587;
-    --color-fg-faint:        #5f7367;  /* Mono-Labels, Tertiärtext */
-
-    /* Domänen-Akzente – Haupt / Hell (Label) / Chip-Hintergrund */
-    --accent-green:  #5fce97;  --accent-green-light: #8fe0b4;  --accent-green-chip: rgba(95, 206, 151, 0.14);
-    --accent-teal:   #4fbdb0;  --accent-teal-light:  #7fd6cb;  --accent-teal-chip:  rgba(79, 189, 176, 0.16);
-    --accent-gold:   #e2b45f;  --accent-gold-light:  #eccb8c;  --accent-gold-chip:  rgba(226, 180, 95, 0.16);
-    --accent-brown:  #c47b38;  --accent-brown-light: #e3a068;  --accent-brown-chip: rgba(196, 120, 52, 0.16);
-    --accent-coral:  #e07d6f;  --accent-coral-light: #eca79c;  --accent-coral-chip: rgba(224, 125, 111, 0.13);
-
-    /* Semantische Aliase (von bestehenden Komponenten genutzt) auf die neue Palette gemappt */
-    --color-accent:          var(--accent-green);        /* Links, aktive Controls */
-    --color-accent-2:        var(--accent-teal);         /* Verlaufs-Partner */
-    --color-success:         var(--accent-green-light);
-    --color-warning:         var(--accent-gold);
-    --color-error:           var(--accent-coral);
-
-    /* Marken-Farbe Strava (Connect-Button, bewusst kein Statuston) */
+    /* Strava brand color (connect button — intentional brand, not a status tone). */
     --color-strava:          #fc4c02;
-
-    --color-border:          #1e2c21;
-
-    /* Kachel-Gradients je Domäne (flach, solid – kein Glas) */
-    --tile-green:  linear-gradient(150deg, #111a13, #0d130f);
-    --tile-teal:   linear-gradient(160deg, #101f1b, #0c1310);
-    --tile-gold:   linear-gradient(150deg, #171407, #100d08);
-    --tile-brown:  linear-gradient(150deg, #17130c, #100d09);
-    --tile-crypto: linear-gradient(150deg, #17130c, #0d120e);
-
-    /* Kompat-Shims: bis alle Komponenten auf die flachen Tokens migriert sind,
-       bleiben die alten Glass-/Glow-Namen als flache No-Ops erhalten. */
-    --glass-bg:        var(--color-surface-raised);
-    --glass-bg-strong: var(--color-surface-frame);
-    --glass-blur:      none;
-    --glass-rim:       var(--color-border);
-    --glass-sheen:     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 45%);
-    --glass-shadow:    0 8px 30px rgba(0, 0, 0, 0.45);
-    --glow-accent:     none;
-    --glow-success:    none;
 
     /* Spacing-Scale (4px-Basis, modulare Schritte) */
     --space-1: 0.25rem;  /*  4px */
@@ -90,14 +40,11 @@
     --line-height-tight: 1.2;
     --line-height-base:  1.45;
 
-    /* Radien & Schatten */
+    /* Radien */
     --radius-md:   0.5rem;    /*  8px – Chips/Buttons */
     --radius-lg:   0.875rem;  /* 14px – Karten */
     --radius-tile: 1.125rem;  /* 18px – Kacheln */
     --radius-xl:   1.375rem;  /* 22px – Geräterahmen */
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 /* ============================================================
@@ -162,24 +109,6 @@
     --bear:     #db6b5b;
 }
 
-/* When a paper theme is active, the ground becomes flat paper and the
-   Command-Center light-blobs are dropped. Component migration (slice 4)
-   points existing tiles at the ramp; here we only set the base surface,
-   text ink, and the single accent for links. */
-:root[data-theme="eink"] body,
-:root[data-theme="night"] body {
-    color: var(--ink);
-    background-color: var(--bg);
-    background-image: none;
-}
-
-:root[data-theme="eink"] a,
-:root[data-theme="night"] a,
-[data-theme="eink"] a,
-[data-theme="night"] a {
-    color: var(--accent);
-}
-
 /* ============================================================
    Modern CSS Reset (minimal, kein Normalize.css nötig)
    ============================================================ */
@@ -203,15 +132,8 @@ body {
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
-    color: var(--color-fg-primary);
-
-    /* Command-Center-Grund: zwei weiche Licht-Blobs – grün oben-rechts, braun
-       unten-links. background-attachment:fixed → ruhige, gemeinsame „Szene". */
-    background-color: var(--color-surface-base);
-    background-image:
-        radial-gradient(1100px 640px at 84% -10%, rgba(50, 130, 88, 0.16), transparent 58%),
-        radial-gradient(900px 560px at 8% 108%, rgba(150, 104, 64, 0.10), transparent 60%);
-    background-attachment: fixed;
+    color: var(--ink);
+    background-color: var(--bg);
 }
 
 h1, h2, h3, h4, h5, h6 {
