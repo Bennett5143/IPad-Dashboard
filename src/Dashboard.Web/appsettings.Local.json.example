@@ -98,6 +98,9 @@
   // CoinGecko-Slugs (nicht Symbole), "SummaryCoinId" = die Münze der Hauptseiten-Kachel.
   "Crypto": {
     "CoinIds": [ "bitcoin", "ethereum", "solana", "cardano", "ripple" ],
-    "SummaryCoinId": "bitcoin"
+    "SummaryCoinId": "bitcoin",
+    // Falls CoinGecko den schlüssellosen Zugriff drosselt (keine Kurse / HTTP 429):
+    // kostenlosen "Demo"-Key auf coingecko.com holen und hier eintragen.
+    "MarketApiKey": ""
   }
 }

@@ -142,11 +142,19 @@ try
     {
         http.BaseAddress = new Uri(cryptoOptions.MarketBaseUrl);
         http.Timeout = TimeSpan.FromSeconds(10);
+        // CoinGecko/Cloudflare blocks UA-less traffic and throttles the keyless public
+        // endpoint hard (HTTP 429). A User-Agent + optional free demo key keep data flowing.
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd("IPad-Dashboard/1.0");
+        if (!string.IsNullOrWhiteSpace(cryptoOptions.MarketApiKey))
+        {
+            http.DefaultRequestHeaders.Add("x-cg-demo-api-key", cryptoOptions.MarketApiKey);
+        }
     });
     builder.Services.AddHttpClient<IMarketSentimentProvider, FearGreedClient>(http =>
     {
         http.BaseAddress = new Uri(cryptoOptions.SentimentBaseUrl);
         http.Timeout = TimeSpan.FromSeconds(10);
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd("IPad-Dashboard/1.0");
     });
     builder.Services.AddHostedService<CryptoRefreshService>();
 
