@@ -132,8 +132,6 @@
     gap: 8px;
     padding: 2px 8px;
     background-color: var(--track);
-    background-image: radial-gradient(var(--faint) 0.5px, transparent 0.6px);
-    background-size: 3px 3px;
     border: 1px solid var(--rule);
     border-left: 2px solid var(--accent);
     border-radius: 4px;

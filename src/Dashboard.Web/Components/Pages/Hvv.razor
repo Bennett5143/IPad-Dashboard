@@ -18,7 +18,7 @@
         <div class="hvv-grid">
             @foreach (var station in HvvState.Current!.Stations)
             {
-                var deps = station.Departures.OrderBy(d => d.ExpectedTime).Take(7).ToList();
+                var deps = station.Departures.OrderBy(d => d.ExpectedTime).Take(10).ToList();
 
                 <div class="hvv-card">
                     <div class="hvv-card-head">
