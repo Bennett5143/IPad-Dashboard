@@ -1,10 +1,11 @@
 @using Microsoft.AspNetCore.Components.Routing
-@implements IDisposable
 @inject NavigationManager Nav
 
 @* Hub-&-spoke rail for detail pages: back to Home is the only cross-area move.
    Fitness is the one area that also links its own sub-pages (WHOOP/Läufe/Heatmap/
-   Habits); every other area is a single spoke, so it just offers "back to Home". *@
+   Habits); every other area is a single spoke, so it just offers "back to Home".
+   Rendered in the static layout, so the area is read from the current URL each
+   render — no LocationChanged subscription (which is a footgun in static SSR). *@
 <nav class="rail">
     <div class="rail-group">
         <a class="rail-item rail-home" href="/">
@@ -12,7 +13,7 @@
         </a>
     </div>
 
-    @if (_fitness)
+    @if (Fitness)
     {
         <div class="rail-group">
             <span class="rail-group-label">Fitness</span>
@@ -27,25 +28,5 @@
 </nav>
 
 @code {
-    private bool _fitness;
-
-    protected override void OnInitialized()
-    {
-        Nav.LocationChanged += OnLocationChanged;
-        UpdateArea();
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        UpdateArea();
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void UpdateArea()
-    {
-        var relative = Nav.ToBaseRelativePath(Nav.Uri);
-        _fitness = Area.IsFitness(relative);
-    }
-
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    private bool Fitness => Area.IsFitness(Nav.ToBaseRelativePath(Nav.Uri));
 }

@@ -1,28 +1,23 @@
 namespace Dashboard.Web.Components;
 
 /// <summary>
-/// Decides which paper theme is active: the day theme between sunrise and sunset,
-/// the night theme otherwise. Sunset-driven when the weather slice has sun times,
-/// with a fixed local-hour fallback (day 06:00–21:00) until it does. Switching only
-/// swaps token values, so it never shifts layout (PRD §7).
+/// Picks the active paper theme by local clock: the day theme from 08:00 to 20:00,
+/// the night theme from 20:00 to 08:00. Switching only swaps token values, so it
+/// never shifts layout (PRD §7). App.razor uses this for the initial server-side
+/// value; a tiny inline script keeps a running kiosk in sync (see App.razor).
 /// </summary>
 public static class ThemeResolver
 {
     public const string Day = "eink";
     public const string Night = "night";
 
-    public static string Resolve(
-        DateTimeOffset nowUtc,
-        DateTimeOffset? sunriseUtc,
-        DateTimeOffset? sunsetUtc,
-        TimeZoneInfo timeZone)
-    {
-        if (sunriseUtc is { } sunrise && sunsetUtc is { } sunset && sunset > sunrise)
-        {
-            return nowUtc >= sunrise && nowUtc < sunset ? Day : Night;
-        }
+    /// <summary>Day hour range is [DayStartHour, NightStartHour); night otherwise.</summary>
+    public const int DayStartHour = 8;
+    public const int NightStartHour = 20;
 
-        var localHour = TimeZoneInfo.ConvertTime(nowUtc, timeZone).Hour;
-        return localHour is >= 6 and < 21 ? Day : Night;
+    public static string Resolve(DateTimeOffset nowUtc, TimeZoneInfo timeZone)
+    {
+        var hour = TimeZoneInfo.ConvertTime(nowUtc, timeZone).Hour;
+        return hour is >= DayStartHour and < NightStartHour ? Day : Night;
     }
 }

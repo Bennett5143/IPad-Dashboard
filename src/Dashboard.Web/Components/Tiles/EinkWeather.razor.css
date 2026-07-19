@@ -25,7 +25,11 @@
 
 .wx-glyph {
     grid-row: 1 / 3;
-    font-size: clamp(2.4rem, 5vw, 3.4rem);
+    display: flex;
+    align-items: center;
+    color: var(--ink);
+    /* icon sizes to 1em of this font-size (see WeatherIcon) */
+    font-size: clamp(2rem, 4.5vw, 2.9rem);
     line-height: 1;
 }
 
@@ -83,7 +87,7 @@
     border-bottom: 1px solid var(--rule);
 }
 
-.wx-sunset-icon { font-size: 1.1rem; }
+.wx-sunset-icon { width: 18px; height: 18px; color: var(--ink); flex: none; }
 
 .wx-sunset-label {
     font-family: var(--font-family-mono);
@@ -127,7 +131,7 @@
 }
 
 .wx-hour-time { font-size: 0.72rem; color: var(--muted); }
-.wx-hour-glyph { font-size: 1.2rem; line-height: 1; }
+.wx-hour-glyph { display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: 1.4rem; line-height: 1; }
 .wx-hour-temp { font-weight: 600; }
 
 /* Rain probability: quiet by default, ink-emphasised when it actually matters. */

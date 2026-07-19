@@ -1,5 +1,4 @@
 @inject Dashboard.Domain.Time.IClock Clock
-@inject Dashboard.Domain.Weather.WeatherState WeatherState
 <!DOCTYPE html>
 <html lang="de" data-theme="@_theme">
 
@@ -25,7 +24,22 @@
 <body>
     <Routes />
     <ReconnectModal />
-    <ThemeController />
+    @* Day/night by the wall clock (night 20:00–08:00). Pure JS — no Blazor circuit —
+       so the kiosk flips on its own device time and nothing here can fault interactivity.
+       App.razor sets the initial data-theme server-side above, so there is no flash. *@
+    <script>
+        (function () {
+            function apply() {
+                var h = new Date().getHours();
+                var night = h >= 20 || h < 8;
+                var root = document.documentElement;
+                root.setAttribute('data-theme', night ? 'night' : 'eink');
+                root.style.colorScheme = night ? 'dark' : 'light';
+            }
+            apply();
+            setInterval(apply, 60000);
+        })();
+    </script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
@@ -36,14 +50,13 @@
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
     // Server-computed initial theme so the first paint is already day/night (no flash);
-    // ThemeController then keeps a running kiosk in sync over time.
+    // the inline script above keeps a running kiosk in sync on the device clock.
     private string _theme = ThemeResolver.Day;
     private bool _night;
 
     protected override void OnInitialized()
     {
-        var current = WeatherState.Current?.Current;
-        _theme = ThemeResolver.Resolve(Clock.UtcNow, current?.SunriseUtc, current?.SunsetUtc, BerlinTz);
+        _theme = ThemeResolver.Resolve(Clock.UtcNow, BerlinTz);
         _night = _theme == ThemeResolver.Night;
     }
 }
