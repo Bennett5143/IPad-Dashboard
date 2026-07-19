@@ -6,53 +6,32 @@ public class ThemeResolverTests
 {
     private static readonly TimeZoneInfo Berlin = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
-    private static DateTimeOffset Utc(int y, int mo, int d, int h, int mi) =>
-        new(y, mo, d, h, mi, 0, TimeSpan.Zero);
-
-    [Fact]
-    public void Resolve_BetweenSunriseAndSunset_IsDay()
-    {
-        var theme = ThemeResolver.Resolve(
-            Utc(2026, 7, 15, 12, 0), Utc(2026, 7, 15, 3, 0), Utc(2026, 7, 15, 19, 30), Berlin);
-
-        Assert.Equal(ThemeResolver.Day, theme);
-    }
-
-    [Fact]
-    public void Resolve_AfterSunset_IsNight()
-    {
-        var theme = ThemeResolver.Resolve(
-            Utc(2026, 7, 15, 20, 0), Utc(2026, 7, 15, 3, 0), Utc(2026, 7, 15, 19, 30), Berlin);
-
-        Assert.Equal(ThemeResolver.Night, theme);
-    }
-
-    [Fact]
-    public void Resolve_BeforeSunrise_IsNight()
-    {
-        var theme = ThemeResolver.Resolve(
-            Utc(2026, 7, 15, 2, 0), Utc(2026, 7, 15, 3, 0), Utc(2026, 7, 15, 19, 30), Berlin);
-
-        Assert.Equal(ThemeResolver.Night, theme);
-    }
+    // July = Berlin is UTC+2, so local hour = utcHour + 2.
+    private static DateTimeOffset Utc(int hour, int minute = 0) =>
+        new(2026, 7, 15, hour, minute, 0, TimeSpan.Zero);
 
     [Theory]
-    [InlineData(10, ThemeResolver.Day)]   // 12:00 Berlin (UTC+2 in July)
-    [InlineData(1, ThemeResolver.Night)]  // 03:00 Berlin
-    [InlineData(20, ThemeResolver.Night)] // 22:00 Berlin
-    public void Resolve_WithoutSunData_FallsBackToLocalHours(int utcHour, string expected)
-    {
-        var theme = ThemeResolver.Resolve(Utc(2026, 7, 15, utcHour, 0), null, null, Berlin);
+    [InlineData(6, ThemeResolver.Day)]    // 08:00 local — first day hour
+    [InlineData(10, ThemeResolver.Day)]   // 12:00 local
+    [InlineData(17, ThemeResolver.Day)]   // 19:00 local
+    public void Resolve_DaytimeHours_ReturnDay(int utcHour, string expected) =>
+        Assert.Equal(expected, ThemeResolver.Resolve(Utc(utcHour), Berlin));
 
-        Assert.Equal(expected, theme);
-    }
+    [Theory]
+    [InlineData(18, ThemeResolver.Night)] // 20:00 local — first night hour
+    [InlineData(21, ThemeResolver.Night)] // 23:00 local
+    [InlineData(0, ThemeResolver.Night)]  // 02:00 local
+    public void Resolve_NighttimeHours_ReturnNight(int utcHour, string expected) =>
+        Assert.Equal(expected, ThemeResolver.Resolve(Utc(utcHour), Berlin));
 
     [Fact]
-    public void Resolve_WithoutSunData_DayStartsAtSixLocal()
+    public void Resolve_Boundaries_AreInclusiveOfDayStartAndExclusiveOfNightStart()
     {
-        // 04:00 UTC = 06:00 Berlin (July, UTC+2) -> first day hour.
-        Assert.Equal(ThemeResolver.Day, ThemeResolver.Resolve(Utc(2026, 7, 15, 4, 0), null, null, Berlin));
-        // 03:59 UTC = 05:59 Berlin -> still night.
-        Assert.Equal(ThemeResolver.Night, ThemeResolver.Resolve(Utc(2026, 7, 15, 3, 59), null, null, Berlin));
+        // 07:59 local -> night, 08:00 local -> day
+        Assert.Equal(ThemeResolver.Night, ThemeResolver.Resolve(Utc(5, 59), Berlin)); // 07:59 local
+        Assert.Equal(ThemeResolver.Day, ThemeResolver.Resolve(Utc(6, 0), Berlin));    // 08:00 local
+        // 19:59 local -> day, 20:00 local -> night
+        Assert.Equal(ThemeResolver.Day, ThemeResolver.Resolve(Utc(17, 59), Berlin));  // 19:59 local
+        Assert.Equal(ThemeResolver.Night, ThemeResolver.Resolve(Utc(18, 0), Berlin)); // 20:00 local
     }
 }

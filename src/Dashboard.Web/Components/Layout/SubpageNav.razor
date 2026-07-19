@@ -1,12 +1,12 @@
 @using Microsoft.AspNetCore.Components.Routing
-@implements IDisposable
 @inject NavigationManager Nav
 
 @* Hub-&-spoke top nav for MainLayout pages: only "back to Home", plus the Fitness
-   siblings when the current page is in the Fitness area. No lateral cross-area jumps. *@
+   siblings when the current page is in the Fitness area. No lateral cross-area jumps.
+   Read from the current URL each render (static layout) — no LocationChanged subscription. *@
 <nav class="subnav">
     <a class="subnav-home" href="/">← Home</a>
-    @if (_fitness)
+    @if (Fitness)
     {
         <div class="subnav-links">
             @foreach (var (href, label) in Area.Fitness)
@@ -18,21 +18,5 @@
 </nav>
 
 @code {
-    private bool _fitness;
-
-    protected override void OnInitialized()
-    {
-        Nav.LocationChanged += OnLocationChanged;
-        UpdateArea();
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        UpdateArea();
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void UpdateArea() => _fitness = Area.IsFitness(Nav.ToBaseRelativePath(Nav.Uri));
-
-    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+    private bool Fitness => Area.IsFitness(Nav.ToBaseRelativePath(Nav.Uri));
 }
