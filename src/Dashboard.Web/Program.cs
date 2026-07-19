@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
+using Dashboard.Domain.Calendar;
 using Dashboard.Infrastructure;
+using Dashboard.Infrastructure.Calendar;
 using Dashboard.Infrastructure.Crests;
 using Dashboard.Infrastructure.Crypto;
 using Dashboard.Infrastructure.Football;
@@ -91,6 +93,20 @@ try
     });
     builder.Services.AddHostedService<WeatherRefreshService>();
 
+    // Calendar (published ICS subscription source; PRD §6)
+    var calendarOptions = builder.Configuration
+        .GetSection(CalendarOptions.SectionName)
+        .Get<CalendarOptions>() ?? new CalendarOptions();
+
+    builder.Services.Configure<CalendarOptions>(
+        builder.Configuration.GetSection(CalendarOptions.SectionName));
+    builder.Services.AddSingleton<CalendarState>();
+    builder.Services.AddHttpClient<ICalendarProvider, IcsCalendarClient>(http =>
+    {
+        http.Timeout = TimeSpan.FromSeconds(calendarOptions.HttpTimeoutSeconds);
+    });
+    builder.Services.AddHostedService<CalendarRefreshService>();
+
     // Football
     var footballOptions = builder.Configuration
         .GetSection(FootballOptions.SectionName)
@@ -126,11 +142,19 @@ try
     {
         http.BaseAddress = new Uri(cryptoOptions.MarketBaseUrl);
         http.Timeout = TimeSpan.FromSeconds(10);
+        // CoinGecko/Cloudflare blocks UA-less traffic and throttles the keyless public
+        // endpoint hard (HTTP 429). A User-Agent + optional free demo key keep data flowing.
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd("IPad-Dashboard/1.0");
+        if (!string.IsNullOrWhiteSpace(cryptoOptions.MarketApiKey))
+        {
+            http.DefaultRequestHeaders.Add("x-cg-demo-api-key", cryptoOptions.MarketApiKey);
+        }
     });
     builder.Services.AddHttpClient<IMarketSentimentProvider, FearGreedClient>(http =>
     {
         http.BaseAddress = new Uri(cryptoOptions.SentimentBaseUrl);
         http.Timeout = TimeSpan.FromSeconds(10);
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd("IPad-Dashboard/1.0");
     });
     builder.Services.AddHostedService<CryptoRefreshService>();
 
@@ -215,6 +239,7 @@ try
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CryptoState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<HvvState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WhoopState>());
+    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CalendarState>());
     builder.Services.AddSingleton<ISystemMetricsProvider>(OperatingSystem.IsLinux()
         ? new LinuxSystemMetricsProvider()
         : new NullSystemMetricsProvider());

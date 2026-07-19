@@ -1,0 +1,155 @@
+.eink-calendar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 2fr;
+    gap: 20px;
+    height: 100%;
+    min-height: 0;
+}
+
+/* Month grid ------------------------------------------------------------ */
+.cal-month {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.cal-month-title {
+    font-family: var(--font-family-base);
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    color: var(--ink);
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    flex: 1;
+    min-height: 0;
+}
+
+.cal-wd {
+    font-family: var(--font-family-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    padding-bottom: 2px;
+}
+
+.cal-day {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family-mono);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    border: 1px solid transparent;
+    border-radius: 5px;
+    min-height: 0;
+}
+
+.cal-day--blank { color: transparent; }
+
+.cal-day.is-today {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+}
+
+.cal-dot {
+    position: absolute;
+    bottom: 3px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--muted);
+}
+
+.cal-day.is-today .cal-dot { background: var(--bg); }
+
+/* Day timeline ---------------------------------------------------------- */
+.cal-timeline {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cal-track {
+    position: relative;
+    height: 100%;
+    /* leave a gutter on the left for hour labels */
+    padding-left: 34px;
+}
+
+.cal-hourline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--rule);
+    transform: translateY(-0.5px);
+}
+
+.cal-hourlabel {
+    position: absolute;
+    left: 0;
+    top: -0.55em;
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* "now" marker: a thin accent line so the free gaps around it read at a glance */
+.cal-now {
+    position: absolute;
+    left: 34px;
+    right: 0;
+    border-top: 1px solid var(--accent);
+    z-index: 2;
+}
+
+.cal-now::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: -2.5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.cal-event {
+    position: absolute;
+    left: 40px;
+    right: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 2px 8px;
+    background-color: var(--track);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--accent);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.cal-event-time {
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    flex: none;
+}
+
+.cal-event-title {
+    font-size: 0.78rem;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -1,0 +1,85 @@
+@implements IDisposable
+@inject WeatherState WeatherState
+@inject IClock Clock
+
+@* e-ink weather block (home top-right): current conditions + labeled sunset,
+   then upcoming hourly cards (time → icon → temp → rain%). Paper look; the only
+   colored things are data (rain >= 30% goes ink-emphasised). *@
+<a class="eink-weather" href="/weather">
+    @if (_snapshot is null)
+    {
+        <p class="wx-empty">Wetterdaten gerade nicht verfügbar.</p>
+    }
+    else
+    {
+        <div class="wx-current">
+            <span class="wx-glyph"><WeatherIcon Condition="_snapshot.Current.Condition" /></span>
+            <div class="wx-headline">
+                <span class="wx-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
+                <span class="wx-desc">@_snapshot.Current.Description</span>
+            </div>
+            <dl class="wx-facts">
+                <div><dt>Gefühlt</dt><dd>@WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</dd></div>
+                <div><dt>H / T</dt><dd>H @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature) / T @WeatherFormatter.Temperature(_snapshot.Today.MinTemperature)</dd></div>
+                <div><dt>Wind</dt><dd>@WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</dd></div>
+            </dl>
+        </div>
+
+        <div class="wx-sunset">
+            <svg class="wx-sunset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17 18a5 5 0 0 0-10 0" />
+                <line x1="12" y1="9" x2="12" y2="3" />
+                <polyline points="8.5 6.5 12 9 15.5 6.5" />
+                <line x1="1" y1="18" x2="4" y2="18" />
+                <line x1="20" y1="18" x2="23" y2="18" />
+                <line x1="4.2" y1="11.2" x2="5.6" y2="12.6" />
+                <line x1="19.8" y1="11.2" x2="18.4" y2="12.6" />
+                <line x1="2" y1="22" x2="22" y2="22" />
+            </svg>
+            <span class="wx-sunset-label">Sonnenuntergang</span>
+            <span class="wx-sunset-time">@WeatherFormatter.Sun(_snapshot.Current.SunsetUtc)</span>
+        </div>
+
+        <div class="wx-hours">
+            @foreach (var h in Upcoming)
+            {
+                var rainy = h.PrecipitationProbability >= 0.30;
+                <div class="wx-hour">
+                    <span class="wx-hour-time">@($"{h.Time:HH}")</span>
+                    <span class="wx-hour-glyph"><WeatherIcon Condition="h.Condition" /></span>
+                    <span class="wx-hour-temp">@WeatherFormatter.Temperature(h.Temperature)</span>
+                    <span class="wx-hour-rain @(rainy ? "is-wet" : null)">@WeatherFormatter.Precipitation(h.PrecipitationProbability)</span>
+                </div>
+            }
+        </div>
+    }
+</a>
+
+@code {
+    private WeatherSnapshot? _snapshot;
+
+    private IEnumerable<HourlyForecast> Upcoming
+    {
+        get
+        {
+            if (_snapshot is null) return Enumerable.Empty<HourlyForecast>();
+            var now = Clock.UtcNow;
+            return _snapshot.Hourly.Where(h => h.Time >= now).Take(6);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        WeatherState.Changed += OnChanged;
+        _snapshot = WeatherState.Current;
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        _snapshot = WeatherState.Current;
+        StateHasChanged();
+    });
+
+    public void Dispose() => WeatherState.Changed -= OnChanged;
+}

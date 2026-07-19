@@ -15,6 +15,9 @@
 appsettings.Development.json
 appsettings.Local.json
 
+# Runtime-generated crest/flag proxy cache
+src/Dashboard.Web/crest-cache/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

@@ -6,7 +6,7 @@
 
 <PageTitle>Abfahrten</PageTitle>
 
-<PageHeader Title="Abfahrten" Accent="var(--accent-green)" Meta="@($"{_count} HALTESTELLEN")" />
+<PageHeader Title="Abfahrten" Meta="@($"{_count} HALTESTELLEN")" />
 
 <div class="detail-body">
     @if (_count == 0)
@@ -18,7 +18,7 @@
         <div class="hvv-grid">
             @foreach (var station in HvvState.Current!.Stations)
             {
-                var deps = station.Departures.OrderBy(d => d.ExpectedTime).Take(7).ToList();
+                var deps = station.Departures.OrderBy(d => d.ExpectedTime).Take(10).ToList();
 
                 <div class="hvv-card">
                     <div class="hvv-card-head">

@@ -21,13 +21,13 @@
 
 .ring-track {
     fill: none;
-    stroke: var(--color-surface-sunken);
+    stroke: var(--track);
     stroke-width: 9;
 }
 
 .ring-fill {
     fill: none;
-    stroke: var(--ring-color, var(--color-accent));
+    stroke: var(--ring-color, var(--accent));
     stroke-width: 9;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.4s ease;
@@ -42,24 +42,24 @@
     font-family: var(--font-family-display);
     font-weight: 700;
     font-size: var(--font-size-lg);
-    color: var(--color-fg-primary);
+    color: var(--ink);
 }
 
 .ring-label {
     font-size: var(--font-size-sm);
-    color: var(--color-fg-muted);
+    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
 
 .ring.is-high .ring-fill {
-    stroke: var(--color-success);
+    stroke: var(--rec-high);
 }
 
 .ring.is-medium .ring-fill {
-    stroke: var(--color-warning);
+    stroke: var(--rec-mid);
 }
 
 .ring.is-low .ring-fill {
-    stroke: var(--color-error);
+    stroke: var(--rec-low);
 }

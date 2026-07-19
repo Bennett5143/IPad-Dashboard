@@ -1,8 +1,8 @@
 .rail {
     width: 208px;
     flex: none;
-    background: #0b0f0a;
-    border-right: 1px solid #17231b;
+    background: var(--bg);
+    border-right: 1px solid var(--rule);
     display: flex;
     flex-direction: column;
     padding: 18px 14px;
@@ -10,31 +10,28 @@
     overflow-y: auto;
 }
 
-.rail-brand {
+/* Back-to-Home is a plain <a> in this component (not a NavLink), so it is styled
+   directly — the fitness NavLinks below come from a child component and need ::deep. */
+.rail-home {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 0 6px 14px;
+    gap: 11px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-family: var(--font-family-base);
+    font-size: 14px;
+    color: var(--muted);
 }
 
-.rail-brand-chip {
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
-    background: var(--accent-green-chip);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
+.rail-home:hover {
+    color: var(--ink);
 }
 
-.rail-brand-label {
-    font-family: var(--font-family-mono);
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent-green-light);
-    font-weight: 600;
+.rail-back {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .rail-group {
@@ -49,7 +46,7 @@
     font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #4c5f53;
+    color: var(--muted);
     padding: 8px 12px 4px;
 }
 
@@ -66,7 +63,7 @@
     font-family: var(--font-family-base);
     font-size: 14px;
     font-weight: 400;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
 }
 
 .rail ::deep .rail-item .rail-dot {
@@ -74,15 +71,15 @@
     height: 6px;
     border-radius: 2px;
     flex: none;
-    background: #33473b;
+    background: var(--faint);
 }
 
 .rail ::deep .rail-item.active {
-    background: #15241b;
-    color: var(--color-fg-primary);
+    background: var(--track);
+    color: var(--ink);
     font-weight: 600;
 }
 
 .rail ::deep .rail-item.active .rail-dot {
-    background: var(--accent-green);
+    background: var(--accent);
 }

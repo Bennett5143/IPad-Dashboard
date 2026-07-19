@@ -1,18 +1,19 @@
 .page-shell {
     min-height: 100dvh;
-    background-color: var(--color-surface-base);
-    color: var(--color-fg-primary);
+    background-color: var(--bg);
+    color: var(--ink);
     padding: var(--space-4);
     max-width: 1200px;
     margin: 0 auto;
 }
 
 #blazor-error-ui {
-    background: var(--color-surface-raised);
-    color: var(--color-fg-primary);
-    border-top: 1px solid var(--color-error);
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-top: 1px solid var(--bear);
     bottom: 0;
-    box-shadow: var(--shadow-md);
+    box-shadow: none;
     box-sizing: border-box;
     display: none;
     left: 0;

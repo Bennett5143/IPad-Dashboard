@@ -17,9 +17,10 @@
 }
 
 .page-header-accent {
-    width: 11px;
+    width: 4px;
     height: 26px;
-    border-radius: 4px;
+    border-radius: 2px;
+    background: var(--accent);
     flex: none;
 }
 
@@ -27,6 +28,6 @@
     font-family: var(--font-family-mono);
     font-size: 11px;
     letter-spacing: 0.12em;
-    color: var(--color-fg-faint);
+    color: var(--muted);
     text-align: right;
 }

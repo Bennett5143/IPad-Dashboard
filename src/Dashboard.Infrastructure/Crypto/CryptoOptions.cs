@@ -11,6 +11,14 @@ public sealed class CryptoOptions
     public string MarketBaseUrl { get; init; } = "https://api.coingecko.com/";
     public string SentimentBaseUrl { get; init; } = "https://api.alternative.me/";
 
+    /// <summary>
+    /// Optionaler CoinGecko-„Demo"-API-Key (kostenlos). Ohne Key drosselt CoinGecko den
+    /// öffentlichen Endpoint pro IP inzwischen hart (HTTP 429), dann kommen keine Kurse an.
+    /// Mit Key wird das Limit angehoben; gesendet als Header <c>x-cg-demo-api-key</c>.
+    /// Gehört (falls gesetzt) in <c>appsettings.Local.json</c>. Leer = schlüssellos wie bisher.
+    /// </summary>
+    public string? MarketApiKey { get; init; }
+
     /// <summary>Fiat-Währung der Kurse (CoinGecko-Code, klein).</summary>
     public string VsCurrency { get; init; } = "eur";
 

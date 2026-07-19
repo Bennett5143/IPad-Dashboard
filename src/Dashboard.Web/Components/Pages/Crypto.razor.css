@@ -1,5 +1,5 @@
 .crypto-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-style: italic;
     margin-top: 12px;
 }
@@ -17,9 +17,9 @@
     display: flex;
     align-items: center;
     gap: 26px;
-    background: var(--tile-crypto);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     padding: 22px 24px;
 }
 
@@ -35,12 +35,12 @@
     font-size: 50px;
     font-weight: 600;
     line-height: 0.9;
-    color: var(--accent-gold);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
 
 .fng-cap {
-    color: #8a7a52;
+    color: var(--muted);
 }
 
 .fng-body {
@@ -51,13 +51,13 @@
 .fng-class {
     font-size: 15px;
     font-weight: 600;
-    color: var(--accent-gold);
+    color: var(--ink);
 }
 
 .fng-bar {
     height: 8px;
     border-radius: 4px;
-    background: #17231b;
+    background: var(--track);
     margin-top: 12px;
     overflow: hidden;
 }
@@ -65,7 +65,8 @@
 .fng-fill {
     height: 100%;
     border-radius: 4px;
-    background: linear-gradient(90deg, #e07d6f, #e2b45f 55%, #5fce97);
+    /* fear -> greed spectrum: data-bearing, uses the red/amber/green zone tokens */
+    background: linear-gradient(90deg, var(--rec-low), var(--rec-mid) 55%, var(--rec-high));
 }
 
 .fng-scale {
@@ -73,15 +74,15 @@
     justify-content: space-between;
     font-family: var(--font-family-mono);
     font-size: 10px;
-    color: var(--color-fg-faint);
+    color: var(--faint);
     margin-top: 6px;
 }
 
 /* Coin-Tabelle (füllt die Resthöhe, kein Scrollen) */
 .coin-table {
-    background: var(--tile-green);
-    border: 1px solid var(--color-border);
-    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     overflow: hidden;
     flex: 1;
     min-height: 0;
@@ -103,13 +104,13 @@
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-fg-faint);
-    border-bottom: 1px solid #17231b;
+    color: var(--faint);
+    border-bottom: 1px solid var(--rule);
     flex: none;
 }
 
 .coin-row {
-    border-top: 1px solid #131e17;
+    border-top: 1px solid var(--rule);
     flex: 1;
 }
 
@@ -151,7 +152,7 @@
 
 .coin-name {
     font-size: 11px;
-    color: #6a8272;
+    color: var(--muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -170,19 +171,19 @@
 }
 
 .coin-chg.up {
-    color: var(--accent-green);
-    background: rgba(95, 206, 151, 0.13);
+    color: var(--bull);
+    background: var(--track);
 }
 
 .coin-chg.down {
-    color: var(--accent-coral);
-    background: rgba(224, 125, 111, 0.13);
+    color: var(--bear);
+    background: var(--track);
 }
 
 .coin-cap {
     font-family: var(--font-family-mono);
     font-size: 12px;
-    color: var(--color-fg-secondary);
+    color: var(--muted);
 }
 
 .coin-table ::deep .coin-spark {
@@ -194,14 +195,14 @@
 }
 
 .coin-table ::deep .coin-spark--up {
-    stroke: var(--accent-green);
+    stroke: var(--bull);
 }
 
 .coin-table ::deep .coin-spark--down {
-    stroke: var(--accent-coral);
+    stroke: var(--bear);
 }
 
 .coin-foot {
-    color: var(--color-fg-faint);
+    color: var(--faint);
     letter-spacing: 0.08em;
 }

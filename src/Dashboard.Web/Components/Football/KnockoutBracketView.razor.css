@@ -17,7 +17,7 @@
     font-size: var(--font-size-sm);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }
 
 .bracket-ties {
@@ -34,24 +34,24 @@
     gap: 2px;
     padding: var(--space-2);
     border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--glass-rim);
+    background: var(--bg);
+    border: 1px solid var(--rule);
 }
 
 .bracket-tie.is-two-legs {
-    border-left: 2px solid var(--color-accent);
+    border-left: 2px solid var(--ink);
 }
 
 .bracket-team {
     display: flex;
     justify-content: space-between;
     gap: var(--space-2);
-    color: var(--color-fg-secondary);
+    color: var(--muted);
     font-size: var(--font-size-sm);
 }
 
 .bracket-team.is-winner {
-    color: var(--color-fg-primary);
+    color: var(--ink);
     font-weight: var(--font-weight-semibold);
 }
 
@@ -77,5 +77,5 @@
 .bracket-note {
     margin-top: 2px;
     font-size: var(--font-size-xs, 0.7rem);
-    color: var(--color-fg-muted);
+    color: var(--muted);
 }

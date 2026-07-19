@@ -5,7 +5,7 @@
 }
 
 .football-page-empty {
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-style: italic;
 }
 
@@ -25,10 +25,10 @@
 
 .football-tab {
     background: transparent;
-    border: 1px solid #17231b;
-    border-radius: 9px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     padding: 7px 15px;
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-family: var(--font-family-base);
     font-size: 13px;
     font-weight: 500;
@@ -36,9 +36,9 @@
 }
 
 .football-tab.is-active {
-    background: rgba(226, 180, 95, 0.14);
-    color: var(--accent-gold-light);
-    border-color: #4a3f1f;
+    background: var(--track);
+    color: var(--accent);
+    border-color: var(--accent);
     font-weight: 600;
 }
 
@@ -48,10 +48,10 @@
     align-items: center;
     gap: 6px;
     background: transparent;
-    border: 1px solid #17231b;
-    border-radius: 9px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
     padding: 6px 13px;
-    color: var(--color-fg-muted);
+    color: var(--muted);
     font-family: var(--font-family-base);
     font-size: 13px;
     cursor: pointer;
@@ -59,8 +59,8 @@
 }
 
 .football-toggle.is-on {
-    color: var(--accent-gold-light);
-    border-color: #4a3f1f;
+    color: var(--accent);
+    border-color: var(--accent);
 }
 
 .football-toggle-icon {
@@ -75,9 +75,9 @@
 
 .football-card {
     padding: var(--space-4);
-    border-radius: 16px;
-    background: var(--tile-gold);
-    border: 1px solid #26241b;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
 }
 
 /* Bracket braucht volle Breite (horizontaler Scroll der Runden). */
@@ -88,7 +88,7 @@
 .football-card h2 {
     font-family: var(--font-family-mono);
     font-size: 10px;
-    color: var(--accent-gold-light);
+    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.18em;
     margin-bottom: var(--space-3);

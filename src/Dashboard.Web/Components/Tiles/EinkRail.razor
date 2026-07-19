@@ -1,0 +1,88 @@
+@implements IDisposable
+@inject IEnumerable<Dashboard.Domain.Common.ISliceStatusSource> Sources
+
+@* Home icon rail (hub &amp; spoke): the four data areas + Health. Icons only, no text.
+   Each opens an isolated area; return is always via Home. Health is de-colored and
+   readable by SHAPE — a pulse line when up, a broken flatline when down. *@
+<nav class="eink-rail" aria-label="Bereiche">
+    <a class="eink-rail-item" href="/hvv" aria-label="Abfahrten">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="3" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" />
+            <line x1="4" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="1.6" />
+            <rect x="6.5" y="5.5" width="4" height="3" rx="0.6" fill="currentColor" />
+            <rect x="13.5" y="5.5" width="4" height="3" rx="0.6" fill="currentColor" />
+            <circle cx="8" cy="13.5" r="1.1" fill="currentColor" />
+            <circle cx="16" cy="13.5" r="1.1" fill="currentColor" />
+            <line x1="7" y1="18" x2="7" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            <line x1="17" y1="18" x2="17" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+    </a>
+
+    <a class="eink-rail-item" href="/whoop" aria-label="Fitness">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="7.5" y1="12" x2="16.5" y2="12" stroke="currentColor" stroke-width="2.4" />
+            <rect x="3" y="8" width="3.2" height="8" rx="1" fill="currentColor" />
+            <rect x="6.4" y="6" width="2.6" height="12" rx="1" fill="currentColor" />
+            <rect x="15" y="6" width="2.6" height="12" rx="1" fill="currentColor" />
+            <rect x="17.8" y="8" width="3.2" height="8" rx="1" fill="currentColor" />
+        </svg>
+    </a>
+
+    <a class="eink-rail-item" href="/football" aria-label="Fußball">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+            <polygon points="12,8 15,10.2 13.8,13.8 10.2,13.8 9,10.2" fill="currentColor" />
+            <line x1="12" y1="3.5" x2="12" y2="8" stroke="currentColor" stroke-width="1.2" />
+            <line x1="15" y1="10.2" x2="19.6" y2="9" stroke="currentColor" stroke-width="1.2" />
+            <line x1="13.8" y1="13.8" x2="16.5" y2="18" stroke="currentColor" stroke-width="1.2" />
+            <line x1="10.2" y1="13.8" x2="7.5" y2="18" stroke="currentColor" stroke-width="1.2" />
+            <line x1="9" y1="10.2" x2="4.4" y2="9" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+    </a>
+
+    <a class="eink-rail-item" href="/crypto" aria-label="Krypto">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+            <text class="eink-btc" x="12" y="16.4" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">&#8383;</text>
+        </svg>
+    </a>
+
+    <a class="eink-rail-item eink-rail-health" href="/status" aria-label="@(_up ? "System läuft" : "System gestört")">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            @if (_up)
+            {
+                <polyline points="2,12 7,12 9.5,6 12.5,18 15,12 22,12" fill="none"
+                          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            }
+            else
+            {
+                <line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <line x1="14" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            }
+        </svg>
+    </a>
+</nav>
+
+@code {
+    private bool _up = true;
+
+    protected override void OnInitialized()
+    {
+        foreach (var s in Sources) s.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    // Down as soon as any source that has data has gone stale.
+    private void ReadState() => _up = !Sources.Any(s => s.HasData && s.IsStale);
+
+    public void Dispose()
+    {
+        foreach (var s in Sources) s.Changed -= OnChanged;
+    }
+}

@@ -82,12 +82,25 @@
     ]
   },
 
+  // Apple-/iCloud-Kalender als veröffentlichte .ics-Abo-URL(s). In der Kalender-App den
+  // Kalender „Öffentlich freigeben" und den erzeugten webcal://- bzw. https://-Link hier
+  // eintragen (mehrere möglich). Kein Passwort nötig; ein echtes CalDAV-Konto-Passwort
+  // gehörte stattdessen in User-Secrets. Timezone/Intervall/Fenster stehen in appsettings.json.
+  "Calendar": {
+    "IcsUrls": [
+      "https://p00-caldav.icloud.com/published/2/XXXXXXXXXXXXXXXXXXXXXXXX"
+    ]
+  },
+
   // Krypto-Watchlist (optional). Beide Quellen sind frei & schlüssellos (CoinGecko +
   // alternative.me) – kein Secret nötig. Sinnvolle Defaults stehen schon in appsettings.json
   // (Crypto:CoinIds); hier nur überschreiben, wenn du eine andere Auswahl willst. "CoinIds" =
   // CoinGecko-Slugs (nicht Symbole), "SummaryCoinId" = die Münze der Hauptseiten-Kachel.
   "Crypto": {
     "CoinIds": [ "bitcoin", "ethereum", "solana", "cardano", "ripple" ],
-    "SummaryCoinId": "bitcoin"
+    "SummaryCoinId": "bitcoin",
+    // Falls CoinGecko den schlüssellosen Zugriff drosselt (keine Kurse / HTTP 429):
+    // kostenlosen "Demo"-Key auf coingecko.com holen und hier eintragen.
+    "MarketApiKey": ""
   }
 }

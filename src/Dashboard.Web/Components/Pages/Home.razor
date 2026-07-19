@@ -4,39 +4,5 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-@* Bento-Hauptseite (12×4, iPad quer 1024×768, kein Scrollen): Uhr-Banner + Wetter-Hero +
-   Fitness-Ringe + Abfahrten + System + Krypto + Fußball + Zitat. Jede Modul-Kachel ist
-   tippbar → Detailseite. *@
-<div class="dashboard">
-    <TileBoundary CssClass="area-clock">
-        <ClockTile CssClass="area-clock" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-weather">
-        <WeatherSummaryTile CssClass="area-weather" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-fitness">
-        <FitnessSummaryTile CssClass="area-fitness" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-hvv">
-        <HvvSummaryTile CssClass="area-hvv" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-system">
-        <SystemSummaryTile CssClass="area-system" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-crypto">
-        <CryptoSummaryTile CssClass="area-crypto" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-football">
-        <FootballSummaryTile CssClass="area-football" />
-    </TileBoundary>
-
-    <TileBoundary CssClass="area-quote">
-        <QuoteTile CssClass="area-quote" />
-    </TileBoundary>
-</div>
+@* The e-ink paper home (no-scroll bento: clock + WHOOP, weather, calendar, icon rail). *@
+<EinkHome />

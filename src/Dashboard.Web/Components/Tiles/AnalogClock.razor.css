@@ -1,0 +1,51 @@
+.analog-clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.analog-face {
+    width: clamp(72px, 8vw, 96px);
+    height: clamp(72px, 8vw, 96px);
+}
+
+.face-rim {
+    fill: none;
+    stroke: var(--rule);
+    stroke-width: 1.2;
+}
+
+.tick {
+    stroke: var(--muted);
+    stroke-width: 1;
+    stroke-linecap: round;
+}
+
+.tick--major {
+    stroke: var(--ink);
+    stroke-width: 1.8;
+}
+
+/* Hands are ink — motion carries the "alive" signal, not color. */
+.hand {
+    stroke: var(--ink);
+    stroke-linecap: round;
+}
+
+.hand--hour   { stroke-width: 2.6; }
+.hand--minute { stroke-width: 1.8; }
+.hand--second { stroke-width: 0.9; }
+
+.hand-cap {
+    fill: var(--ink);
+}
+
+.analog-digital {
+    font-family: var(--font-family-mono);
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
