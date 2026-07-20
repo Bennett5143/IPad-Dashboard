@@ -79,7 +79,12 @@ public sealed class IcsCalendarClient : ICalendarProvider
         var calendar = Ical.Net.Calendar.Load(ics);
         if (calendar is null) yield break;
 
-        foreach (var occ in calendar.GetOccurrences(from, to))
+        // Ical.Net v5 GetOccurrences takes a single (inclusive) start and returns a
+        // start-time-ordered, potentially infinite sequence; bound the upper end ourselves.
+        var windowStart = new Ical.Net.DataTypes.CalDateTime(from, _options.TimeZone);
+        var windowEnd = new Ical.Net.DataTypes.CalDateTime(to, _options.TimeZone);
+
+        foreach (var occ in calendar.GetOccurrences(windowStart).TakeWhile(o => o.Period.StartTime < windowEnd))
         {
             if (occ.Source is not Ical.Net.CalendarComponents.CalendarEvent src) continue;
 
@@ -100,7 +105,7 @@ public sealed class IcsCalendarClient : ICalendarProvider
         }
     }
 
-    private static DateTimeOffset ToOffset(Ical.Net.DataTypes.IDateTime value)
+    private static DateTimeOffset ToOffset(Ical.Net.DataTypes.CalDateTime value)
         => new(DateTime.SpecifyKind(value.AsUtc, DateTimeKind.Utc));
 
     private static string Normalize(string url)

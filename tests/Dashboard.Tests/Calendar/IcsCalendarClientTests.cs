@@ -74,6 +74,37 @@ public class IcsCalendarClientTests
     }
 
     [Fact]
+    public async Task GetCalendarAsync_ParsesAllDayEvent_AsMidnightLocalSpanningOneDay()
+    {
+        const string allDayIcs =
+            """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:-//test//test//EN
+            BEGIN:VEVENT
+            UID:3@test
+            DTSTART;VALUE=DATE:20260717
+            DTEND;VALUE=DATE:20260718
+            SUMMARY:Ganztag
+            END:VEVENT
+            END:VCALENDAR
+            """;
+
+        var client = Create(StubReturning(allDayIcs), new CalendarOptions
+        {
+            IcsUrls = ["https://cal.test/a.ics"],
+        });
+
+        var snapshot = await client.GetCalendarAsync();
+
+        var e = Assert.Single(snapshot.Events);
+        Assert.True(e.AllDay);
+        // Midnight in Europe/Berlin (CEST, +02:00 in July), spanning exactly one day.
+        Assert.Equal(new DateTimeOffset(2026, 7, 17, 0, 0, 0, TimeSpan.FromHours(2)), e.Start);
+        Assert.Equal(new DateTimeOffset(2026, 7, 18, 0, 0, 0, TimeSpan.FromHours(2)), e.End);
+    }
+
+    [Fact]
     public async Task GetCalendarAsync_ToleratesOneFailingSource_WhenAnotherSucceeds()
     {
         var handler = new StubHttpMessageHandler(req =>
