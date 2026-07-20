@@ -13,7 +13,7 @@
 - [x] 2.4 Hourly weather cards side by side: time → icon → temp → rain % (rain ≥30% in ink); H/T prefixes on high/low
 - [x] 2.5 Bottom calendar region: mini month grid (today in accent, event dots) + hourly day timeline (hour lines, blocks at real time/duration, visible gaps), dummy data — `EinkCalendar` + placeholder `CalendarEvent`
 - [x] 2.6 Make the timeline window dynamic (from "now" / first–last appointment + buffer)
-- [ ] 2.7 A/B on the real iPad 6: verify no-scroll, contrast, and readability of clock/cards/timeline (build passes + 1024×768 mock verified; on-device A/B via `/?eink=1` remains yours — DB/Docker not available locally)
+- [x] 2.7 A/B on the real iPad 6: no-scroll, contrast, and readability of clock/cards/timeline verified on-device — clean
 
 ## 3. Navigation refactor (hub & spoke)
 
@@ -30,7 +30,7 @@
 - [x] 4.3 Restyle `/football` and `/crypto`
 - [x] 4.4 Restyle `/whoop`, `/runs`, `/runs/{id}`, `/habits`
 - [x] 4.5 Restyle `/status`
-- [ ] 4.6 Verify each subpage: hairline/table look, mono numerals, accent only for state, flat surfaces (build green + independent grep = 0 Command-Center tokens/dark hex left; on-device visual check across pages remains yours). Also still open from 3.4: weather-set SVG icons (weather uses emoji)
+- [x] 4.6 Verified each subpage on-device: hairline/table look, mono numerals, accent only for state, flat surfaces — clean. Weather-set SVG icons (from 3.4) shipped in `WeatherIcon` (emoji replaced)
 
 ## 5. Heatmap to light
 
@@ -52,8 +52,8 @@
 ## 8. Cleanup
 
 - [x] 8.1 Removed the `?classic=1` escape hatch (Home is `EinkHome` only), deleted the 8 classic-only summary tiles + `TileBoundary` + dead `Home.razor.css`, unified the `PageHeader` accent to the single `--accent` (dropped per-page domain accents), and stripped the dead Command Center tokens from `app.css` (surface/fg/domain-accent/tile/glass/glow/shadow/border) — 0 references remain; only used base tokens (Strava brand, spacing, typography, radii) plus the two theme ramps are left
-- [ ] 8.2 Final device verification at 1024×768: no-scroll holds, heatmap light + route legible, night switch clean — **yours** (app needs Postgres to run; not available in this environment)
+- [x] 8.2 Final device verification at 1024×768: no-scroll holds, heatmap light + route legible, night switch clean — verified on-device
 
 ## 9. Verification
 
-- [ ] 9.1 `dotnet run --launch-profile https --project src/Dashboard.Web`; check on the iPad 6 (1024×768 landscape, LAN): no-scroll, contrast/legibility, timeline height with ~5 appointments, heatmap light, night switch
+- [x] 9.1 Checked on the iPad 6 (1024×768 landscape, LAN): no-scroll, contrast/legibility, timeline height with ~5 appointments, heatmap light, night switch — all clean
