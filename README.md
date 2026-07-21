@@ -20,7 +20,8 @@ slices, background polling, graceful degradation, offline-friendly asset proxyin
 
 ## Features
 
-- **Home** — a compact summary layer: clock, quote and five tappable tiles.
+- **Home** — a calm, e-ink-style paper bento: clock, recovery rings, weather
+  and a calendar agenda, with automatic day/night themes.
 - **Fitness hub** — aggregates WHOOP and Strava into views no single app offers:
   a run heatmap, run list with detail profiles, recovery/sleep/training-load
   insights, and a habit history.
@@ -80,6 +81,12 @@ tracked clubs — go in a gitignored `appsettings.Local.json` (copy the provided
 
 Each integration is optional and self-contained. Background services poll on their
 own interval and push updates to the UI over SignalR without a page reload.
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — layers, the vertical-slice pattern, UI and operations
+- [Feature modules](docs/feature-modules.md) — what each module does and its key files
+- [History](docs/history.md) — guiding decisions and a compact changelog
 
 ## License
 
