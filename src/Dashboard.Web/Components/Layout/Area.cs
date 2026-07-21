@@ -2,7 +2,7 @@ namespace Dashboard.Web.Components.Layout;
 
 /// <summary>
 /// Hub-and-spoke navigation model: five isolated areas reachable only from Home,
-/// return always via Home (PRD section 4). Only Fitness bundles several sub-pages
+/// return always via Home. Only Fitness bundles several sub-pages
 /// that may navigate among themselves; every other area is a single spoke.
 /// </summary>
 public static class Area
