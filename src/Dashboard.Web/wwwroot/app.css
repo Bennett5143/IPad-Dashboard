@@ -3,7 +3,7 @@
    ============================================================
    Non-color base tokens (spacing, typography, radii) shared by both
    paper themes. The color ramp lives in the data-theme blocks below
-   (eink = day, night). See PRD "e-ink / Papier Redesign".
+   (eink = day, night).
    ============================================================ */
 
 :root {
@@ -63,7 +63,7 @@
    Rule: color carries information only — the single accent (forest
    green) is for links/active selection; every other color is a
    data-bearing token OUTSIDE the ramp (heatmap route, WHOOP recovery
-   zone, bull/bear). See PRD "e-ink / Papier Redesign" §2.
+   zone, bull/bear).
    ============================================================ */
 
 :root[data-theme="eink"],

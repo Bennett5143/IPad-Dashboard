@@ -93,7 +93,7 @@ try
     });
     builder.Services.AddHostedService<WeatherRefreshService>();
 
-    // Calendar (published ICS subscription source; PRD §6)
+    // Calendar (published ICS subscription source)
     var calendarOptions = builder.Configuration
         .GetSection(CalendarOptions.SectionName)
         .Get<CalendarOptions>() ?? new CalendarOptions();

@@ -3,7 +3,7 @@ namespace Dashboard.Web.Components;
 /// <summary>
 /// Picks the active paper theme by local clock: the day theme from 08:00 to 20:00,
 /// the night theme from 20:00 to 08:00. Switching only swaps token values, so it
-/// never shifts layout (PRD §7). App.razor uses this for the initial server-side
+/// never shifts layout. App.razor uses this for the initial server-side
 /// value; a tiny inline script keeps a running kiosk in sync (see App.razor).
 /// </summary>
 public static class ThemeResolver
