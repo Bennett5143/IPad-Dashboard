@@ -446,3 +446,6 @@ tile-cache/
 # Private docs live in a nested repo; openspec in the root is a symlink into it
 docs-internal/
 openspec
+
+# Claude Code local settings
+.claude/settings.local.json
