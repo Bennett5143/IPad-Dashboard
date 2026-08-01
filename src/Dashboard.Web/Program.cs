@@ -426,6 +426,14 @@ try
         double minLat, double minLng, double maxLat, double maxLng, int minZoom, int maxZoom,
         IServiceScopeFactory scopeFactory, ILoggerFactory loggerFactory) =>
     {
+        // Unauthentifiziert + teuer (bis zu 200k Upstream-Fetches) → außerhalb von
+        // Development nur aktiv, wenn explizit freigeschaltet (Tiles:WarmupEnabled,
+        // z. B. einmalig nach dem Deployment per Env-Var).
+        if (!tileOptions.WarmupEnabled && !app.Environment.IsDevelopment())
+        {
+            return Results.NotFound();
+        }
+
         if (minZoom < 0 || maxZoom > 19 || minZoom > maxZoom || minLat >= maxLat || minLng >= maxLng)
         {
             return Results.BadRequest("Ungültige Parameter (Zoom 0–19, minZoom ≤ maxZoom, min < max).");
