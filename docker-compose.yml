@@ -12,7 +12,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      # Nur loopback: der Host (Dev-Laufzeit, psql, EF-Tools) erreicht die DB,
+      # das restliche LAN nicht. Der app-Container spricht direkt übers
+      # Compose-Netz mit "db" und braucht kein publiziertes Port-Mapping.
+      - "127.0.0.1:5432:5432"
     volumes:
       - dashboard-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -21,5 +24,40 @@ services:
       timeout: 5s
       retries: 5
 
+  # Die App selbst – für Dev weiterhin nur `docker compose up -d db` starten
+  # (App läuft dann via `dotnet run` auf dem Host); auf dem Pi/Server startet
+  # `docker compose up -d` beide Services.
+  app:
+    build: .
+    container_name: dashboard-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5235:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      TZ: ${TZ:-Europe/Berlin}
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      # Single-Instance-Appliance: Migrationen beim Start anwenden (Seeder),
+      # statt manuell `dotnet ef database update` auf dem Host zu erfordern.
+      Seeding__ApplyMigrations: "true"
+    # API-Keys/OAuth-Secrets liegen NICHT im Repo, sondern in einer lokalen
+    # env-Datei neben der Compose-Datei (chmod 600). Optional, damit Dev ohne
+    # die Datei weiter `docker compose up -d db` nutzen kann.
+    env_file:
+      - path: ./dashboard.secrets.env
+        required: false
+    volumes:
+      # Private Standort-/Stations-/Kalender-Konfiguration (gitignored).
+      - ./src/Dashboard.Web/appsettings.Local.json:/app/appsettings.Local.json:ro
+      - dashboard-tile-cache:/app/tile-cache
+      - dashboard-crest-cache:/app/crest-cache
+      - dashboard-logs:/app/logs
+
 volumes:
   dashboard-db-data:
+  dashboard-tile-cache:
+  dashboard-crest-cache:
+  dashboard-logs:
