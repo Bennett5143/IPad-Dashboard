@@ -20,4 +20,12 @@ public sealed class TileOptions
 
     /// <summary>Maximal akzeptierte Zoomstufe (Schutz gegen Unsinns-Anfragen).</summary>
     public int MaxZoom { get; init; } = 20;
+
+    /// <summary>
+    /// Schaltet den Admin-Endpoint <c>/tiles/warm</c> frei. Default aus: Der Endpoint ist
+    /// unauthentifiziert und stößt bis zu 200.000 Upstream-Fetches an – er soll nur bewusst
+    /// (z. B. einmalig nach dem Deployment, per Env-Var <c>Tiles__WarmupEnabled=true</c>)
+    /// aktiv sein, nicht dauerhaft für jeden LAN-Client.
+    /// </summary>
+    public bool WarmupEnabled { get; init; }
 }
