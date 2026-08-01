@@ -15,8 +15,12 @@ COPY src/Dashboard.Web/Dashboard.Web.csproj src/Dashboard.Web/
 RUN dotnet restore src/Dashboard.Web/Dashboard.Web.csproj
 
 COPY src/ src/
+# Kein --no-restore: Das Web-SDK fügt Microsoft.AspNetCore.App.Internal.Assets
+# (liefert _framework/blazor.web.js) nur hinzu, wenn beim Restore .razor-Dateien
+# existieren — im Metadaten-only-Restore oben fehlen sie. Der zweite Restore ist
+# dank des gewärmten NuGet-Caches schnell; der Layer oben bleibt der Cache-Wärmer.
 RUN dotnet publish src/Dashboard.Web/Dashboard.Web.csproj \
-    --configuration Release --no-restore --output /app/publish
+    --configuration Release --output /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
