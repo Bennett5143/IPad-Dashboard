@@ -66,12 +66,15 @@ is set in the compose file); quotes are seeded on first run.
 ## Updating
 
 ```bash
-git pull
-docker compose up -d --build   # rebuild + recreate only what changed
+./deploy.sh            # latest origin/main
+./deploy.sh <ref>      # a specific tag/commit (also manual rollback)
 ```
 
-Rollback = `git checkout <previous-commit>` + the same command. Volumes are
-untouched either way; migrations only ever roll forward.
+The script builds the new image before recreating the container (downtime is
+seconds), waits for `/health/ready`, and automatically rolls back to the
+previously deployed commit if the new version does not come up healthy.
+Volumes are untouched either way; migrations only ever roll forward — for a
+destructive migration, take a DB dump first (see below).
 
 ## Moving an existing database in
 
