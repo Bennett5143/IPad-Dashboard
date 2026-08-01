@@ -449,3 +449,6 @@ openspec
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# deploy.sh rollback anchor (per-host state)
+.last-deploy
