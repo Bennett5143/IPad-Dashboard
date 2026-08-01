@@ -91,3 +91,8 @@ One squash PR per slice.
   sunset-driven theme switching (#115) simplified to a plain-JS 20:00–08:00
   schedule (#117), command-center cleanup (#116), CoinGecko User-Agent fix
   (#118), home polish — no dither, SVG weather icons (#119).
+- **First hosted deployment (Aug 2026)** — multi-stage Dockerfile + compose
+  `app` service with opt-in startup migrations (#127), LAN endpoint hardening:
+  loopback-only DB port, gated `/tiles/warm`, sanitized `/health/ready` (#128),
+  YAGNI cleanup of dead UI components and the speculative Fabrizio-alert port
+  (#129), deployment guide (see [deployment.md](deployment.md)).
