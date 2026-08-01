@@ -26,11 +26,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Writable dirs for the offline-proxy caches and Serilog file logs; owned by the
-# unprivileged app user so the container does not run as root. Named volumes
-# mounted here inherit this ownership on first use.
-RUN mkdir -p tile-cache crest-cache logs \
-    && chown -R $APP_UID:$APP_UID tile-cache crest-cache logs
+# Writable dirs for the offline-proxy caches, Serilog file logs and the Data
+# Protection key ring (antiforgery + Blazor circuit descriptors survive container
+# recreation); owned by the unprivileged app user so the container does not run
+# as root. Named volumes mounted here inherit this ownership on first use.
+RUN mkdir -p tile-cache crest-cache logs /home/app/.aspnet/DataProtection-Keys \
+    && chown -R $APP_UID:$APP_UID tile-cache crest-cache logs /home/app/.aspnet
 USER $APP_UID
 
 # The aspnet base image listens on 8080 (ASPNETCORE_HTTP_PORTS); map it to the
