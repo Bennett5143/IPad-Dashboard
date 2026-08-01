@@ -115,9 +115,7 @@ try
     builder.Services.Configure<FootballOptions>(
         builder.Configuration.GetSection(FootballOptions.SectionName));
     builder.Services.AddSingleton<FootballState>();
-    // Fabrizio-Alert-Seam: bis 15.8 (echter Social-Feed) ein Null-Object → die Summary-Kachel
-    // hält den Badge-Slot bereit, ohne dass etwas erscheint.
-    builder.Services.AddSingleton<IFabrizioAlertSource, NullFabrizioAlertSource>();
+    // lean: Fabrizio-Alert-Port entfernt — kommt mit dem Social-Slice (15.8) zurück.
     builder.Services.AddHttpClient<IFootballProvider, FootballDataClient>(http =>
     {
         http.BaseAddress = new Uri(footballOptions.BaseUrl);
