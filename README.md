@@ -62,6 +62,9 @@ data tiles simply stay in their "unavailable" state until you add credentials.
 
 Health probes: `GET /health/live` (liveness) and `GET /health/ready` (incl. DB).
 
+To run the whole stack as containers on an always-on host instead, see
+[docs/deployment.md](docs/deployment.md).
+
 ## Configuration
 
 App-wide settings (URLs, refresh intervals, defaults) live in `appsettings.json`.
