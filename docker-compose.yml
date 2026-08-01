@@ -55,9 +55,13 @@ services:
       - dashboard-tile-cache:/app/tile-cache
       - dashboard-crest-cache:/app/crest-cache
       - dashboard-logs:/app/logs
+      # Data-Protection-Key-Ring persistieren: sonst invalidiert jedes Neuerstellen
+      # des Containers Antiforgery-Cookies und offene Blazor-Circuits (Kiosk!).
+      - dashboard-dp-keys:/home/app/.aspnet/DataProtection-Keys
 
 volumes:
   dashboard-db-data:
   dashboard-tile-cache:
   dashboard-crest-cache:
   dashboard-logs:
+  dashboard-dp-keys:
