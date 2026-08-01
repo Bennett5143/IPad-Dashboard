@@ -1,0 +1,22 @@
+# Keep the build context small and free of local state/secrets.
+**/bin/
+**/obj/
+**/logs/
+**/tile-cache/
+**/crest-cache/
+.git/
+.github/
+.vs/
+.idea/
+docs/
+docs-internal/
+openspec/
+tests/
+coverage*/
+*.md
+.env
+.env.*
+**/appsettings.Local.json
+**/appsettings.Development.json
+Dockerfile
+.dockerignore

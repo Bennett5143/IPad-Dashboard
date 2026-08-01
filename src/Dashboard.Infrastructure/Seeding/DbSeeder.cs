@@ -33,6 +33,16 @@ public sealed class DbSeeder(DashboardDbContext context, IOptions<SeedSettings> 
         var pending = (await context.Database.GetPendingMigrationsAsync(ct)).ToList();
         if (pending.Count == 0) return;
 
+        if (_settings.ApplyMigrations)
+        {
+            logger.LogInformation(
+                "Wende {Count} ausstehende Migration(en) an: {Migrations}",
+                pending.Count,
+                string.Join(", ", pending));
+            await context.Database.MigrateAsync(ct);
+            return;
+        }
+
         logger.LogError(
             "DB-Schema ist nicht aktuell. {Count} ausstehende Migration(en): {Migrations}. " +
             "Bitte 'dotnet ef database update' im Dashboard.Web-Projekt ausführen.",
