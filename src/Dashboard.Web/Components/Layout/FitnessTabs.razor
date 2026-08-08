@@ -1,0 +1,29 @@
+@inject NavigationManager Nav
+
+@* Sub-Navigation des Fitness-Bereichs. Sie sitzt im Seiten-Body statt in der Rail, damit
+   die Rail auf jeder Seite gleich hoch und still bleibt; das Tab-Vokabular (.tab-row/.tab)
+   teilt sie sich mit der Wettbewerbs-Zeile auf /football.
+   Aktiv-Markierung wird selbst berechnet, weil /runs auch /runs/{id} abdecken muss. *@
+<nav class="tab-row" aria-label="Fitness">
+    <div class="tab-row-items">
+        @foreach (var (href, label) in Area.Fitness)
+        {
+            var active = IsActive(href);
+            <a class="tab @(active ? "is-active" : null)" href="@href"
+               aria-current="@(active ? "page" : null)">@label</a>
+        }
+    </div>
+</nav>
+
+@code {
+    private bool IsActive(string href)
+    {
+        var path = Nav.ToBaseRelativePath(Nav.Uri);
+        if (!path.StartsWith('/')) path = "/" + path;
+        var cut = path.IndexOfAny(new[] { '?', '#' });
+        if (cut >= 0) path = path[..cut];
+
+        return path.Equals(href, StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith(href + "/", StringComparison.OrdinalIgnoreCase);
+    }
+}

@@ -1,85 +1,39 @@
 .rail {
-    width: 208px;
+    width: 64px;
     flex: none;
     background: var(--bg);
     border-right: 1px solid var(--rule);
     display: flex;
     flex-direction: column;
-    padding: 18px 14px;
-    gap: 6px;
-    overflow-y: auto;
-}
-
-/* Back-to-Home is a plain <a> in this component (not a NavLink), so it is styled
-   directly — the fitness NavLinks below come from a child component and need ::deep. */
-.rail-home {
-    display: flex;
     align-items: center;
-    gap: 11px;
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 9px;
-    text-decoration: none;
-    font-family: var(--font-family-base);
-    font-size: 14px;
-    color: var(--muted);
-}
-
-.rail-home:hover {
-    color: var(--ink);
-}
-
-.rail-back {
-    font-size: 16px;
-    line-height: 1;
-}
-
-.rail-group {
-    display: flex;
-    flex-direction: column;
+    padding: 14px 0 16px;
     gap: 2px;
-    margin-bottom: 8px;
 }
 
-.rail-group-label {
-    font-family: var(--font-family-mono);
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 8px 12px 4px;
-}
-
-/* NavLink rendert ein <a>; ::deep, weil das Element aus der Kindkomponente kommt. */
-.rail ::deep .rail-item {
+/* 52×52 keeps the tap target well above the 44px floor while the glyph stays small. */
+.rail-item {
     display: flex;
     align-items: center;
-    gap: 11px;
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 9px;
-    text-align: left;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    flex: none;
     text-decoration: none;
-    font-family: var(--font-family-base);
-    font-size: 14px;
-    font-weight: 400;
     color: var(--muted);
 }
 
-.rail ::deep .rail-item .rail-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 2px;
-    flex: none;
-    background: var(--faint);
-}
-
-.rail ::deep .rail-item.active {
-    background: var(--track);
+/* The rail stays still: state is carried by ink alone — no fill, pill or radius. */
+.rail-item.is-active {
     color: var(--ink);
-    font-weight: 600;
 }
 
-.rail ::deep .rail-item.active .rail-dot {
-    background: var(--accent);
+/* ::deep, weil das <svg> aus der AreaIcon-Kindkomponente kommt. */
+.rail-item ::deep .area-icon {
+    width: 26px;
+    height: 26px;
+}
+
+/* Health sits at the bottom and reads by shape, so it never takes a state color. */
+.rail-health {
+    margin-top: auto;
 }

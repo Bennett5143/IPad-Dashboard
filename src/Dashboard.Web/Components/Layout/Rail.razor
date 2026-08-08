@@ -1,32 +1,35 @@
-@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
+@inject IEnumerable<Dashboard.Domain.Common.ISliceStatusSource> Sources
 
-@* Hub-&-spoke rail for detail pages: back to Home is the only cross-area move.
-   Fitness is the one area that also links its own sub-pages (WHOOP/Läufe/Heatmap/
-   Habits); every other area is a single spoke, so it just offers "back to Home".
-   Rendered in the static layout, so the area is read from the current URL each
-   render — no LocationChanged subscription (which is a footgun in static SSR). *@
-<nav class="rail">
-    <div class="rail-group">
-        <a class="rail-item rail-home" href="/">
-            <span class="rail-back" aria-hidden="true">←</span><span>Home</span>
-        </a>
-    </div>
+@* 64px icon rail for detail pages: back to Home on top, then every area, health pulse
+   pinned to the bottom. Textless and still — the active item is ink, the rest muted, and
+   nothing sits behind either. Active marking is computed here rather than left to NavLink,
+   because Fitness spans four disjoint prefixes.
+   Rendered in the static layout, so both the current path and the health state are read
+   once per render — no LocationChanged or Changed subscription (a footgun in static SSR). *@
+<nav class="rail" aria-label="Bereiche">
+    <a class="rail-item" href="/" aria-label="Home">
+        <AreaIcon Name="AreaIconName.Home" />
+    </a>
 
-    @if (Fitness)
+    @foreach (var area in Area.All)
     {
-        <div class="rail-group">
-            <span class="rail-group-label">Fitness</span>
-            @foreach (var (href, label) in Area.Fitness)
-            {
-                <NavLink class="rail-item" href="@href" Match="NavLinkMatch.Prefix">
-                    <span class="rail-dot"></span><span>@label</span>
-                </NavLink>
-            }
-        </div>
+        var active = Area.IsActive(area, Path);
+        <a class="rail-item @(active ? "is-active" : null)" href="@area.Href"
+           aria-label="@area.Label" aria-current="@(active ? "page" : null)">
+            <AreaIcon Name="area.Icon" />
+        </a>
     }
+
+    <a class="rail-item rail-health @(Area.IsActive(Area.Status, Path) ? "is-active" : null)"
+       href="@Area.Status.Href" aria-label="@(Up ? "System läuft" : "System gestört")">
+        <AreaIcon Name="AreaIconName.Health" Up="Up" />
+    </a>
 </nav>
 
 @code {
-    private bool Fitness => Area.IsFitness(Nav.ToBaseRelativePath(Nav.Uri));
+    private string Path => Nav.ToBaseRelativePath(Nav.Uri);
+
+    // Down as soon as any source that has data has gone stale.
+    private bool Up => !Sources.Any(s => s.HasData && s.IsStale);
 }

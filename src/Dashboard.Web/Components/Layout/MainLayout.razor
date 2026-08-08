@@ -1,10 +1,9 @@
 @inherits LayoutComponentBase
 
-@* Schlichter Shell für frei scrollende Seiten (Lauf-Detail, NotFound, Admin):
-   Inhalt mittig begrenzt, Höhe wächst mit dem Inhalt. Detail-Seiten mit
-   Fill-Height-Content (.detail-body) gehören stattdessen in das DetailLayout. *@
+@* Schlichter Shell für frei scrollende Seiten (NotFound, Admin): Inhalt mittig
+   begrenzt, Höhe wächst mit dem Inhalt. Alle Unterseiten mit Fill-Height-Content
+   (.detail-body) liegen im DetailLayout und navigieren über dessen Icon-Rail. *@
 <main class="page-shell">
-    <SubpageNav />
     @Body
 </main>
 
