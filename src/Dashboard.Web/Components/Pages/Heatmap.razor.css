@@ -3,7 +3,6 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
 }
 
 .heatmap-connect {
@@ -11,10 +10,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-4);
-    padding: var(--space-6);
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
+    padding: var(--space-6) 0;
 }
 
 /* Strava connect keeps its brand color on purpose (not a status tone). */
@@ -28,40 +24,16 @@
     font-weight: var(--font-weight-semibold);
 }
 
+/* Hero: Zeitraum-Auswahl links, die Kennzahlen des Zeitraums rechts. */
 .heatmap-controls {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
+    padding: 10px 0 14px;
+    border-bottom: 1px solid var(--rule);
     flex: none;
-}
-
-.range-buttons,
-.layer-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    flex: none;
-}
-
-.range-buttons button,
-.layer-buttons button {
-    padding: 6px 13px;
-    border-radius: 6px;
-    background: transparent;
-    border: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: var(--font-weight-medium);
-}
-
-.range-buttons button.active,
-.layer-buttons button.active {
-    background: var(--track);
-    color: var(--ink);
-    border-color: var(--accent);
-    font-weight: var(--font-weight-semibold);
 }
 
 .heatmap-stats {
@@ -75,12 +47,17 @@
     gap: 2px;
 }
 
+/* Die eine Hero-Zahl der Seite ist die Distanz; die anderen ordnen sich unter. */
 .stat-value {
-    font-size: 20px;
-    font-weight: 600;
+    font-family: var(--font-family-mono);
+    font-size: 28px;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     line-height: 1;
+}
+
+.heatmap-stats .stat:nth-child(2) .stat-value {
+    font-size: 40px;
 }
 
 .stat-label {
@@ -96,8 +73,6 @@
     flex: 1;
     min-height: 0;
     width: 100%;
-    border-radius: 6px;
-    border: 1px solid var(--rule);
     overflow: hidden;
     background: var(--bg);
 }
@@ -152,13 +127,20 @@
     font-size: var(--font-size-sm);
 }
 
+/* Fußzeilen der Karte hängen über einer Haarlinie an der Unterkante. */
 .heatmap-legend,
 .heatmap-hint,
 .sync-info {
+    margin: 0;
     font-family: var(--font-family-mono);
     font-size: 11px;
     color: var(--faint);
     flex: none;
+}
+
+.heatmap-legend {
+    border-top: 1px solid var(--rule);
+    padding-top: 8px;
 }
 
 .heatmap-legend {
@@ -176,10 +158,13 @@
 
 .cluster-reset {
     padding: 6px 13px;
-    border-radius: 6px;
-    background: transparent;
-    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--track);
+    border: 0;
     color: var(--accent);
-    font-size: 12px;
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     cursor: pointer;
 }

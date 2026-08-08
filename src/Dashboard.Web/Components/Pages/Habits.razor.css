@@ -3,59 +3,44 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
 }
 
+/* Die Habit-Auswahl trägt das gemeinsame Tab-Vokabular (.tab-row/.tab aus app.css). */
 .habit-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
     flex: none;
 }
 
-.habit-tabs button {
-    padding: 6px 14px;
-    border-radius: 6px;
-    background: transparent;
-    border: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: var(--font-weight-medium);
-}
-
-.habit-tabs button.active {
-    background: var(--track);
-    color: var(--accent);
-    border-color: var(--accent);
-    font-weight: var(--font-weight-semibold);
-}
-
-/* Flache Karte je Abschnitt. */
-.habit-card {
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 20px 24px;
+/* Hero: die Kennzahlen des gewählten Habits, Haarlinie darunter. */
+.habit-hero {
     display: flex;
-    flex-direction: column;
-    gap: 14px;
+    gap: 48px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
     flex: none;
 }
 
-.habit-summary {
-    flex-direction: row;
-    gap: 40px;
-}
-
-.habit-summary .stat {
+.habit-hero .stat {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
+/* Regionen statt Karten. */
+.habit-region {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 0;
+    flex: none;
+}
+
+.habit-region + .habit-region {
+    border-top: 1px solid var(--rule);
+}
+
 .stat-value {
-    font-size: 30px;
-    font-weight: 600;
+    font-family: var(--font-family-mono);
+    font-size: 44px;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     line-height: 1;
@@ -127,10 +112,11 @@
     color: var(--faint);
 }
 
-/* ---- Wochenbalken (füllt die Resthöhe) ---- */
+/* ---- Wochenbalken: binden nach unten, sie sind die letzte Region ---- */
 .weeks {
     flex: 1;
     min-height: 0;
+    padding-bottom: 0;
 }
 
 .week-bars {

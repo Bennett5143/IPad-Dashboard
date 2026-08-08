@@ -1,61 +1,39 @@
-.run-detail {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    max-width: 760px;
-}
-
-.runs-header {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-4);
-}
-
-.runs-back {
-    color: var(--accent);
-    text-decoration: none;
-    font-size: var(--font-size-sm);
-}
-
 .runs-msg {
     color: var(--muted);
 }
 
-.run-title {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
-    color: var(--ink);
-}
-
-.run-subtitle {
-    color: var(--muted);
-    font-size: var(--font-size-sm);
-    display: flex;
+/* Hero: Distanz als Hero-Zahl, die übrigen Kennzahlen hinter einer Haarlinie. */
+.run-hero {
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    gap: var(--space-3);
-    flex-wrap: wrap;
+    gap: 28px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+    flex: none;
 }
 
-.run-route-badge {
-    padding: 1px var(--space-2);
-    border-radius: 999px;
-    background: var(--track);
-    border: 1px solid var(--rule);
-    color: var(--route);
-    font-size: var(--font-size-xs, 0.75rem);
+.run-hero-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.run-hero-num {
+    font-family: var(--font-family-mono);
+    font-size: 64px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--ink);
 }
 
 .run-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: var(--space-3);
-    margin: var(--space-2) 0;
-    padding: var(--space-3);
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    box-shadow: none;
+    margin: 0;
+    padding-left: 28px;
+    border-left: 1px solid var(--rule);
 }
 
 .run-stats div {
@@ -65,31 +43,43 @@
 }
 
 .run-stats dt {
-    font-size: var(--font-size-sm);
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    order: 2;
 }
 
 .run-stats dd {
     margin: 0;
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
-    font-weight: 700;
+    font-family: var(--font-family-mono);
+    font-size: 17px;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
+    order: 1;
 }
 
-.run-efforts {
+/* Regionen statt Karten. */
+.run-region {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-3);
+    padding: 14px 0;
+    flex: none;
 }
 
-.run-efforts h2 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--ink);
+.run-region + .run-region {
+    border-top: 1px solid var(--rule);
+}
+
+/* Die Profilsektion bringt ihre Trennlinie am ersten Profil selbst mit. */
+.run-region.run-profiles {
+    border-top: 0;
+}
+
+.run-region h2 {
+    margin: 0;
 }
 
 .effort-chips {
@@ -104,9 +94,8 @@
     align-items: center;
     gap: 2px;
     padding: var(--space-2) var(--space-4);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--track);
-    border: 1px solid var(--rule);
 }
 
 .effort-distance {
@@ -115,9 +104,8 @@
 }
 
 .effort-time {
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-lg);
-    font-weight: 700;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
@@ -125,18 +113,19 @@
 .run-profiles {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 0;
+    padding-top: 0;
 }
 
+/* Die Haarlinie sitzt am Profil selbst, nicht als Geschwister-Regel: jedes Profil steckt
+   in einer Explainable-Hülle, zwischen den .run-profile-Elementen gibt es also keine
+   Geschwisterbeziehung mehr. */
 .run-profile {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    padding: var(--space-3);
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    box-shadow: none;
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--rule);
 }
 
 .run-profile-head {

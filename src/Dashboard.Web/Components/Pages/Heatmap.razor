@@ -16,6 +16,7 @@
 <PageHeader Title="Lauf-Heatmap" Meta="@MetaText" />
 
 <div class="detail-body">
+    <FitnessTabs />
     <div class="heatmap-page">
     @if (!_connected)
     {
@@ -29,10 +30,10 @@
         <div class="heatmap-controls">
             @if (Cluster is null)
             {
-                <div class="range-buttons" role="group" aria-label="Zeitraum">
-                    <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
-                    <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
-                    <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
+                <div class="tab-row-items" role="group" aria-label="Zeitraum">
+                    <button class="tab @RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
+                    <button class="tab @RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
+                    <button class="tab @RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
                 </div>
             }
             else
@@ -50,12 +51,14 @@
             </div>
         </div>
 
-        <div class="layer-buttons" role="group" aria-label="Ebene">
-            <button class="@LayerCss("heat")" @onclick='() => SetLayerAsync("heat")'>Heatmap</button>
-            <button class="@LayerCss("pace")" @onclick='() => SetLayerAsync("pace")'>Pace</button>
-            <button class="@LayerCss("elevation")" @onclick='() => SetLayerAsync("elevation")'>Höhe</button>
-            <button class="@LayerCss("direction")" @onclick='() => SetLayerAsync("direction")'>Richtung</button>
-            <button class="@LayerCss("heartrate")" @onclick='() => SetLayerAsync("heartrate")'>Herzfrequenz</button>
+        <div class="tab-row" role="group" aria-label="Ebene">
+            <div class="tab-row-items">
+                <button class="tab @LayerCss("heat")" @onclick='() => SetLayerAsync("heat")'>Heatmap</button>
+                <button class="tab @LayerCss("pace")" @onclick='() => SetLayerAsync("pace")'>Pace</button>
+                <button class="tab @LayerCss("elevation")" @onclick='() => SetLayerAsync("elevation")'>Höhe</button>
+                <button class="tab @LayerCss("direction")" @onclick='() => SetLayerAsync("direction")'>Richtung</button>
+                <button class="tab @LayerCss("heartrate")" @onclick='() => SetLayerAsync("heartrate")'>Herzfrequenz</button>
+            </div>
         </div>
 
         <div id="heatmap-map" class="heatmap-map"></div>
@@ -183,9 +186,9 @@
         }
     }
 
-    private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
+    private string RangeCss(RunTimeRange range) => range == _range ? "is-active" : string.Empty;
 
-    private string LayerCss(string layer) => layer == _layer ? "active" : string.Empty;
+    private string LayerCss(string layer) => layer == _layer ? "is-active" : string.Empty;
 
     private string MetaText => Cluster is not null
         ? "STANDARD-RUNDE"

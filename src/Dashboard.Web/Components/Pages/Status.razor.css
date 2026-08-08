@@ -1,13 +1,8 @@
 .status-stack {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-}
-
-.status-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    flex: 1;
+    min-height: 0;
 }
 
 .status-msg {
@@ -15,15 +10,58 @@
     font-size: var(--font-size-sm);
 }
 
-/* Flache Karte je Sektion. */
-.status-card {
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 20px 24px;
+/* Hero: die eine Zahl der Seite (frische Quellen) links, die Quellenliste rechts. */
+.status-hero {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 28px;
+    padding: 14px 0 16px;
+    border-bottom: 1px solid var(--rule);
+    flex: none;
+}
+
+.status-hero-score {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    gap: 4px;
+    flex: none;
+}
+
+.status-hero-num {
+    font-family: var(--font-family-mono);
+    font-size: 64px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--ink);
+}
+
+/* Regionen statt Karten: nur Kanten trennen. */
+.status-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--rule);
+    flex: none;
+}
+
+.status-cols > .status-region + .status-region {
+    border-left: 1px solid var(--rule);
+}
+
+.status-region {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 18px;
+    min-width: 0;
+}
+
+/* Der Log bindet nach unten: er ist die letzte Region der Seite. */
+.status-region-log {
+    flex: 1;
+    min-height: 0;
+    border-top: 1px solid var(--rule);
 }
 
 /* Datenquellen-Liste: Statuspunkt, Name, Zustand, Mono-Zeit; Zeilen per border-top getrennt. */

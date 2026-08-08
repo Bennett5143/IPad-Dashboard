@@ -1,5 +1,5 @@
 @page "/runs/{Id:long}"
-@layout MainLayout
+@layout DetailLayout
 @rendermode InteractiveServer
 @inject IRunRepository RunRepository
 @inject IRouteClusterStore RouteClusters
@@ -7,38 +7,35 @@
 
 <PageTitle>@(_header?.Name ?? "Lauf")</PageTitle>
 
-<div class="run-detail">
-    <header class="runs-header">
-        <a class="runs-back" href="/runs">← Läufe</a>
-    </header>
+<PageHeader Title="@(_header?.Name ?? "Lauf")" Meta="@(_header?.Date)" />
 
+<div class="detail-body is-scroll run-detail">
     @if (_notFound)
     {
         <p class="runs-msg">Lauf nicht gefunden.</p>
     }
     else if (_header is not null)
     {
-        <h1 class="run-title">@_header.Name</h1>
-        <p class="run-subtitle">
-            @_header.Date
-            @if (_cluster is not null)
-            {
-                <span class="run-route-badge">@_cluster.Name</span>
-            }
-        </p>
-
-        <dl class="run-stats">
-            <div><dt>Distanz</dt><dd>@_header.Distance</dd></div>
-            <div><dt>Dauer</dt><dd>@_header.Duration</dd></div>
-            <div><dt>Pace</dt><dd>@_header.Pace</dd></div>
-            <div><dt>Ø Herzfrequenz</dt><dd>@_header.HeartRate</dd></div>
-            <div><dt>Höhenmeter</dt><dd>@_header.Elevation</dd></div>
-        </dl>
+        @* Hero: die Distanz trägt den Lauf, die übrigen Kennzahlen ordnen sich rechts an. *@
+        <section class="run-hero">
+            <div class="run-hero-main">
+                <span class="mono-label">
+                    DISTANZ@(_cluster is null ? null : $" · {_cluster.Name.ToUpperInvariant()}")
+                </span>
+                <span class="run-hero-num">@_header.Distance</span>
+            </div>
+            <dl class="run-stats">
+                <div><dt>Dauer</dt><dd>@_header.Duration</dd></div>
+                <div><dt>Pace</dt><dd>@_header.Pace</dd></div>
+                <div><dt>Ø Herzfrequenz</dt><dd>@_header.HeartRate</dd></div>
+                <div><dt>Höhenmeter</dt><dd>@_header.Elevation</dd></div>
+            </dl>
+        </section>
 
         @if (_bestEfforts.Count > 0)
         {
-            <section class="run-efforts">
-                <h2>Bestzeiten in diesem Lauf</h2>
+            <section class="run-region run-efforts">
+                <h2 class="mono-label">BESTZEITEN IN DIESEM LAUF</h2>
                 <Explainable Id="MetricId.RunBestEfforts"><ChildContent>
                 <div class="effort-chips">
                     @foreach (var effort in _bestEfforts)
@@ -59,7 +56,7 @@
         }
         else
         {
-            <section class="run-profiles">
+            <section class="run-region run-profiles">
                 @if (_profile.HasPace)
                 {
                     @ProfileBlock("Pace", "pace", "min/km · niedriger = schneller", "Pace (min/km)", MetricId.RunPaceProfile, _profile.Pace, invert: true)
