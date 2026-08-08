@@ -13,6 +13,11 @@
     aspect-ratio: 1;
 }
 
+/* Hero-Variante der Unterseiten. */
+.ring.is-lg .ring-disc {
+    max-width: 96px;
+}
+
 .ring-svg {
     width: 100%;
     height: 100%;

@@ -1,8 +1,5 @@
-/* Content-Bereich unter dem PageHeader: die .detail-body-Utility liefert Höhe/Scroll/Padding,
-   .insights fügt nur die vertikale Sektions-Rhythmik hinzu. */
-.insights {
-    gap: var(--space-4);
-}
+/* Content-Bereich unter dem PageHeader: die .detail-body-Utility liefert Höhe/Scroll/Padding.
+   /whoop ist die einzige Unterseite, die bewusst über 768px hinausgeht und scrollt. */
 
 /* Sektions-Überschriften: Mono, Versalien, ruhiges Papier-Sekundär. */
 .insights h2 {
@@ -12,12 +9,13 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: var(--space-2);
+    margin: 0 0 var(--space-2);
 }
 
-.insights h2 .tod-window,
-.insights h2 .sleep-date {
+.insights h2 .wi-window {
     color: var(--muted);
+    font-weight: 400;
+    margin-left: var(--space-2);
 }
 
 .insights-msg {
@@ -28,60 +26,153 @@
     color: var(--bear);
 }
 
-.metric-grid {
+/* ===== Hero: drei Ringe · Trainingslast ===== */
+
+.wi-hero {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: var(--space-4);
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 28px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+    flex: none;
 }
 
-.metric-card {
+.wi-rings {
+    display: flex;
+    gap: 22px;
+}
+
+.wi-load {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
+    gap: 4px;
+    padding-left: 28px;
+    border-left: 1px solid var(--rule);
+    min-width: 0;
 }
 
-.metric-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+/* Die eine Hero-Zahl der Seite. */
+.wi-load-ratio {
+    display: block;
+    font-family: var(--font-family-mono);
+    font-size: 40px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
 }
 
-.metric-title {
-    font-size: var(--font-size-sm);
-    color: var(--muted);
+.wi-load-zone {
+    display: block;
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+}
+
+.wi-load-hint {
+    margin: 4px 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--rec-mid);
+}
+
+/* Trainingslast-Zonen sind Daten: low = neutral, ok = gut, warn/high = Warnung/Alarm. */
+.wi-load-ratio.load-low,
+.wi-load-zone.load-low {
+    color: var(--muted);
+}
+
+.wi-load-ratio.load-ok,
+.wi-load-zone.load-ok {
+    color: var(--good);
+}
+
+.wi-load-ratio.load-warn,
+.wi-load-zone.load-warn {
+    color: var(--rec-mid);
+}
+
+.wi-load-ratio.load-high,
+.wi-load-zone.load-high {
+    color: var(--bear);
+}
+
+/* ===== Metrik-Raster: 3×2, nur Haarlinien ===== */
+
+/* Die Trennlinien entstehen aus dem 1px-Gap auf durchscheinendem --rule, nicht aus
+   Rändern an den Zellen: nth-child-Regeln wären hier brüchig, weil Explainable im
+   geöffneten Zustand ein zusätzliches Geschwister-Element rendert. */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    flex: none;
+}
+
+.metric-grid ::deep .explainable {
+    background: var(--bg);
+    border-radius: 0;
+}
+
+.metric-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 18px;
+    min-width: 0;
 }
 
 .metric-current {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
-    font-weight: 700;
+    font-family: var(--font-family-mono);
+    font-size: 19px;
     font-variant-numeric: tabular-nums;
     color: var(--ink);
 }
 
 .metric-unit {
-    margin-left: 2px;
-    font-size: var(--font-size-sm);
+    margin-left: 3px;
+    font-size: 12px;
     color: var(--muted);
 }
 
 .metric-stats {
     display: flex;
     gap: var(--space-3);
-    font-size: var(--font-size-sm);
-    color: var(--muted);
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.08em;
+    color: var(--faint);
     font-variant-numeric: tabular-nums;
 }
 
+/* ===== Sektionen: rahmenlose Blöcke über einer Haarlinie ===== */
+
+.wi-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-top: 14px;
+    margin-top: 14px;
+    border-top: 1px solid var(--rule);
+    flex: none;
+}
+
+.wi-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.drivers-block {
+    max-width: 560px;
+}
+
+/* ===== Sparklines ===== */
+
 ::deep .sparkline {
     width: 100%;
-    height: 36px;
+    height: 44px;
     overflow: visible;
 }
 
@@ -110,24 +201,21 @@
     stroke: var(--ink);
 }
 
-.sleep-date {
-    color: var(--muted);
+::deep .sparkline.load polyline {
+    stroke: var(--ink);
 }
 
-.sleep-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-3);
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
+::deep .sparkline.fitness polyline {
+    stroke: var(--good);
 }
+
+/* ===== Letzte Nacht ===== */
 
 .sleep-meta {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-4);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
@@ -135,44 +223,42 @@
 
 .sleep-bar {
     display: flex;
-    height: 14px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: var(--track);
+    gap: 2px;
+    height: 22px;
 }
 
 .sleep-seg {
     height: 100%;
 }
 
-/* Schlafphasen sind kategoriale Daten -> tonale Papier-Rampe (dunkel = tief). */
-.sleep-seg.sleep-light,
-.sleep-swatch.sleep-light {
+/* Schlafphasen sind kategoriale Daten: wach = Grundrauschen, REM/Tief tragen Zonenfarbe. */
+.sleep-seg.sleep-awake,
+.sleep-swatch.sleep-awake {
     background: var(--faint);
-}
-
-.sleep-seg.sleep-deep,
-.sleep-swatch.sleep-deep {
-    background: var(--ink);
 }
 
 .sleep-seg.sleep-rem,
 .sleep-swatch.sleep-rem {
-    background: var(--muted);
+    background: var(--rec-mid);
 }
 
-.sleep-seg.sleep-awake,
-.sleep-swatch.sleep-awake {
+.sleep-seg.sleep-light,
+.sleep-swatch.sleep-light {
     background: var(--track);
+}
+
+.sleep-seg.sleep-deep,
+.sleep-swatch.sleep-deep {
+    background: var(--rec-high);
 }
 
 .sleep-legend {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-4);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
     font-size: var(--font-size-sm);
 }
 
@@ -180,12 +266,14 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    min-width: 0;
 }
 
 .sleep-swatch {
     width: 0.7rem;
     height: 0.7rem;
     border-radius: 3px;
+    flex: none;
 }
 
 .sleep-stage {
@@ -197,33 +285,12 @@
     font-variant-numeric: tabular-nums;
 }
 
-.tod {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-}
-
-.tod-window {
-    color: var(--muted);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-normal, 400);
-    margin-left: var(--space-2);
-}
+/* ===== Tageszeit / Schlafenszeiten / Recovery-Treiber ===== */
 
 .tod-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: var(--space-4);
-}
-
-.tod-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
 }
 
 .tod-head {
@@ -255,18 +322,10 @@
 
 .tod-rows li {
     display: grid;
-    grid-template-columns: 6.5rem 1fr 3.5rem 2.8rem;
+    grid-template-columns: 96px 1fr 52px auto;
     align-items: center;
     gap: var(--space-2);
     font-size: var(--font-size-sm);
-    padding: 1px var(--space-1);
-    border-radius: var(--radius-sm, 6px);
-}
-
-/* Bestes Zeitfenster = aktive Auswahl -> Grün-Akzent auf ruhiger Papier-Füllung. */
-.tod-rows li.is-best {
-    background: var(--track);
-    outline: 1px solid var(--accent);
 }
 
 .tod-rows li.is-thin {
@@ -274,6 +333,7 @@
 }
 
 .tod-bucket {
+    font-family: var(--font-family-mono);
     color: var(--muted);
 }
 
@@ -284,124 +344,42 @@
     overflow: hidden;
 }
 
+/* Nur das beste Fenster trägt den Akzent — der Rest bleibt Hintergrund. */
 .tod-bar-fill {
     display: block;
     height: 100%;
-    background: var(--ink);
+    background: var(--faint);
+}
+
+.tod-rows li.is-best .tod-bar-fill {
+    background: var(--accent);
+}
+
+.tod-rows li.is-best .tod-value {
+    color: var(--accent);
 }
 
 .tod-value {
+    font-family: var(--font-family-mono);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
 
 .tod-n {
-    color: var(--muted);
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    color: var(--faint);
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
 
-.tod-verdict {
-    font-size: var(--font-size-sm);
-    color: var(--muted);
-}
-
+.tod-verdict,
 .tod-fact {
+    margin: 0;
     font-size: var(--font-size-sm);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
-}
-
-.load {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-}
-
-.load .tod-card {
-    max-width: 420px;
-}
-
-.load-head {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-3);
-}
-
-.load-ratio {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-
-.load-zone {
-    font-size: var(--font-size-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* Trainingslast-Zonen sind Daten: low = neutral, ok = gut, warn/high = Warnung/Alarm. */
-.load-ratio.load-low,
-.load-zone.load-low {
-    color: var(--muted);
-}
-
-.load-ratio.load-ok,
-.load-zone.load-ok {
-    color: var(--good);
-}
-
-.load-ratio.load-warn,
-.load-zone.load-warn {
-    color: var(--rec-mid);
-}
-
-.load-ratio.load-high,
-.load-zone.load-high {
-    color: var(--bear);
-}
-
-.load-confidence {
-    font-size: var(--font-size-sm);
-    color: var(--rec-mid);
-}
-
-::deep .sparkline.load polyline {
-    stroke: var(--ink);
-}
-
-.fitness-current {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--ink);
-}
-
-.fitness-trend {
-    font-size: var(--font-size-sm);
-}
-
-.fitness-trend.trend-good {
-    color: var(--good);
-}
-
-.fitness-trend.trend-bad {
-    color: var(--rec-mid);
-}
-
-.fitness-trend.trend-flat {
-    color: var(--muted);
-}
-
-::deep .sparkline.fitness polyline {
-    stroke: var(--good);
-}
-
-.drivers-card {
-    max-width: 560px;
 }
 
 .drv-rows {
@@ -426,15 +404,48 @@
 }
 
 .drv-strength {
+    font-family: var(--font-family-mono);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
+
+/* ===== Aerobe Fitness ===== */
+
+.load-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+}
+
+.fitness-current {
+    font-family: var(--font-family-mono);
+    font-size: 19px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.fitness-trend {
+    font-size: var(--font-size-sm);
+}
+
+.fitness-trend.trend-good {
+    color: var(--good);
+}
+
+.fitness-trend.trend-bad {
+    color: var(--rec-mid);
+}
+
+.fitness-trend.trend-flat {
+    color: var(--muted);
+}
+
+/* ===== Scatter / Matrix ===== */
 
 ::deep .scatter {
     width: 100%;
     height: 130px;
     overflow: visible;
-    border-radius: var(--radius-sm, 6px);
     background: var(--track);
 }
 
@@ -449,6 +460,7 @@
 }
 
 .tod-matrix th {
+    font-family: var(--font-family-mono);
     color: var(--muted);
     font-weight: var(--font-weight-normal, 400);
     padding: 2px var(--space-2);
@@ -461,7 +473,6 @@
     text-align: center;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
-    border-radius: var(--radius-sm, 6px);
     border: 2px solid transparent;
     background-clip: padding-box;
 }
@@ -485,13 +496,14 @@
     color: var(--bg);
 }
 
+/* ===== Läufe nach Recovery ===== */
+
 .run-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
 }
 
 .run {
@@ -499,6 +511,8 @@
     grid-template-columns: auto 4rem 5rem 1fr;
     align-items: center;
     gap: var(--space-3);
+    padding: 6px 0;
+    border-top: 1px solid var(--rule);
     font-size: var(--font-size-sm);
 }
 
@@ -522,21 +536,19 @@
 }
 
 .run-date {
+    font-family: var(--font-family-mono);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
 .run-detail {
+    font-family: var(--font-family-mono);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
 
-/* Klickbare Hülle (Explainable) an die Kartenbreite der jeweiligen Sektion koppeln,
-   damit der Klickbereich die Karte umschließt statt die volle Sektionsbreite. */
-.load > .explainable {
-    max-width: 420px;
-}
-
-.tod > .explainable {
+/* Klickbare Hülle (Explainable) an die Blockbreite koppeln, damit der Klickbereich
+   den Inhalt umschließt statt die volle Sektionsbreite. */
+.wi-section ::deep .explainable {
     max-width: 560px;
 }
