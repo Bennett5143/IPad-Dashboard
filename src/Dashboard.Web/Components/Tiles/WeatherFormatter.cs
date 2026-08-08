@@ -69,6 +69,18 @@ public static class WeatherFormatter
             ? TimeZoneInfo.ConvertTime(time, BerlinTz).ToString("HH:mm", CultureInfo.InvariantCulture)
             : "–";
 
+    /// <summary>Mono-Label einer Ausblick-Spalte: „HEUTE", „MORGEN", sonst der Wochentag.</summary>
+    public static string DayLabel(DateOnly date, DateOnly today)
+    {
+        var delta = date.DayNumber - today.DayNumber;
+        return delta switch
+        {
+            0 => "HEUTE",
+            1 => "MORGEN",
+            _ => date.ToDateTime(TimeOnly.MinValue).ToString("dddd", German).ToUpperInvariant()
+        };
+    }
+
     public static string UpdatedAt(DateTimeOffset retrievedAtUtc) =>
         TimeZoneInfo.ConvertTime(retrievedAtUtc, BerlinTz)
             .ToString("HH:mm", CultureInfo.InvariantCulture);

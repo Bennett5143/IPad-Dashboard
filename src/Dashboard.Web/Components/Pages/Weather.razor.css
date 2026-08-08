@@ -1,122 +1,159 @@
-.weather-detail {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
+/* ===== Hero: Glyph · Temperatur · Fakten ===== */
 
-.weather-cards {
+.wx-hero {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 16px;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 28px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+    flex: none;
 }
 
-.wx-card {
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 24px;
-}
-
-.wx-now {
+.wx-hero-glyph {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.wx-now-temp {
-    font-size: 72px;
-    font-weight: 600;
-    line-height: 0.9;
-}
-
-.wx-now-temp--sm {
-    font-size: 46px;
-}
-
-.wx-now-cond {
-    font-size: 16px;
-    color: var(--muted);
-}
-
-.wx-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.wx-chip {
-    font-family: var(--font-family-mono);
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--track);
-    padding: 5px 11px;
-    border-radius: 8px;
-}
-
-.wx-chip--teal {
+    align-items: center;
     color: var(--ink);
-    background: var(--track);
 }
 
-.wx-hourly {
-    flex: 1;
-    min-height: 0;
+/* ::deep, weil das <svg> aus der WeatherIcon-Kindkomponente kommt. */
+.wx-hero-glyph ::deep .wx-icon {
+    width: 76px;
+    height: 76px;
+}
+
+.wx-hero-now {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
-.wx-chart-wrap {
+/* Die eine Hero-Zahl der Seite. */
+.wx-hero-temp {
+    font-family: var(--font-family-mono);
+    font-size: 88px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.wx-hero-desc {
+    font-size: 17px;
+    color: var(--muted);
+}
+
+/* Die vier Tagesfakten hängen hinter einer Haarlinie, nicht in einer Karte. */
+.wx-facts {
+    margin: 0;
+    padding-left: 28px;
+    border-left: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 24px;
+}
+
+.wx-facts div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.wx-facts dd {
+    margin: 0;
+    font-family: var(--font-family-mono);
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== Temperaturverlauf: füllt die Resthöhe ===== */
+
+.wx-trend {
     flex: 1;
     min-height: 0;
-    margin-top: 14px;
+    padding: 14px 0;
+    color: var(--ink);
 }
 
-.weather-detail ::deep .wx-day-chart {
-    width: 100%;
-    height: 100%;
-    display: block;
-    stroke: var(--ink);
-    stroke-width: 2.5;
+.wx-trend ::deep .sparkline {
+    stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
-.wx-ticks {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 8px;
+/* ===== Stundenleiste ===== */
+
+.wx-hours {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    border-top: 1px solid var(--rule);
+    flex: none;
 }
 
-.wx-tick {
+.wx-hour {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    flex: 1;
+    gap: 2px;
+    padding: 10px 4px;
 }
 
-.wx-tick-temp {
-    font-size: 15px;
-    font-weight: 600;
+.wx-hour + .wx-hour {
+    border-left: 1px solid var(--rule);
 }
 
-.wx-tick-hour {
+.wx-hour-temp {
     font-family: var(--font-family-mono);
-    font-size: 11px;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+}
+
+.wx-hour-time {
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
     color: var(--muted);
 }
 
-.wx-tick-rain {
+/* Nasse Stunden treten in Tinte hervor, trockene bleiben im Hintergrund. */
+.wx-hour-rain {
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    color: var(--ink);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
+    color: var(--faint);
 }
 
-.weather-empty {
+.wx-hour-rain.is-wet {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* ===== Ausblick als letzte Zeile ===== */
+
+.wx-outlook {
+    display: flex;
+    border-top: 1px solid var(--rule);
+    flex: none;
+}
+
+.wx-day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 18px;
+    min-width: 0;
+}
+
+.wx-day + .wx-day {
+    border-left: 1px solid var(--rule);
+}
+
+.wx-day-text {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.wx-empty {
     color: var(--muted);
 }

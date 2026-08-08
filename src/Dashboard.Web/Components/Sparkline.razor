@@ -1,4 +1,5 @@
-<svg class="sparkline @CssClass" viewBox="0 0 120 32" preserveAspectRatio="none" role="img" aria-hidden="true">
+<svg class="sparkline @(Fill ? "sparkline--fill" : null) @CssClass" viewBox="0 0 120 32"
+     preserveAspectRatio="none" role="img" aria-hidden="true">
     @if (_area.Length > 0 && GradientId is not null)
     {
         <polygon class="sparkline-area" points="@_area" fill="url(#@GradientId)" />
@@ -12,6 +13,11 @@
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<double?> Values { get; set; } = [];
     [Parameter] public string? CssClass { get; set; }
+
+    /// <summary>Füllt den umgebenden Container statt eine feste SVG-Größe zu tragen. Für Verläufe,
+    /// die die Resthöhe einer Seite nehmen; <c>preserveAspectRatio="none"</c> und
+    /// <c>vector-effect</c> halten die Strichstärke dabei gleichmäßig.</summary>
+    [Parameter] public bool Fill { get; set; }
 
     /// <summary>Gradient-Id (ohne <c>#</c>) aus <see cref="ChartGradients"/>, z. B. <c>gGreen</c>.
     /// Ist er gesetzt, wird zusätzlich die Fläche unter der Kurve mit dem Verlauf gefüllt.</summary>
