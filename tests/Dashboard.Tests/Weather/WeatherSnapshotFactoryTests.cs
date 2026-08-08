@@ -68,7 +68,7 @@ public class WeatherSnapshotFactoryTests
     }
 
     [Fact]
-    public void Tomorrow_IsAggregatedSeparately()
+    public void Outlook_AggregatesTomorrowSeparately()
     {
         var steps = new[]
         {
@@ -79,22 +79,56 @@ public class WeatherSnapshotFactoryTests
 
         var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 4);
 
-        Assert.NotNull(snapshot.Tomorrow);
-        Assert.Equal(new DateOnly(2026, 6, 11), snapshot.Tomorrow!.Date);
-        Assert.Equal(12, snapshot.Tomorrow.MinTemperature);
-        Assert.Equal(16, snapshot.Tomorrow.MaxTemperature);
-        Assert.Equal(0.6, snapshot.Tomorrow.PrecipitationProbability);
-        Assert.Equal(WeatherCondition.Clouds, snapshot.Tomorrow.Condition);
+        Assert.Equal(2, snapshot.Outlook.Count);
+        var tomorrow = snapshot.Outlook[1];
+        Assert.Equal(new DateOnly(2026, 6, 11), tomorrow.Date);
+        Assert.Equal(12, tomorrow.MinTemperature);
+        Assert.Equal(16, tomorrow.MaxTemperature);
+        Assert.Equal(0.6, tomorrow.PrecipitationProbability);
+        Assert.Equal(WeatherCondition.Clouds, tomorrow.Condition);
     }
 
     [Fact]
-    public void Tomorrow_IsNull_WhenNoStepsForTomorrow()
+    public void Outlook_StartsWithToday()
+    {
+        var steps = new[]
+        {
+            Utc(10, 13, 18, 0.1, WeatherCondition.Clear),
+            Utc(11, 7, 12, 0.6, WeatherCondition.Clouds)
+        };
+
+        var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 4);
+
+        Assert.Equal(snapshot.Today, snapshot.Outlook[0]);
+    }
+
+    [Fact]
+    public void Outlook_ContainsOnlyToday_WhenNoFutureSteps()
     {
         var steps = new[] { Utc(10, 13, 18, 0.1, WeatherCondition.Clear) };
 
         var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 4);
 
-        Assert.Null(snapshot.Tomorrow);
+        Assert.Single(snapshot.Outlook);
+        Assert.Equal(snapshot.Today, snapshot.Outlook[0]);
+    }
+
+    [Fact]
+    public void Outlook_CapsAtThreeDays()
+    {
+        // Vier Tage Vorhersage → nur heute + 2 Folgetage landen im Ausblick.
+        var steps = new[]
+        {
+            Utc(10, 13, 18, 0.1, WeatherCondition.Clear),
+            Utc(11, 13, 17, 0.2, WeatherCondition.Clouds),
+            Utc(12, 13, 16, 0.3, WeatherCondition.Rain),
+            Utc(13, 13, 15, 0.4, WeatherCondition.Clear)
+        };
+
+        var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 4);
+
+        Assert.Equal(3, snapshot.Outlook.Count);
+        Assert.Equal(new DateOnly(2026, 6, 12), snapshot.Outlook[^1].Date);
     }
 
     [Fact]
