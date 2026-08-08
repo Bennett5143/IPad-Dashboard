@@ -2,57 +2,115 @@
 @layout DetailLayout
 @implements IDisposable
 @inject HvvState HvvState
+@inject IClock Clock
 @rendermode InteractiveServer
 
 <PageTitle>Abfahrten</PageTitle>
 
-<PageHeader Title="Abfahrten" Meta="@($"{_count} HALTESTELLEN")" />
+<PageHeader Title="Abfahrten" Meta="@($"{_stations.Count} HALTESTELLEN")" />
 
 <div class="detail-body">
-    @if (_count == 0)
+    @if (_stations.Count == 0)
     {
         <p class="hvv-empty">Keine Haltestellen konfiguriert.</p>
     }
     else
     {
-        <div class="hvv-grid">
-            @foreach (var station in HvvState.Current!.Stations)
-            {
-                var deps = station.Departures.OrderBy(d => d.ExpectedTime).Take(10).ToList();
+        <section class="hvv-hero">
+            <div class="hvv-next">
+                <span class="mono-label">@NextLabel</span>
+                @if (_next is null)
+                {
+                    <p class="hvv-empty">Keine Abfahrt im Zeitfenster.</p>
+                }
+                else
+                {
+                    <div class="hvv-next-row">
+                        <span class="hvv-badge hvv-badge-lg">@_next.LineName</span>
+                        <span class="hvv-next-dir">@_next.Direction</span>
+                        <span class="hvv-next-min">@HvvFormatter.MinutesUntil(_next, _now)</span>
+                        <span class="hvv-next-time">
+                            @HvvFormatter.Time(_next)
+                            @if (HvvFormatter.DelayBadge(_next) is { } delay)
+                            {
+                                <span>@delay</span>
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
 
-                <div class="hvv-card">
-                    <div class="hvv-card-head">
+            @* 30-Minuten-Fenster: jede Abfahrt ein Tick, die nächste in Akzent. *@
+            <div class="hvv-axis">
+                <span class="mono-label">NÄCHSTE 30 MINUTEN</span>
+                <div class="hvv-axis-track">
+                    @foreach (var tick in _ticks)
+                    {
+                        <span class="hvv-tick @(tick.IsNext ? "is-next" : null)" style="left:@(tick.Left)%"></span>
+                    }
+                </div>
+                <div class="hvv-axis-scale">
+                    <span>JETZT</span>
+                    <span>+10</span>
+                    <span>+20</span>
+                    <span>+30</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="hvv-columns @(_stations.Count > 3 ? "is-scroll" : null)">
+            @foreach (var station in _stations)
+            {
+                var deps = Upcoming(station).Take(DeparturesPerColumn).ToList();
+
+                <section class="hvv-col">
+                    <header class="hvv-col-head">
                         <span class="hvv-station">
                             <span class="hvv-station-dot"></span>@station.StationName
                         </span>
-                        <span class="hvv-station-meta">@(station.Available ? "HALTESTELLE" : "KEINE DATEN")</span>
-                    </div>
-                    <div class="hvv-deps">
-                        @if (deps.Count == 0)
-                        {
-                            <p class="hvv-empty">Keine Abfahrten im Zeitfenster.</p>
-                        }
-                        else
-                        {
+                        <span class="mono-label">@ColumnMeta(station, deps)</span>
+                    </header>
+
+                    @if (deps.Count == 0)
+                    {
+                        <p class="hvv-empty">Keine Abfahrten im Zeitfenster.</p>
+                    }
+                    else
+                    {
+                        <div class="hvv-deps">
                             @for (var i = 0; i < deps.Count; i++)
                             {
                                 var d = deps[i];
                                 <div class="hvv-dep">
-                                    <span class="hvv-line">@d.LineName</span>
+                                    <span class="hvv-badge">@d.LineName</span>
                                     <span class="hvv-dir">@d.Direction</span>
-                                    <span class="hvv-when @(i == 0 ? "is-next" : null)">@HvvFormatter.Time(d)</span>
+                                    <span class="hvv-min @(i == 0 ? "is-next" : null)">@HvvFormatter.MinutesUntil(d, _now)</span>
                                 </div>
                             }
-                        }
-                    </div>
-                </div>
+                        </div>
+                    }
+                </section>
             }
         </div>
     }
 </div>
 
 @code {
-    private int _count;
+    private const int DeparturesPerColumn = 7;
+    private const int AxisMinutes = 30;
+
+    /// <summary>Ein Tick auf der 30-Minuten-Achse. <see cref="Left"/> ist invariant vorformatiert,
+    /// weil es direkt in ein style-Attribut geht.</summary>
+    private sealed record Tick(string Left, bool IsNext);
+
+    private IReadOnlyList<StationBoard> _stations = Array.Empty<StationBoard>();
+    private IReadOnlyList<Tick> _ticks = Array.Empty<Tick>();
+    private Departure? _next;
+    private string? _nextStation;
+    private DateTimeOffset _now;
+
+    private string NextLabel =>
+        _nextStation is null ? "NÄCHSTE ABFAHRT" : $"NÄCHSTE ABFAHRT · {_nextStation.ToUpperInvariant()}";
 
     protected override void OnInitialized()
     {
@@ -66,7 +124,40 @@
         StateHasChanged();
     });
 
-    private void ReadState() => _count = HvvState.Current?.Stations.Count ?? 0;
+    private void ReadState()
+    {
+        _now = Clock.UtcNow;
+        _stations = HvvState.Current?.Stations ?? (IReadOnlyList<StationBoard>)Array.Empty<StationBoard>();
+
+        // Die früheste Abfahrt über alle Haltestellen trägt die Hero-Zeile und den Akzent-Tick.
+        var earliest = _stations
+            .SelectMany(s => Upcoming(s).Select(d => new { Station = s.StationName, Departure = d }))
+            .OrderBy(x => x.Departure.ExpectedTime)
+            .FirstOrDefault();
+
+        _next = earliest?.Departure;
+        _nextStation = earliest?.Station;
+
+        _ticks = _stations
+            .SelectMany(Upcoming)
+            .Select(d => new { Departure = d, Minutes = HvvFormatter.MinutesUntil(d, _now) })
+            .Where(x => x.Minutes <= AxisMinutes)
+            .Select(x => new Tick(
+                Left: (x.Minutes * 100.0 / AxisMinutes)
+                    .ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),
+                // Referenzgleichheit, nicht Wertgleichheit: zwei identische Abfahrten
+                // an verschiedenen Haltestellen dürfen nicht beide den Akzent tragen.
+                IsNext: ReferenceEquals(x.Departure, _next)))
+            .ToList();
+    }
+
+    private IEnumerable<Departure> Upcoming(StationBoard station) =>
+        station.Departures.OrderBy(d => d.ExpectedTime);
+
+    private static string ColumnMeta(StationBoard station, IReadOnlyList<Departure> deps) =>
+        !station.Available ? "KEINE DATEN"
+        : deps.Count == 0 ? "HALTESTELLE"
+        : HvvFormatter.ModeLabel(deps[0].Mode);
 
     public void Dispose() => HvvState.Changed -= OnChanged;
 }
