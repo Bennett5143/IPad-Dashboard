@@ -26,8 +26,12 @@
     else
     {
         <div class="status-stack">
-            <section class="status-card">
-                <span class="mono-label mono-label--green">Datenquellen</span>
+            @* Hero: wie viele Quellen frisch sind — die eine Zahl, an der die Seite hängt. *@
+            <section class="status-hero">
+                <div class="status-hero-score">
+                    <span class="status-hero-num">@_healthy</span>
+                    <span class="mono-label">VON @_total QUELLEN FRISCH</span>
+                </div>
                 <ul class="status-list">
                     @foreach (var row in _slices)
                     {
@@ -42,8 +46,8 @@
             </section>
 
             <div class="status-cols">
-                <section class="status-card">
-                    <span class="mono-label mono-label--brown">Strava</span>
+                <section class="status-region">
+                    <span class="mono-label">STRAVA</span>
                     <dl class="status-facts">
                         <div><dt>Verbindung</dt><dd>@(_stravaConnected ? "verbunden" : "nicht verbunden")</dd></div>
                         <div><dt>Letzter Sync</dt><dd>@_stravaLastSync</dd></div>
@@ -57,8 +61,8 @@
                     </dl>
                 </section>
 
-                <section class="status-card">
-                    <span class="mono-label mono-label--green">WHOOP</span>
+                <section class="status-region">
+                    <span class="mono-label">WHOOP</span>
                     <dl class="status-facts">
                         <div><dt>Verbindung</dt><dd>@(_whoopConnected ? "verbunden" : "nicht verbunden")</dd></div>
                         <div><dt>Tageswerte</dt><dd>@_whoopDailyLabel</dd></div>
@@ -68,8 +72,8 @@
             </div>
 
             <div class="status-cols">
-                <section class="status-card">
-                    <span class="mono-label mono-label--teal">System</span>
+                <section class="status-region">
+                    <span class="mono-label">SYSTEM</span>
                     @if (_system is null)
                     {
                         <p class="status-msg">Host-Metriken sind nur unter Linux (Raspberry Pi) verfügbar.</p>
@@ -93,16 +97,16 @@
                     }
                 </section>
 
-                <section class="status-card">
-                    <span class="mono-label mono-label--teal">Datenbank</span>
+                <section class="status-region">
+                    <span class="mono-label">DATENBANK</span>
                     <dl class="status-facts">
                         <div><dt>PostgreSQL</dt><dd>@_dbLabel</dd></div>
                     </dl>
                 </section>
             </div>
 
-            <section class="status-card">
-                <span class="mono-label">Letzte Warnungen &amp; Fehler</span>
+            <section class="status-region status-region-log">
+                <span class="mono-label">LETZTE WARNUNGEN &amp; FEHLER</span>
                 @if (_logs.Count == 0)
                 {
                     <p class="status-msg">Keine Warnungen seit dem Start.</p>
@@ -131,6 +135,8 @@
 
     private bool _loading = true;
     private string _meta = "ALLE SYSTEME";
+    private int _healthy;
+    private int _total;
     private IReadOnlyList<StatusSliceRow> _slices = [];
     private bool _stravaConnected;
     private string _stravaLastSync = "–";
@@ -153,7 +159,9 @@
 
         _slices = StatusViewBuilder.BuildSliceRows(
             Sources.Select(s => (s.SliceName, s.HasData, s.IsStale, s.LastUpdatedUtc)), now);
-        _meta = $"{Sources.Count(s => s.HasData && !s.IsStale)}/{Sources.Count()} QUELLEN";
+        _healthy = Sources.Count(s => s.HasData && !s.IsStale);
+        _total = Sources.Count();
+        _meta = $"{_healthy}/{_total} QUELLEN";
 
         try
         {

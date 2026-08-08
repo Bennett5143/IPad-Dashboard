@@ -1,101 +1,144 @@
-.football-page {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.football-page-empty {
-    color: var(--muted);
-    font-style: italic;
-}
-
-.football-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-}
-
-.football-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.football-tab {
-    background: transparent;
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 7px 15px;
-    color: var(--muted);
-    font-family: var(--font-family-base);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.football-tab.is-active {
-    background: var(--track);
-    color: var(--accent);
-    border-color: var(--accent);
-    font-weight: 600;
-}
-
-/* Wappen-Ein/Aus-Schalter rechts in der Leiste. */
-.football-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: transparent;
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 6px 13px;
-    color: var(--muted);
-    font-family: var(--font-family-base);
-    font-size: 13px;
-    cursor: pointer;
+/* Wappen-Toggle rechts in der Tab-Zeile — trägt das Tab-Vokabular, aber nie den
+   Aktiv-Zustand: er schaltet etwas, er navigiert nicht. */
+.fb-toggle {
     white-space: nowrap;
 }
 
-.football-toggle.is-on {
-    color: var(--accent);
-    border-color: var(--accent);
+/* ===== Body: Tabelle links, „Deine Vereine" rechts ===== */
+
+.fb-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.75fr 1fr;
 }
 
-.football-toggle-icon {
+.fb-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    padding-right: 22px;
+}
+
+.fb-aside {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    padding: 12px 0 0 22px;
+    border-left: 1px solid var(--rule);
+}
+
+.fb-bracket {
+    flex: none;
+    overflow: hidden;
+    padding-top: 12px;
+}
+
+.fb-bracket h2 {
+    margin: 0 0 10px;
+}
+
+/* ===== Ein getrackter Verein ===== */
+
+.fb-team {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.fb-team-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+    font-weight: 600;
+    min-width: 0;
+}
+
+.fb-crest {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
     flex: none;
 }
 
-.football-comp {
+.fb-form {
+    display: flex;
+    gap: 4px;
+}
+
+/* Sieg trägt den Akzent, alles andere bleibt Fläche — Farbe nur am Datenpunkt. */
+.fb-form-box {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.fb-form-box.is-win {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.fb-form-box.is-other {
+    background: var(--track);
+    color: var(--muted);
+}
+
+.fb-next {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 2px;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
 }
 
-.football-card {
-    padding: var(--space-4);
-    border-radius: 6px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
-}
-
-/* Bracket braucht volle Breite (horizontaler Scroll der Runden). */
-.football-card-wide {
-    overflow: hidden;
-}
-
-.football-card h2 {
-    font-family: var(--font-family-mono);
-    font-size: 10px;
+.fb-next-text {
+    font-size: 14px;
     color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    margin-bottom: var(--space-3);
 }
 
-/* Der „Vereine"-Tab reicht die vorhandene FootballTile durch – sie bringt ihre eigenen
-   (CSS-isolierten) Stile und Tap-Modals mit; hier nur die Breite begrenzen. */
-.football-clubs {
-    max-width: 640px;
+/* ===== Dritter Block: diese Woche ===== */
+
+.fb-week {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
+}
+
+.fb-week-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+}
+
+.fb-week-time {
+    font-family: var(--font-family-mono);
+    font-size: 0.6875rem; /* 11px */
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    flex: none;
+}
+
+.fb-week-match {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fb-week-empty,
+.fb-empty {
+    color: var(--muted);
 }

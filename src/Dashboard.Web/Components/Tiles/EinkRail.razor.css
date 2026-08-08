@@ -15,13 +15,10 @@
     border-radius: 6px;
 }
 
-.eink-rail-item svg {
+/* ::deep, weil das <svg> aus der AreaIcon-Kindkomponente kommt. */
+.eink-rail-item ::deep .area-icon {
     width: 26px;
     height: 26px;
-}
-
-.eink-btc {
-    font-family: var(--font-family-mono);
 }
 
 /* Health reads by shape, so keep it in muted ink like the rest — no state color. */

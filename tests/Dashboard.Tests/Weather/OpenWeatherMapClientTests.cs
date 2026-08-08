@@ -81,10 +81,11 @@ public class OpenWeatherMapClientTests
     {
         var snapshot = await CreateClient().GetWeatherAsync();
 
-        Assert.NotNull(snapshot.Tomorrow);
-        Assert.Equal(WeatherCondition.Rain, snapshot.Tomorrow!.Condition);
-        Assert.Equal(0.6, snapshot.Tomorrow.PrecipitationProbability);
-        Assert.Equal(12, snapshot.Tomorrow.MaxTemperature);
+        Assert.True(snapshot.Outlook.Count >= 2);
+        var tomorrow = snapshot.Outlook[1];
+        Assert.Equal(WeatherCondition.Rain, tomorrow.Condition);
+        Assert.Equal(0.6, tomorrow.PrecipitationProbability);
+        Assert.Equal(12, tomorrow.MaxTemperature);
     }
 
     [Fact]

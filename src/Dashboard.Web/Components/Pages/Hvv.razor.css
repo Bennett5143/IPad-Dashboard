@@ -1,29 +1,130 @@
-.hvv-grid {
-    flex: 1;
-    min-height: 0;
+/* ===== Hero: nächste Abfahrt + 30-Minuten-Achse ===== */
+
+.hvv-hero {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    /* content-height rows packed at the top — no stretched cards, no wasted space */
-    grid-auto-rows: min-content;
-    align-content: start;
-    gap: 14px;
-    overflow-y: auto;
+    grid-template-columns: auto 1fr;
+    align-items: end;
+    gap: 40px;
+    padding: 14px 0 12px;
+    border-bottom: 1px solid var(--rule);
+    flex: none;
 }
 
-.hvv-card {
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 12px 16px;
+.hvv-next {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    min-width: 0;
 }
 
-.hvv-card-head {
+/* Baseline-Reihe: Badge, Richtung, Hero-Zahl und Uhrzeit sitzen auf einer Linie. */
+.hvv-next-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    min-width: 0;
+}
+
+.hvv-next-dir {
+    font-size: 22px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Die eine Hero-Zahl der Seite. */
+.hvv-next-min {
+    font-family: var(--font-family-mono);
+    font-size: 64px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--accent);
+}
+
+.hvv-next-time {
+    font-family: var(--font-family-mono);
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.hvv-axis {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Die Achse selbst ist nur eine Haarlinie; die Ticks stehen darauf. */
+.hvv-axis-track {
+    position: relative;
+    height: 34px;
+    border-bottom: 1px solid var(--rule);
+}
+
+.hvv-tick {
+    position: absolute;
+    bottom: 0;
+    width: 2px;
+    height: 13px;
+    margin-left: -1px;
+    background: var(--faint);
+}
+
+.hvv-tick.is-next {
+    height: 24px;
+    background: var(--accent);
+}
+
+.hvv-axis-scale {
     display: flex;
     justify-content: space-between;
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
+    color: var(--muted);
+}
+
+/* ===== Haltestellen-Spalten ===== */
+
+/* Flex statt eines festen 3er-Grids: bei zwei konfigurierten Haltestellen füllen die
+   Spalten trotzdem die Breite, statt ein Drittel leer stehen zu lassen. */
+.hvv-columns {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+/* Ab der vierten Haltestelle scrollt die Spaltenreihe seitwärts, statt die Spalten
+   zu quetschen oder in eine zweite Zeile zu brechen (die das Binden nach unten bräche). */
+.hvv-columns.is-scroll {
+    overflow-x: auto;
+}
+
+.hvv-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 18px;
+}
+
+.hvv-columns.is-scroll .hvv-col {
+    flex: 0 0 300px;
+}
+
+.hvv-col + .hvv-col {
+    border-left: 1px solid var(--rule);
+}
+
+.hvv-col-head {
+    display: flex;
     align-items: center;
-    margin-bottom: 6px;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 8px;
+    flex: none;
 }
 
 .hvv-station {
@@ -32,6 +133,10 @@
     gap: 10px;
     font-size: 16px;
     font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .hvv-station-dot {
@@ -42,27 +147,27 @@
     flex: none;
 }
 
-.hvv-station-meta {
-    font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    color: var(--muted);
-}
-
+/* Die Liste bindet bis zur Unterkante: der Rest verteilt sich zwischen die Zeilen,
+   statt als Loch unter der letzten stehen zu bleiben. */
 .hvv-deps {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .hvv-dep {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 5px 0;
+    /* Mindesthöhe, damit die Zeilen bei dünner Datenlage nicht auseinanderfallen. */
+    min-height: 34px;
+    padding: 4px 0;
     border-top: 1px solid var(--rule);
 }
 
-.hvv-line {
+.hvv-badge {
     font-family: var(--font-family-mono);
     font-weight: 600;
     font-size: 13px;
@@ -72,6 +177,13 @@
     border-radius: 6px;
     min-width: 46px;
     text-align: center;
+    flex: none;
+}
+
+.hvv-badge-lg {
+    font-size: 20px;
+    border-radius: 8px;
+    padding: 4px 12px;
 }
 
 .hvv-dir {
@@ -83,13 +195,15 @@
     white-space: nowrap;
 }
 
-.hvv-when {
+.hvv-min {
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
     font-weight: 600;
     font-size: 17px;
     color: var(--ink);
 }
 
-.hvv-when.is-next {
+.hvv-min.is-next {
     color: var(--accent);
 }
 

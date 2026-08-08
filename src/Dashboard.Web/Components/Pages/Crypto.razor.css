@@ -4,23 +4,15 @@
     margin-top: 12px;
 }
 
-.crypto-detail {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
+/* ===== Fear & Greed als Zeile, nicht als Karte ===== */
 
-/* Fear & Greed */
-.fng-card {
+.fng {
     display: flex;
     align-items: center;
     gap: 26px;
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 22px 24px;
+    padding: 14px 0 16px;
+    border-bottom: 1px solid var(--rule);
+    flex: none;
 }
 
 .fng-score {
@@ -31,16 +23,13 @@
     flex: none;
 }
 
+/* Die eine Hero-Zahl der Seite. */
 .fng-num {
-    font-size: 50px;
-    font-weight: 600;
-    line-height: 0.9;
+    font-family: var(--font-family-mono);
+    font-size: 54px;
+    line-height: 1;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
-}
-
-.fng-cap {
-    color: var(--muted);
 }
 
 .fng-body {
@@ -73,17 +62,15 @@
     display: flex;
     justify-content: space-between;
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    color: var(--faint);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
+    color: var(--muted);
     margin-top: 6px;
 }
 
-/* Coin-Tabelle (füllt die Resthöhe, kein Scrollen) */
-.coin-table {
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    overflow: hidden;
+/* ===== Coin-Tabelle: rahmenlos, füllt die Resthöhe ===== */
+
+.coins {
     flex: 1;
     min-height: 0;
     display: flex;
@@ -93,29 +80,26 @@
 .coin-head,
 .coin-row {
     display: grid;
-    grid-template-columns: 1.4fr 1fr 0.8fr 1.4fr 1fr;
+    grid-template-columns: 1.5fr 1fr 0.8fr 1.3fr 1fr;
     gap: 12px;
     align-items: center;
-    padding: 12px 22px;
 }
 
 .coin-head {
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--faint);
-    border-bottom: 1px solid var(--rule);
+    font-size: 0.625rem; /* 10px */
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    padding: 10px 0;
     flex: none;
 }
 
+/* Jede Zeile nimmt denselben Anteil der Resthöhe — so endet die Tabelle bündig
+   an der Fußzeile statt mit einem Loch darunter. */
 .coin-row {
     border-top: 1px solid var(--rule);
     flex: 1;
-}
-
-.coin-row:first-of-type {
-    border-top: none;
+    min-height: 0;
 }
 
 .coin-head .r,
@@ -134,6 +118,8 @@
 .coin-chip {
     width: 28px;
     height: 28px;
+    background: var(--track);
+    color: var(--ink);
     font-family: var(--font-family-mono);
     font-size: 10px;
     font-weight: 600;
@@ -159,25 +145,25 @@
 }
 
 .coin-price {
-    font-weight: 500;
+    font-family: var(--font-family-mono);
     font-variant-numeric: tabular-nums;
 }
 
 .coin-chg {
+    font-family: var(--font-family-mono);
     font-weight: 600;
     font-size: 13px;
     padding: 3px 8px;
     border-radius: 6px;
+    background: var(--track);
 }
 
 .coin-chg.up {
     color: var(--bull);
-    background: var(--track);
 }
 
 .coin-chg.down {
     color: var(--bear);
-    background: var(--track);
 }
 
 .coin-cap {
@@ -186,23 +172,27 @@
     color: var(--muted);
 }
 
-.coin-table ::deep .coin-spark {
-    width: 110px;
-    height: 28px;
+.coins ::deep .coin-spark {
+    width: 118px;
+    height: 30px;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
-.coin-table ::deep .coin-spark--up {
+.coins ::deep .coin-spark--up {
     stroke: var(--bull);
 }
 
-.coin-table ::deep .coin-spark--down {
+.coins ::deep .coin-spark--down {
     stroke: var(--bear);
 }
 
+/* ===== Fußzeile ===== */
+
 .coin-foot {
-    color: var(--faint);
-    letter-spacing: 0.08em;
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+    color: var(--muted);
+    flex: none;
 }

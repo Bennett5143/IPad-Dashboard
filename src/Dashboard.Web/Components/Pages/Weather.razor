@@ -11,67 +11,86 @@
 <div class="detail-body">
     @if (_snapshot is null)
     {
-        <p class="weather-empty">Wetterdaten gerade nicht verfügbar.</p>
+        <p class="wx-empty">Wetterdaten gerade nicht verfügbar.</p>
     }
     else
     {
-        var hourly = _snapshot.Hourly;
-        var hourlyTemps = hourly.Select(h => (double?)h.Temperature).ToList();
-        var ticks = hourly.Take(8).ToList();
+        var current = _snapshot.Current;
+        var hourlyTemps = _snapshot.Hourly.Select(h => (double?)h.Temperature).ToList();
+        var hours = _snapshot.Hourly.Take(HourColumns).ToList();
 
-        <div class="weather-detail">
-            <div class="weather-cards">
-                <div class="wx-card">
-                    <span class="mono-label mono-label--teal">Jetzt</span>
-                    <div class="wx-now">
-                        <span class="wx-now-temp">@WeatherFormatter.Temperature(_snapshot.Current.Temperature)</span>
-                        <span class="wx-now-cond">@_snapshot.Current.Description</span>
-                    </div>
-                    <div class="wx-chips">
-                        <span class="wx-chip">Min/Max @WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</span>
-                        <span class="wx-chip wx-chip--teal">Regen @WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</span>
-                        <span class="wx-chip">Wind @WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</span>
-                        <span class="wx-chip">Gefühlt @WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</span>
-                    </div>
-                </div>
-
-                @if (_snapshot.Tomorrow is { } tomorrow)
-                {
-                    <div class="wx-card">
-                        <span class="mono-label mono-label--teal">Morgen</span>
-                        <div class="wx-now">
-                            <span class="wx-now-temp wx-now-temp--sm">@WeatherFormatter.Temperature(tomorrow.MaxTemperature)</span>
-                            <span class="wx-now-cond">@tomorrow.Description</span>
-                        </div>
-                        <div class="wx-chips">
-                            <span class="wx-chip">Min/Max @WeatherFormatter.Temperature(tomorrow.MinTemperature) / @WeatherFormatter.Temperature(tomorrow.MaxTemperature)</span>
-                            <span class="wx-chip wx-chip--teal">Regen @WeatherFormatter.Precipitation(tomorrow.PrecipitationProbability)</span>
-                        </div>
-                    </div>
-                }
+        <section class="wx-hero">
+            <div class="wx-hero-glyph">
+                <WeatherIcon Condition="current.Condition" />
             </div>
 
-            <div class="wx-card wx-hourly">
-                <span class="mono-label mono-label--teal">Stündlich</span>
-                <div class="wx-chart-wrap">
-                    <Sparkline Values="hourlyTemps" GradientId="gTeal" CssClass="wx-day-chart" />
-                </div>
-                <div class="wx-ticks">
-                    @foreach (var h in ticks)
-                    {
-                        <div class="wx-tick">
-                            <span class="wx-tick-temp">@WeatherFormatter.Temperature(h.Temperature)</span>
-                            <span class="wx-tick-hour">@($"{h.Time:HH}h")</span>
-                            <span class="wx-tick-rain">@WeatherFormatter.Precipitation(h.PrecipitationProbability)</span>
-                        </div>
-                    }
-                </div>
+            <div class="wx-hero-now">
+                <span class="wx-hero-temp">@WeatherFormatter.Temperature(current.Temperature)</span>
+                <span class="wx-hero-desc">
+                    @current.Description · gefühlt @WeatherFormatter.Temperature(current.FeelsLike)
+                </span>
             </div>
+
+            <dl class="wx-facts">
+                <div>
+                    <dt class="mono-label">MIN/MAX</dt>
+                    <dd>@WeatherFormatter.Temperature(_snapshot.Today.MinTemperature) / @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature)</dd>
+                </div>
+                <div>
+                    <dt class="mono-label">REGEN</dt>
+                    <dd>@WeatherFormatter.Precipitation(_snapshot.Today.PrecipitationProbability)</dd>
+                </div>
+                <div>
+                    <dt class="mono-label">WIND</dt>
+                    <dd>@WeatherFormatter.Wind(current.WindSpeedMs)</dd>
+                </div>
+                <div>
+                    <dt class="mono-label">SONNENUNTERGANG</dt>
+                    <dd>@WeatherFormatter.Sun(current.SunsetUtc)</dd>
+                </div>
+            </dl>
+        </section>
+
+        @* Der Verlauf nimmt die Resthöhe zwischen Hero und Stundenleiste. *@
+        <div class="wx-trend">
+            <Sparkline Values="hourlyTemps" Fill="true" />
+        </div>
+
+        <div class="wx-hours">
+            @foreach (var h in hours)
+            {
+                <div class="wx-hour">
+                    <span class="wx-hour-temp">@WeatherFormatter.Temperature(h.Temperature)</span>
+                    <span class="wx-hour-time">@($"{h.Time:HH}h")</span>
+                    <span class="wx-hour-rain @(h.PrecipitationProbability >= RainThreshold ? "is-wet" : null)">
+                        @WeatherFormatter.Precipitation(h.PrecipitationProbability)
+                    </span>
+                </div>
+            }
+        </div>
+
+        <div class="wx-outlook">
+            @foreach (var day in _snapshot.Outlook)
+            {
+                <div class="wx-day">
+                    <span class="mono-label">@WeatherFormatter.DayLabel(day.Date, _snapshot.Today.Date)</span>
+                    <span class="wx-day-text">
+                        @day.Description, @WeatherFormatter.Temperature(day.MinTemperature) bis
+                        @WeatherFormatter.Temperature(day.MaxTemperature), Regen
+                        @WeatherFormatter.Precipitation(day.PrecipitationProbability)
+                    </span>
+                </div>
+            }
         </div>
     }
 </div>
 
 @code {
+    private const int HourColumns = 8;
+
+    /// <summary>Ab dieser Regenwahrscheinlichkeit wird die Stunde in Tinte hervorgehoben.</summary>
+    private const double RainThreshold = 0.30;
+
     private WeatherSnapshot? _snapshot;
     private string _meta = "HAMBURG";
 

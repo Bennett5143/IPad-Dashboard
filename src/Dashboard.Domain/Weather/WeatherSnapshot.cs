@@ -7,6 +7,6 @@ namespace Dashboard.Domain.Weather;
 public sealed record WeatherSnapshot(
     CurrentWeather Current,
     DailyForecast Today,
-    DailyForecast? Tomorrow,
+    IReadOnlyList<DailyForecast> Outlook,
     IReadOnlyList<HourlyForecast> Hourly,
     DateTimeOffset RetrievedAtUtc) : Common.ISnapshot;

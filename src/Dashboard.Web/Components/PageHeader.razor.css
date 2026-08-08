@@ -1,8 +1,11 @@
+/* Erste Rasterlinie der Seite: der Header bindet über die Haarlinie an den Body an,
+   statt als freischwebender Block darüber zu stehen. */
 .page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 22px 32px 14px;
+    padding: 20px 28px 14px;
+    border-bottom: 1px solid var(--rule);
     flex: none;
 }
 

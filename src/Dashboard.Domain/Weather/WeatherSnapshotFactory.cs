@@ -7,6 +7,9 @@ namespace Dashboard.Domain.Weather;
 /// </summary>
 public static class WeatherSnapshotFactory
 {
+    /// <summary>Länge des Tages-Ausblicks inklusive heute (Drei-Tage-Zeile auf /weather).</summary>
+    private const int OutlookDays = 3;
+
     public static WeatherSnapshot Create(
         CurrentWeather current,
         IReadOnlyList<ForecastStep> steps,
@@ -20,13 +23,11 @@ public static class WeatherSnapshotFactory
 
         var localNow = TimeZoneInfo.ConvertTime(nowUtc, timeZone);
         var todayDate = DateOnly.FromDateTime(localNow.Date);
-        var tomorrowDate = todayDate.AddDays(1);
 
         DateOnly LocalDate(ForecastStep step) =>
             DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(step.TimestampUtc, timeZone).Date);
 
         var todaySteps = steps.Where(s => LocalDate(s) == todayDate).ToList();
-        var tomorrowSteps = steps.Where(s => LocalDate(s) == tomorrowDate).ToList();
 
         // Spät am Abend liefert die Vorhersage ggf. keinen (oder nur einen) Tagesschritt mehr
         // für "heute". Die aktuell gemessene Temperatur wird in Min/Max einbezogen, damit die
@@ -42,7 +43,17 @@ public static class WeatherSnapshotFactory
                 MaxTemperature = Math.Max(todayAggregate.MaxTemperature, current.Temperature)
             };
 
-        var tomorrow = Aggregate(tomorrowDate, tomorrowSteps);
+        // Ausblick: heute plus die Folgetage, für die die Vorhersage noch Schritte hergibt.
+        var outlook = new List<DailyForecast> { today };
+        for (var offset = 1; offset < OutlookDays; offset++)
+        {
+            var date = todayDate.AddDays(offset);
+            var day = Aggregate(date, steps.Where(s => LocalDate(s) == date).ToList());
+            if (day is not null)
+            {
+                outlook.Add(day);
+            }
+        }
 
         var hourly = steps
             .Where(s => s.TimestampUtc > nowUtc)
@@ -55,7 +66,7 @@ public static class WeatherSnapshotFactory
                 s.Condition))
             .ToList();
 
-        return new WeatherSnapshot(current, today, tomorrow, hourly, nowUtc);
+        return new WeatherSnapshot(current, today, outlook, hourly, nowUtc);
     }
 
     private static DailyForecast? Aggregate(DateOnly date, IReadOnlyList<ForecastStep> steps)

@@ -30,6 +30,25 @@ public static class HvvFormatter
         };
     }
 
+    /// <summary>Minuten bis zur erwarteten Abfahrt, nie negativ. Wird abgerundet: „4" heißt
+    /// „noch mindestens 4 Minuten" — bei Abfahrten lieber zu knapp als zu großzügig anzeigen.</summary>
+    public static int MinutesUntil(Departure departure, DateTimeOffset now)
+    {
+        var minutes = (departure.ExpectedTime - now).TotalMinutes;
+        return minutes <= 0 ? 0 : (int)Math.Floor(minutes);
+    }
+
+    /// <summary>Verkehrsmittel als Mono-Label für den Spaltenkopf.</summary>
+    public static string ModeLabel(TransportMode mode) => mode switch
+    {
+        TransportMode.Bus => "BUS",
+        TransportMode.SBahn => "S-BAHN",
+        TransportMode.UBahn => "U-BAHN",
+        TransportMode.Ferry => "FÄHRE",
+        TransportMode.RegionalTrain => "REGIONAL",
+        _ => "ABFAHRTEN"
+    };
+
     public static string ModeEmoji(TransportMode mode) => mode switch
     {
         TransportMode.Bus => "🚌",

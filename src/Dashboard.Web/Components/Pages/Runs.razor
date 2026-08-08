@@ -12,6 +12,7 @@
 <PageHeader Title="Läufe" Meta="@Meta" />
 
 <div class="detail-body is-scroll">
+    <FitnessTabs />
     <div class="runs-page">
     @if (!_connected)
     {
@@ -25,24 +26,30 @@
     {
         @if (_review is not null)
         {
-            <section class="review">
-                <div class="review-head">
-                    <h2>Jahresrückblick</h2>
-                    <div class="year-buttons" role="group" aria-label="Jahr">
-                        @foreach (var year in _review.AvailableYears)
-                        {
-                            <button class="@(year == _review.Year ? "active" : null)" @onclick="() => SetYear(year)">@year</button>
-                        }
-                    </div>
+            <div class="tab-row" role="group" aria-label="Jahr">
+                <div class="tab-row-items">
+                    @foreach (var year in _review.AvailableYears)
+                    {
+                        <button class="tab @(year == _review.Year ? "is-active" : null)" @onclick="() => SetYear(year)">@year</button>
+                    }
                 </div>
+            </div>
 
+            @* Hero: die Jahresdistanz trägt die Seite, die übrigen Kennzahlen ordnen sich rechts an. *@
+            <section class="runs-hero">
+                <div class="runs-hero-main">
+                    <span class="mono-label">DISTANZ @_review.Year</span>
+                    <span class="runs-hero-num">@_review.TotalKm</span>
+                </div>
                 <dl class="review-stats">
                     <div><dt>Läufe</dt><dd>@_review.RunCount</dd></div>
-                    <div><dt>Distanz</dt><dd>@_review.TotalKm</dd></div>
                     <div><dt>Höhenmeter</dt><dd>@_review.TotalElevation</dd></div>
                     <div><dt>Zeit</dt><dd>@_review.TotalTime</dd></div>
                     <div><dt>Eddington</dt><dd>@_review.Eddington</dd></div>
                 </dl>
+            </section>
+
+            <section class="runs-region">
 
                 <Explainable Id="MetricId.RunYearReview"><ChildContent>
                 <div class="review-bars" role="img" aria-label="Kilometer pro Monat">
@@ -69,7 +76,7 @@
 
         @if (_clusters.Count > 0)
         {
-            <section class="routes">
+            <section class="runs-region routes">
                 <h2>Standard-Runden</h2>
                 <p class="routes-hint">
                     Ähnlich verlaufende Läufe werden automatisch zu „Runden" gebündelt (richtungsunabhängig,
@@ -101,11 +108,11 @@
             </section>
         }
 
-        <section class="runs-list-section">
-            <div class="runs-controls" role="group" aria-label="Zeitraum">
-                <button class="@RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRange(RunTimeRange.FourWeeks)">4 Wochen</button>
-                <button class="@RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRange(RunTimeRange.TwelveMonths)">12 Monate</button>
-                <button class="@RangeCss(RunTimeRange.All)" @onclick="() => SetRange(RunTimeRange.All)">Alle</button>
+        <section class="runs-region runs-list-section">
+            <div class="tab-row-items" role="group" aria-label="Zeitraum">
+                <button class="tab @RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRange(RunTimeRange.FourWeeks)">4 Wochen</button>
+                <button class="tab @RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRange(RunTimeRange.TwelveMonths)">12 Monate</button>
+                <button class="tab @RangeCss(RunTimeRange.All)" @onclick="() => SetRange(RunTimeRange.All)">Alle</button>
             </div>
 
             <table class="runs-table">
@@ -196,5 +203,5 @@
     // eine leere/schwarze Karte (Container beim Init noch nicht endgültig vermessen).
     private void OpenCluster(int clusterId) => Nav.NavigateTo($"/heatmap?cluster={clusterId}", forceLoad: true);
 
-    private string RangeCss(RunTimeRange range) => range == _range ? "active" : string.Empty;
+    private string RangeCss(RunTimeRange range) => range == _range ? "is-active" : string.Empty;
 }
