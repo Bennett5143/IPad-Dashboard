@@ -1,6 +1,6 @@
 @* Wiederverwendbare Ligatabelle (Top-5, CL-Ligaphase, Turnier-Gruppen). Getrackte Vereine
    (Table.Rows[i].IsOwnTeam) werden hervorgehoben. *@
-<table class="league-table">
+<table class="league-table @(MarkRelegation ? "has-relegation" : null)">
     <thead>
         <tr>
             <th class="num">#</th>
@@ -43,4 +43,8 @@
 
     /// <summary>Wappen vor dem Vereinsnamen zeigen (über den /crests-Proxy).</summary>
     [Parameter] public bool ShowCrests { get; set; } = true;
+
+    /// <summary>Die beiden letzten Plätze als Abstiegsplätze markieren. Nur für echte Ligatabellen —
+    /// in einer Vierergruppe eines Turniers gibt es keinen Abstieg, deshalb entscheidet der Aufrufer.</summary>
+    [Parameter] public bool MarkRelegation { get; set; }
 }

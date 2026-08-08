@@ -52,6 +52,12 @@
     color: var(--muted);
 }
 
+/* Abstiegsplätze = die beiden letzten Ränge. Nur gesetzt, wenn der Aufrufer die Tabelle
+   als echte Liga markiert (MarkRelegation) — Turniergruppen kennen keinen Abstieg. */
+.league-table.has-relegation tbody tr:nth-last-child(-n + 2) td:first-child {
+    color: var(--rec-low);
+}
+
 /* Getrackter Verein hervorgehoben. */
 .league-table tr.is-own td {
     background: var(--track);

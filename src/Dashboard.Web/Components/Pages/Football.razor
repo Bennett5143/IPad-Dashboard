@@ -1,4 +1,5 @@
 @page "/football"
+@layout DetailLayout
 @implements IDisposable
 @inject FootballState FootballState
 @rendermode InteractiveServer
@@ -7,86 +8,139 @@
 
 <PageHeader Title="Fußball" Meta="BUNDESLIGA" />
 
-<div class="detail-body is-scroll">
-<div class="football-page">
-    <div class="football-bar">
-        <div class="football-tabs" role="tablist">
+<div class="detail-body">
+    <div class="tab-row" role="tablist">
+        <div class="tab-row-items">
             @foreach (var (key, label) in Tabs())
             {
-                <button class="football-tab @(_tab == key ? "is-active" : null)"
+                <button class="tab @(_tab == key ? "is-active" : null)"
                         role="tab" aria-selected="@(_tab == key)" @onclick="() => _tab = key">
                     @label
                 </button>
             }
         </div>
-        <button class="football-toggle @(_showCrests ? "is-on" : null)"
-                @onclick="() => _showCrests = !_showCrests"
+        <button class="tab fb-toggle" @onclick="() => _showCrests = !_showCrests"
                 title="Vereinswappen / Flaggen ein- oder ausblenden">
-            <svg class="football-toggle-icon" width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
-                <path d="M8 2 3 4v4c0 3 2.2 4.8 5 6 2.8-1.2 5-3 5-6V4L8 2Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" />
-            </svg>
             Wappen @(_showCrests ? "an" : "aus")
         </button>
     </div>
 
-    @if (_tab == "tables")
-    {
-        @if (_tables is { Count: > 0 })
-        {
-            <TableFilter Tables="_tables" ShowCrests="_showCrests" />
-        }
-        else
-        {
-            <p class="football-page-empty">Tabellen gerade nicht verfügbar.</p>
-        }
-    }
-    else if (_tab == "cl" && _cl is not null)
-    {
-        <div class="football-comp">
-            @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
+    <div class="fb-body">
+        <div class="fb-main">
+            @if (_tab == "tables")
             {
-                <TableFilter Tables="@(new[] { phase })" ShowCrests="_showCrests" />
+                @if (_tables is { Count: > 0 })
+                {
+                    <TableFilter Tables="_tables" ShowCrests="_showCrests" MarkRelegation="true" />
+                }
+                else
+                {
+                    <p class="fb-empty">Tabellen gerade nicht verfügbar.</p>
+                }
             }
-            @if (_cl.Bracket is not null)
+            else if (_tab == "cl" && _cl is not null)
             {
-                <section class="football-card football-card-wide">
-                    <h2>K.o.-Runde</h2>
-                    <KnockoutBracketView Bracket="_cl.Bracket" ShowCrests="_showCrests" />
+                @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
+                {
+                    <TableFilter Tables="@(new[] { phase })" ShowCrests="_showCrests" />
+                }
+                @if (_cl.Bracket is not null)
+                {
+                    <section class="fb-bracket">
+                        <h2 class="mono-label">K.O.-RUNDE</h2>
+                        <KnockoutBracketView Bracket="_cl.Bracket" ShowCrests="_showCrests" />
+                    </section>
+                }
+            }
+            else if (_tab.StartsWith("t:", StringComparison.Ordinal) && CurrentTournament() is { } tournament)
+            {
+                @if (tournament.Groups.Count > 0)
+                {
+                    <TableFilter Tables="tournament.Groups" ShowCrests="_showCrests" />
+                }
+                @if (tournament.Bracket is not null)
+                {
+                    <section class="fb-bracket">
+                        <h2 class="mono-label">K.O.-RUNDE</h2>
+                        <KnockoutBracketView Bracket="tournament.Bracket" ShowCrests="_showCrests" />
+                    </section>
+                }
+            }
+        </div>
+
+        @* „Deine Vereine" steht jetzt permanent neben der Tabelle statt hinter einem eigenen Tab. *@
+        <aside class="fb-aside">
+            @foreach (var team in Teams)
+            {
+                <section class="fb-team">
+                    <span class="fb-team-name">
+                        @if (_showCrests && FootballFormatter.CrestSrc(team.CrestUrl) is { } crest)
+                        {
+                            <img class="fb-crest" src="@crest" alt="" width="20" height="20" loading="lazy" />
+                        }
+                        @team.TeamName
+                    </span>
+                    <span class="mono-label">
+                        PLATZ @FootballFormatter.Position(team.Standing) · @PointsLabel(team.Standing)
+                    </span>
+
+                    <div class="fb-form" aria-label="Form der letzten Spiele">
+                        @foreach (var match in Form(team))
+                        {
+                            <span class="fb-form-box @FormCss(match.Outcome)">@FootballFormatter.OutcomeLabel(match.Outcome)</span>
+                        }
+                    </div>
+
+                    @if (team.Upcoming.FirstOrDefault() is { } next)
+                    {
+                        <div class="fb-next">
+                            <span class="mono-label">NÄCHSTES SPIEL</span>
+                            <span class="fb-next-text">
+                                @FootballFormatter.DateTimeLabel(next.KickoffUtc) · @next.Opponent
+                                (@FootballFormatter.Venue(next))
+                            </span>
+                        </div>
+                    }
                 </section>
             }
-        </div>
-    }
-    else if (_tab.StartsWith("t:", StringComparison.Ordinal) && CurrentTournament() is { } tournament)
-    {
-        <div class="football-comp">
-            @if (tournament.Groups.Count > 0)
-            {
-                <TableFilter Tables="tournament.Groups" ShowCrests="_showCrests" />
-            }
-            @if (tournament.Bracket is not null)
-            {
-                <section class="football-card football-card-wide">
-                    <h2>K.o.-Runde</h2>
-                    <KnockoutBracketView Bracket="tournament.Bracket" ShowCrests="_showCrests" />
-                </section>
-            }
-        </div>
-    }
-    else if (_tab == "clubs")
-    {
-        <div class="football-clubs">
-            <FootballTile ShowCrests="_showCrests" />
-        </div>
-    }
-</div>
+
+            <section class="fb-week">
+                <span class="mono-label">DIESE WOCHE</span>
+                @if (_week is null || !FootballWeekBuilder.HasMatches(_week))
+                {
+                    <span class="fb-week-empty">Keine Spiele.</span>
+                }
+                else
+                {
+                    @foreach (var entry in WeekEntries())
+                    {
+                        <div class="fb-week-row">
+                            <span class="fb-week-time">@(entry.IsFinished ? entry.Result : entry.Time)</span>
+                            <span class="fb-week-match">@entry.TeamName @entry.Venue @entry.Opponent</span>
+                        </div>
+                    }
+                }
+            </section>
+        </aside>
+    </div>
 </div>
 
 @code {
+    /// <summary>Länge der Formreihe im Aside.</summary>
+    private const int FormLength = 5;
+
+    /// <summary>So viele Begegnungen passen unter „Diese Woche", ohne das Aside zu sprengen.</summary>
+    private const int WeekRows = 5;
+
     private IReadOnlyList<LeagueTable>? _tables;
     private ChampionsLeague? _cl;
     private IReadOnlyList<TournamentView>? _tournaments;
+    private IReadOnlyList<FootballTeamSnapshot> _teams = Array.Empty<FootballTeamSnapshot>();
+    private IReadOnlyList<FootballWeekDay>? _week;
     private string _tab = "tables";
     private bool _showCrests = true;
+
+    private IReadOnlyList<FootballTeamSnapshot> Teams => _teams;
 
     protected override void OnInitialized()
     {
@@ -108,9 +162,12 @@
         _tables = snapshot?.LeagueTables;
         _cl = snapshot?.Cl;
         _tournaments = snapshot?.Tournaments;
+        _teams = snapshot?.Teams ?? (IReadOnlyList<FootballTeamSnapshot>)Array.Empty<FootballTeamSnapshot>();
+        _week = snapshot is null ? null : FootballWeekBuilder.Build(snapshot);
     }
 
-    // Tab-Reihenfolge: Tabellen · Champions League · aktive Turniere · Vereine.
+    // Tab-Reihenfolge: Tabellen · Champions League · aktive Turniere.
+    // „Vereine" entfällt — das Aside zeigt sie jetzt dauerhaft.
     private IReadOnlyList<(string Key, string Label)> Tabs()
     {
         var tabs = new List<(string, string)> { ("tables", "Tabellen") };
@@ -124,7 +181,6 @@
             tabs.AddRange(_tournaments.Select(t => ($"t:{t.Code}", t.Name)));
         }
 
-        tabs.Add(("clubs", "Vereine"));
         return tabs;
     }
 
@@ -150,6 +206,19 @@
         var code = _tab[2..];
         return _tournaments.FirstOrDefault(t => t.Code == code);
     }
+
+    // Die jüngsten Spiele stehen zuerst; die Formreihe liest sich von alt nach neu.
+    private static IEnumerable<Match> Form(FootballTeamSnapshot team) =>
+        team.RecentResults.OrderByDescending(m => m.KickoffUtc).Take(FormLength).Reverse();
+
+    private static string FormCss(MatchOutcome? outcome) =>
+        outcome == MatchOutcome.Win ? "is-win" : "is-other";
+
+    private static string PointsLabel(TablePosition? standing) =>
+        standing is null ? "–" : $"{standing.Points} PKT";
+
+    private IEnumerable<FootballWeekEntry> WeekEntries() =>
+        (_week ?? Array.Empty<FootballWeekDay>()).SelectMany(d => d.Entries).Take(WeekRows);
 
     public void Dispose() => FootballState.Changed -= OnChanged;
 }

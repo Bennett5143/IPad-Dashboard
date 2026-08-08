@@ -19,9 +19,9 @@
             </div>
         }
 
-        <section class="tf-card">
+        <section class="tf-table">
             <h2 class="tf-heading">@Heading(Current)</h2>
-            <StandingsTable Table="Current" ShowCrests="ShowCrests" />
+            <StandingsTable Table="Current" ShowCrests="ShowCrests" MarkRelegation="MarkRelegation" />
         </section>
     </div>
 }
@@ -31,6 +31,9 @@
 
     /// <summary>Wappen in der gezeigten Tabelle ein-/ausblenden (durchgereicht an StandingsTable).</summary>
     [Parameter] public bool ShowCrests { get; set; } = true;
+
+    /// <summary>Abstiegsplätze markieren (durchgereicht an StandingsTable).</summary>
+    [Parameter] public bool MarkRelegation { get; set; }
 
     private int _selected;
 
