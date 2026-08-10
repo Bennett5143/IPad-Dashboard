@@ -19,6 +19,8 @@
                 </button>
             }
         </div>
+        @* The news subpage is fed by the research tooling, not by football-data. *@
+        <a class="tab fb-toggle" href="/football/news">Nachrichten</a>
         <button class="tab fb-toggle" @onclick="() => _showCrests = !_showCrests"
                 title="Vereinswappen / Flaggen ein- oder ausblenden">
             Wappen @(_showCrests ? "an" : "aus")

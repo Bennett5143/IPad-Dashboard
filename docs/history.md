@@ -96,3 +96,7 @@ One squash PR per slice.
   loopback-only DB port, gated `/tiles/warm`, sanitized `/health/ready` (#128),
   YAGNI cleanup of dead UI components and the speculative Fabrizio-alert port
   (#129), deployment guide (see [deployment.md](deployment.md)).
+- **Reading a foreign schema (Aug 2026)** — football news and a market report
+  produced by a separate tool are displayed from a `research` schema this app
+  reads but never writes or migrates. Second read-only `DbContext`, migration
+  exclusion enforced by tests, empty state when the schema is absent.

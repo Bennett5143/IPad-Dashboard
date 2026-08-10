@@ -8,6 +8,14 @@
 
 <PageHeader Title="Krypto" Meta="@Meta" />
 
+<div class="tab-row" role="navigation">
+    <div class="tab-row-items">
+        <span class="tab is-active">Kurse</span>
+        @* Written by the research tooling into the `research` schema. *@
+        <a class="tab" href="/crypto/market">Marktbericht</a>
+    </div>
+</div>
+
 <div class="detail-body">
     @if (_snapshot is null)
     {
