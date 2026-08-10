@@ -1,0 +1,239 @@
+@page "/crypto/market"
+@layout DetailLayout
+@using Dashboard.Domain.Research
+@inject IResearchRepository Research
+
+@* The market report as the research tooling recorded it. Every figure carries
+   the source that supplied it and the timestamp that source reported — this page
+   never presents a number as its own, and adds no forecast or recommendation. *@
+
+<PageTitle>Marktbericht</PageTitle>
+
+<PageHeader Title="Marktbericht" Meta="@Meta" />
+
+<div class="detail-body">
+    @if (_report is null)
+    {
+        <p class="rs-empty">Wird geladen…</p>
+    }
+    else if (_report.IsEmpty)
+    {
+        <p class="rs-empty">
+            Kein Marktbericht vorhanden. Das Recherche-Tooling hat für diese
+            Datenbank noch nichts geschrieben.
+        </p>
+    }
+    else
+    {
+        @foreach (var (assetClass, heading) in Sections)
+        {
+            var quotes = _report.Quotes.Where(q => q.AssetClass == assetClass).ToList();
+            if (quotes.Count == 0) { continue; }
+
+            <section class="rs-group">
+                <h2 class="mono-label">@heading</h2>
+                <table class="rs-quotes">
+                    <thead>
+                        <tr>
+                            <th>Wert</th>
+                            <th class="rs-num">Stand</th>
+                            <th class="rs-num">24 h</th>
+                            <th class="rs-num">7 T</th>
+                            <th class="rs-num">30 T</th>
+                            <th>Quelle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var quote in quotes.OrderBy(q => q.Symbol))
+                        {
+                            <tr>
+                                <td>
+                                    <span class="rs-symbol">@quote.Symbol</span>
+                                    <span class="rs-name">@quote.Name</span>
+                                </td>
+                                <td class="rs-num">@FormatValue(quote)</td>
+                                <td class="rs-num @ChangeClass(quote.Change24hPct)">@FormatChange(quote.Change24hPct)</td>
+                                <td class="rs-num @ChangeClass(quote.Change7dPct)">@FormatChange(quote.Change7dPct)</td>
+                                <td class="rs-num @ChangeClass(quote.Change30dPct)">@FormatChange(quote.Change30dPct)</td>
+                                <td class="rs-source">
+                                    @quote.Source
+                                    <span class="rs-date">@quote.ObservedAt.ToLocalTime().ToString("dd.MM. HH:mm")</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+        }
+
+        @if (_report.Drivers.Count > 0)
+        {
+            <section class="rs-group">
+                <h2 class="mono-label">WAS SICH BEWEGT HAT</h2>
+                @foreach (var driver in _report.Drivers)
+                {
+                    <article class="rs-item">
+                        <div class="rs-item-head">
+                            <span class="rs-badge rs-badge-@BadgeClass(driver.Causality)">
+                                @CausalityLabel(driver.Causality)
+                            </span>
+                            @if (!string.IsNullOrWhiteSpace(driver.Symbol))
+                            {
+                                <span class="rs-symbol">@driver.Symbol</span>
+                            }
+                            <span class="rs-category">@ScopeLabel(driver.Scope)</span>
+                        </div>
+                        <p class="rs-summary">@driver.Statement</p>
+                        <div class="rs-source">@SourceMarkup(driver.SourceName, driver.SourceUrl)</div>
+                    </article>
+                }
+            </section>
+        }
+
+        @if (_report.Events.Count > 0)
+        {
+            <section class="rs-group">
+                <h2 class="mono-label">EREIGNISSE</h2>
+                @foreach (var marketEvent in _report.Events)
+                {
+                    <article class="rs-item">
+                        <div class="rs-item-head">
+                            <span class="rs-category">@CategoryLabel(marketEvent.Category)</span>
+                            @if (!string.IsNullOrWhiteSpace(marketEvent.Region))
+                            {
+                                <span class="rs-club">@marketEvent.Region</span>
+                            }
+                            @if (marketEvent.EventDate is { } date)
+                            {
+                                <span class="rs-date">@date.ToString("dd.MM.")</span>
+                            }
+                        </div>
+                        <h3 class="rs-headline">@marketEvent.Headline</h3>
+                        <p class="rs-summary">@marketEvent.Summary</p>
+                        <div class="rs-source">@SourceMarkup(marketEvent.SourceName, marketEvent.SourceUrl)</div>
+                    </article>
+                }
+            </section>
+        }
+
+        @* Wave readings are always someone else's assessment. The section stays
+           away entirely when none was recorded — nothing is generated to fill it. *@
+        @if (_report.WaveViews.Count > 0)
+        {
+            <section class="rs-group">
+                <h2 class="mono-label">WELLENDEUTUNGEN — FREMDE EINSCHÄTZUNG</h2>
+                <p class="rs-disclaimer">
+                    Deutungen Dritter, unverändert wiedergegeben. Weder dieses
+                    Dashboard noch das Recherche-Tooling zählt selbst Wellen.
+                </p>
+                @foreach (var view in _report.WaveViews)
+                {
+                    <article class="rs-item">
+                        <div class="rs-item-head">
+                            <span class="rs-symbol">@view.Symbol</span>
+                            <span class="rs-club">@view.Analyst</span>
+                            @if (view.PublishedOn is { } published)
+                            {
+                                <span class="rs-date">@published.ToString("dd.MM.yyyy")</span>
+                            }
+                        </div>
+                        <p class="rs-summary">@view.Reading</p>
+                        <div class="rs-source">
+                            <a href="@view.SourceUrl" target="_blank" rel="noopener noreferrer">@view.SourceName</a>
+                        </div>
+                    </article>
+                }
+            </section>
+        }
+    }
+</div>
+
+@code {
+    private MarketReport? _report;
+
+    private static readonly (string AssetClass, string Heading)[] Sections =
+    {
+        ("crypto", "KRYPTO"),
+        ("index", "INDIZES"),
+        ("policy_rate", "LEITZINSEN"),
+    };
+
+    private string? Meta => _report?.LastUpdated is { } stamp
+        ? $"STAND {stamp.ToLocalTime():dd.MM. HH:mm}"
+        : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _report = await Research.GetMarketReportAsync();
+    }
+
+    private static string FormatValue(MarketQuote quote) => quote.Unit switch
+    {
+        "percent" => $"{quote.Value:0.##} %",
+        "index_points" => quote.Value.ToString("N2"),
+        _ => quote.Currency is null
+            ? quote.Value.ToString("0.########")
+            : $"{quote.Value:0.########} {quote.Currency}",
+    };
+
+    private static string FormatChange(decimal? change) =>
+        change is null ? "—" : $"{change.Value:+0.00;-0.00;0.00} %";
+
+    private static string ChangeClass(decimal? change) => change switch
+    {
+        null => "rs-flat",
+        > 0 => "rs-up",
+        < 0 => "rs-down",
+        _ => "rs-flat",
+    };
+
+    private static string CausalityLabel(Causality causality) => causality switch
+    {
+        Causality.Evidenced => "belegt",
+        Causality.Plausible => "plausibel",
+        Causality.Unclear => "unklar",
+        _ => "unbekannt",
+    };
+
+    private static string BadgeClass(Causality causality) => causality switch
+    {
+        Causality.Evidenced => "confirmed",
+        Causality.Plausible => "reported",
+        Causality.Unclear => "rumour",
+        _ => "unknown",
+    };
+
+    private static string ScopeLabel(string scope) => scope switch
+    {
+        "crypto" => "Krypto",
+        "equities" => "Aktien",
+        "macro" => "Makro",
+        _ => scope,
+    };
+
+    private static string CategoryLabel(string category) => category switch
+    {
+        "rate_decision" => "Zinsentscheid",
+        "inflation" => "Inflation",
+        "policy_regulation" => "Politik / Regulierung",
+        "ipo" => "IPO",
+        "other" => "Sonstiges",
+        _ => category,
+    };
+
+    private static MarkupString SourceMarkup(string? name, string? url)
+    {
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            var label = System.Net.WebUtility.HtmlEncode(name ?? "Quelle");
+            var href = System.Net.WebUtility.HtmlEncode(url);
+            return new MarkupString(
+                $"<a href=\"{href}\" target=\"_blank\" rel=\"noopener noreferrer\">{label}</a>");
+        }
+
+        var text = string.IsNullOrWhiteSpace(name)
+            ? "Quelle nicht angegeben"
+            : System.Net.WebUtility.HtmlEncode(name) + " — kein Artikellink";
+        return new MarkupString($"<span class=\"rs-source-unlinked\">{text}</span>");
+    }
+}

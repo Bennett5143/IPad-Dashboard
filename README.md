@@ -91,6 +91,9 @@ own interval and push updates to the UI over SignalR without a page reload.
 - [Feature modules](docs/feature-modules.md) — what each module does and its key files
 - [History](docs/history.md) — guiding decisions and a compact changelog
 
+Planning artifacts (specs, change proposals, internal notes) are kept outside
+this repository, so `docs/` is the complete public documentation.
+
 ## License
 
 [MIT](LICENSE)

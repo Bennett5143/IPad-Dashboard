@@ -82,6 +82,33 @@ grid + day agenda. `Domain/Calendar` (`CalendarState`),
 `Infrastructure/Calendar/IcsCalendarClient` + `CalendarRefreshService`,
 component `EinkCalendar`. No persistence — pure live state.
 
+## Research pages — football news & market report
+
+Two pages that display rows written by a **separate tool**, not by this app:
+football news (`/football/news`) and a market report (`/crypto/market`).
+
+The rows live in a Postgres schema named `research`, in the same database this
+app uses. That schema has exactly one writer, and it is not this application:
+another program creates it, versions it with its own migrations, and fills it.
+Here it is read and rendered, nothing else.
+
+Two consequences visible in the code:
+
+- `ResearchDbContext` (`Infrastructure/Research`) is a second, read-only
+  context: `NoTracking`, `SaveChanges` throws, and every entity is mapped with
+  `ExcludeFromMigrations()`. `DashboardDbContext` — the one that owns the
+  migration history — is explicitly kept from scanning those configurations, so
+  a generated migration can never create, alter or drop those tables.
+- A missing schema is an empty page, not an error: the repository catches the
+  Postgres "undefined schema/table" states and returns nothing, because the
+  writing tool may simply never have run against a given database.
+
+Both pages show the grades the writer recorded (`confirmed | reported | rumour`
+for news, `evidenced | plausible | unclear` for market explanations) unchanged,
+and never add a forecast or a recommendation of their own.
+`Domain/Research`, `Infrastructure/Research`, pages `FootballNews.razor` and
+`Market.razor`; guarded by `tests/Dashboard.Tests/Research`.
+
 ## Status & observability
 
 `/status` shows per-slice freshness (`ISliceStatusSource` implemented by

@@ -371,3 +371,161 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     letter-spacing: 0.1em;
     margin-bottom: var(--space-4);
 }
+
+/* ============================================================
+   Research pages (Fußball-Nachrichten, Marktbericht)
+
+   Shared by both pages, so they live here next to .detail-body and
+   .tab-row rather than being duplicated in two scoped stylesheets.
+
+   The grade badges carry meaning, not decoration: a rumour must be
+   distinguishable from a confirmed report without reading the text.
+   On paper that means weight and rule, not hue — the ramp stays the
+   ramp, and only up/down price movement uses the data-bearing
+   --bull/--bear tokens.
+   ============================================================ */
+
+.rs-empty {
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 12px;
+}
+
+.rs-group {
+    padding: 10px 0 4px;
+    border-bottom: 1px solid var(--rule);
+}
+
+.rs-group:last-child { border-bottom: none; }
+
+.rs-item {
+    padding: 10px 0 12px;
+    border-bottom: 1px solid var(--track);
+}
+
+.rs-group .rs-item:last-child { border-bottom: none; }
+
+.rs-item-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.rs-headline {
+    font-size: 17px;
+    line-height: 1.3;
+    margin: 2px 0 4px;
+}
+
+.rs-summary {
+    color: var(--ink);
+    line-height: 1.45;
+    margin: 0 0 6px;
+}
+
+.rs-club,
+.rs-symbol {
+    font-family: var(--font-family-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+}
+
+.rs-name,
+.rs-category,
+.rs-date {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.rs-name { margin-left: 6px; }
+
+.rs-source {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.rs-source a { color: var(--accent); }
+
+/* A missing link is shown as missing — never replaced by a section page. */
+.rs-source-unlinked {
+    color: var(--faint);
+    font-style: italic;
+}
+
+.rs-disclaimer {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin: 0 0 8px;
+}
+
+/* ===== grade badges ===== */
+
+.rs-badge {
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    flex: none;
+}
+
+.rs-badge-confirmed {
+    color: var(--ink);
+    border-color: var(--ink);
+    font-weight: 600;
+}
+
+.rs-badge-reported { color: var(--ink); }
+
+/* Dashed rule: the weakest grade reads as provisional at a glance. */
+.rs-badge-rumour,
+.rs-badge-unknown {
+    border-style: dashed;
+    color: var(--faint);
+}
+
+/* ===== quote table ===== */
+
+.rs-quotes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.rs-quotes th {
+    text-align: left;
+    font-family: var(--font-family-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+    padding: 4px 8px 4px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.rs-quotes td {
+    padding: 5px 8px 5px 0;
+    border-bottom: 1px solid var(--track);
+    vertical-align: baseline;
+}
+
+.rs-quotes tr:last-child td { border-bottom: none; }
+
+.rs-num {
+    text-align: right;
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.rs-quotes th.rs-num { text-align: right; }
+
+.rs-up { color: var(--bull); }
+.rs-down { color: var(--bear); }
+.rs-flat { color: var(--muted); }
