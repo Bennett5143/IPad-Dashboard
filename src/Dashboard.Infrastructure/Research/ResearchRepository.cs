@@ -62,31 +62,53 @@ public sealed class ResearchRepository : IResearchRepository
             Array.Empty<MarketQuote>(),
             "market quotes");
 
-        var drivers = await ReadAsync(
-            () => db.MarketDrivers
-                .OrderByDescending(driver => driver.LastSeenAt)
-                .ThenBy(driver => driver.Scope)
+        // One row per run of the research tool, so the page wants the newest.
+        // Ordered by id rather than by created_at: two runs in the same second
+        // would tie on the timestamp, and the identity column cannot.
+        var situation = await ReadAsync(
+            () => db.MarketSituations
+                .OrderByDescending(item => item.Id)
+                .Take(1)
                 .ToListAsync(ct),
-            Array.Empty<MarketDriver>(),
-            "market drivers");
+            Array.Empty<MarketSituation>(),
+            "market situation");
 
+        // One report, not an archive. The entries shown are those the run that
+        // wrote the paragraph also wrote: "noteworthy" is a handful of things
+        // about now, and with a weekly run and a 45-day dedupe window the table
+        // would otherwise grow without bound on the page.
+        //
+        // Without a situation there is nothing to tie entries to — a database
+        // written by the older, search-driven version — so everything is shown
+        // rather than nothing.
+        var current = situation.FirstOrDefault();
         var events = await ReadAsync(
-            () => db.MarketEvents
-                .OrderByDescending(marketEvent => marketEvent.EventDate)
-                .ThenByDescending(marketEvent => marketEvent.LastSeenAt)
-                .ToListAsync(ct),
+            () => MostAgreedFirst(OfRun(db.MarketEvents, current?.RunId)).ToListAsync(ct),
             Array.Empty<MarketEvent>(),
             "market events");
 
-        var waveViews = await ReadAsync(
-            () => db.ElliottWaveViews
-                .OrderByDescending(view => view.PublishedOn)
-                .ToListAsync(ct),
-            Array.Empty<ElliottWaveView>(),
-            "wave readings");
-
-        return new MarketReport(quotes, drivers, events, waveViews);
+        return new MarketReport(quotes, current, events);
     }
+
+    /// <summary>
+    /// How many newsletters carried a story, first.
+    ///
+    /// The importance measure the research tooling computes from its corpus,
+    /// and the only ordering this page applies that is not a timestamp — a
+    /// count of independent publications is a statement no wording can move.
+    /// Named and public so the SQL translation of <c>newsletters.Count</c> can
+    /// be asserted without a database: it becomes <c>cardinality()</c>, and a
+    /// version of Npgsql that stopped doing so would otherwise fail at runtime.
+    /// </summary>
+    public static IQueryable<MarketEvent> MostAgreedFirst(IQueryable<MarketEvent> events) =>
+        events
+            .OrderByDescending(marketEvent => marketEvent.Newsletters.Count)
+            .ThenByDescending(marketEvent => marketEvent.IssueDate)
+            .ThenByDescending(marketEvent => marketEvent.LastSeenAt);
+
+    /// <summary>The entries of one run, or all of them when there is no run to tie them to.</summary>
+    public static IQueryable<MarketEvent> OfRun(IQueryable<MarketEvent> events, long? runId) =>
+        runId is { } id ? events.Where(marketEvent => marketEvent.LastRunId == id) : events;
 
     private async Task<IReadOnlyList<T>> ReadAsync<T>(
         Func<Task<List<T>>> query, IReadOnlyList<T> fallback, string what)

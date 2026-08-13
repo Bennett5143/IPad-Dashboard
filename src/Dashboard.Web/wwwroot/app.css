@@ -455,6 +455,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     font-style: italic;
 }
 
+/* The situation paragraph: the report's opening half, and the only prose on
+   this page that is about the market as a whole rather than one event. */
+.rs-situation {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: 4px 0 8px;
+}
+
 .rs-disclaimer {
     font-size: 12px;
     color: var(--muted);
@@ -488,6 +497,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .rs-badge-unknown {
     border-style: dashed;
     color: var(--faint);
+}
+
+/* Not a grade but a warning: this text restates a figure the tooling fetches
+   itself. Solid and inked so it reads as "look at this", not as "unsure". */
+.rs-badge-flagged {
+    color: var(--ink);
+    border-color: var(--ink);
+    border-style: solid;
+    font-weight: 600;
 }
 
 /* ===== quote table ===== */

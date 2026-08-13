@@ -31,9 +31,8 @@ public sealed class ResearchDbContext : DbContext
 
     public DbSet<FootballNewsItem> FootballNews => Set<FootballNewsItem>();
     public DbSet<MarketQuote> MarketQuotes => Set<MarketQuote>();
-    public DbSet<MarketDriver> MarketDrivers => Set<MarketDriver>();
+    public DbSet<MarketSituation> MarketSituations => Set<MarketSituation>();
     public DbSet<MarketEvent> MarketEvents => Set<MarketEvent>();
-    public DbSet<ElliottWaveView> ElliottWaveViews => Set<ElliottWaveView>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
