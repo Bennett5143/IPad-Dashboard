@@ -19,21 +19,12 @@ internal static class GradeConverters
         grade => grade.ToString().ToLowerInvariant(),
         text => ParseConfidence(text));
 
-    public static readonly ValueConverter<Causality, string> Causality = new(
-        grade => grade.ToString().ToLowerInvariant(),
-        text => ParseCausality(text));
-
     // Named methods rather than inline TryParse: an expression tree cannot
     // declare an `out` variable, and EF compiles these converters into one.
     internal static NewsConfidence ParseConfidence(string text) =>
         Enum.TryParse<NewsConfidence>(text, ignoreCase: true, out var grade)
             ? grade
             : NewsConfidence.Unknown;
-
-    internal static Causality ParseCausality(string text) =>
-        Enum.TryParse<Causality>(text, ignoreCase: true, out var grade)
-            ? grade
-            : Domain.Research.Causality.Unknown;
 }
 
 public sealed class FootballNewsItemConfiguration : IEntityTypeConfiguration<FootballNewsItem>
@@ -89,26 +80,23 @@ public sealed class MarketQuoteConfiguration : IEntityTypeConfiguration<MarketQu
     }
 }
 
-public sealed class MarketDriverConfiguration : IEntityTypeConfiguration<MarketDriver>
+public sealed class MarketSituationConfiguration : IEntityTypeConfiguration<MarketSituation>
 {
-    public void Configure(EntityTypeBuilder<MarketDriver> builder)
+    public void Configure(EntityTypeBuilder<MarketSituation> builder)
     {
-        builder.ToTable("market_drivers", ResearchDbContext.SchemaName,
+        builder.ToTable("market_situation", ResearchDbContext.SchemaName,
             table => table.ExcludeFromMigrations());
 
-        builder.HasKey(driver => driver.Id);
-        builder.Property(driver => driver.Id).HasColumnName("id");
-        builder.Property(driver => driver.Scope).HasColumnName("scope");
-        builder.Property(driver => driver.Symbol).HasColumnName("symbol");
-        builder.Property(driver => driver.Statement).HasColumnName("statement");
-        builder.Property(driver => driver.Causality)
-            .HasColumnName("causality")
-            .HasConversion(GradeConverters.Causality);
-        builder.Property(driver => driver.SourceName).HasColumnName("source_name");
-        builder.Property(driver => driver.SourceUrl).HasColumnName("source_url");
-        builder.Property(driver => driver.ReportedOn).HasColumnName("reported_on");
-        builder.Property(driver => driver.FirstSeenAt).HasColumnName("first_seen_at");
-        builder.Property(driver => driver.LastSeenAt).HasColumnName("last_seen_at");
+        builder.HasKey(situation => situation.Id);
+        builder.Property(situation => situation.Id).HasColumnName("id");
+        builder.Property(situation => situation.RunId).HasColumnName("run_id");
+        builder.Property(situation => situation.Body).HasColumnName("body");
+        builder.Property(situation => situation.FiguresFlagged).HasColumnName("figures_flagged");
+        builder.Property(situation => situation.CorpusFrom).HasColumnName("corpus_from");
+        builder.Property(situation => situation.CorpusTo).HasColumnName("corpus_to");
+        builder.Property(situation => situation.IssueCount).HasColumnName("issue_count");
+        builder.Property(situation => situation.NewsletterCount).HasColumnName("newsletter_count");
+        builder.Property(situation => situation.CreatedAt).HasColumnName("created_at");
     }
 }
 
@@ -128,27 +116,15 @@ public sealed class MarketEventConfiguration : IEntityTypeConfiguration<MarketEv
         builder.Property(marketEvent => marketEvent.EventDate).HasColumnName("event_date");
         builder.Property(marketEvent => marketEvent.SourceName).HasColumnName("source_name");
         builder.Property(marketEvent => marketEvent.SourceUrl).HasColumnName("source_url");
+        builder.Property(marketEvent => marketEvent.SourceOrigin).HasColumnName("source_origin");
+        // text[] in Postgres, and Npgsql maps it to a list without help. Read
+        // as IReadOnlyList so nothing on this side can append to it.
+        builder.Property(marketEvent => marketEvent.Newsletters).HasColumnName("newsletters");
+        builder.Property(marketEvent => marketEvent.IssueDate).HasColumnName("issue_date");
+        builder.Property(marketEvent => marketEvent.IssueId).HasColumnName("issue_id");
+        builder.Property(marketEvent => marketEvent.FiguresFlagged).HasColumnName("figures_flagged");
+        builder.Property(marketEvent => marketEvent.LastRunId).HasColumnName("last_run_id");
         builder.Property(marketEvent => marketEvent.FirstSeenAt).HasColumnName("first_seen_at");
         builder.Property(marketEvent => marketEvent.LastSeenAt).HasColumnName("last_seen_at");
-    }
-}
-
-public sealed class ElliottWaveViewConfiguration : IEntityTypeConfiguration<ElliottWaveView>
-{
-    public void Configure(EntityTypeBuilder<ElliottWaveView> builder)
-    {
-        builder.ToTable("elliott_wave_views", ResearchDbContext.SchemaName,
-            table => table.ExcludeFromMigrations());
-
-        builder.HasKey(view => view.Id);
-        builder.Property(view => view.Id).HasColumnName("id");
-        builder.Property(view => view.Symbol).HasColumnName("symbol");
-        builder.Property(view => view.Analyst).HasColumnName("analyst");
-        builder.Property(view => view.Reading).HasColumnName("reading");
-        builder.Property(view => view.PublishedOn).HasColumnName("published_on");
-        builder.Property(view => view.SourceName).HasColumnName("source_name");
-        builder.Property(view => view.SourceUrl).HasColumnName("source_url");
-        builder.Property(view => view.FirstSeenAt).HasColumnName("first_seen_at");
-        builder.Property(view => view.LastSeenAt).HasColumnName("last_seen_at");
     }
 }

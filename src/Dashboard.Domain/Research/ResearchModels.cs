@@ -14,19 +14,6 @@ public enum NewsConfidence
     Rumour,
 }
 
-/// <summary>
-/// How well a market explanation is backed by a source. <see cref="Unclear"/> is
-/// a deliberate, valid answer: the research tool says "unclear" instead of
-/// inventing a reason, and this app must not present it as anything else.
-/// </summary>
-public enum Causality
-{
-    Unknown = 0,
-    Evidenced,
-    Plausible,
-    Unclear,
-}
-
 /// <summary>One football story. Written by the research tool, read-only here.</summary>
 public sealed class FootballNewsItem
 {
@@ -49,6 +36,11 @@ public sealed class FootballNewsItem
 /// <summary>
 /// One observation of a price, index level or policy rate — with the source that
 /// supplied it and the timestamp THAT source reported, never our fetch time.
+///
+/// Since the market report was rebuilt around a newsletter corpus, this table is
+/// the ONLY place figures appear. The report itself no longer prints any: a
+/// price quoted in prose is stale the moment it is written and would contradict
+/// the table beside it.
 /// </summary>
 public sealed class MarketQuote
 {
@@ -67,22 +59,44 @@ public sealed class MarketQuote
     public string SourceUrl { get; init; } = "";
 }
 
-/// <summary>An account of what moved a market, graded by how well it is evidenced.</summary>
-public sealed class MarketDriver
+/// <summary>
+/// How markets stand, in one paragraph — the opening half of the report.
+///
+/// One row per run of the research tool. It carries no date of its own because
+/// it is drawn from every issue in a window rather than from one of them; the
+/// window is here instead, and it is what makes ageing visible. A paragraph
+/// whose newest issue is four days old says so.
+/// </summary>
+public sealed class MarketSituation
 {
     public long Id { get; init; }
-    public string Scope { get; init; } = "";
-    public string? Symbol { get; init; }
-    public string Statement { get; init; } = "";
-    public Causality Causality { get; init; }
-    public string? SourceName { get; init; }
-    public string? SourceUrl { get; init; }
-    public DateOnly? ReportedOn { get; init; }
-    public DateTimeOffset FirstSeenAt { get; init; }
-    public DateTimeOffset LastSeenAt { get; init; }
+    public long RunId { get; init; }
+    public string Body { get; init; } = "";
+
+    /// <summary>
+    /// The writer found a figure in this text that restates a quantity it
+    /// fetches itself. Marked, never edited: cutting the number out would leave
+    /// broken prose and hide the evidence that the rule was broken.
+    /// </summary>
+    public bool FiguresFlagged { get; init; }
+
+    public DateOnly? CorpusFrom { get; init; }
+    public DateOnly? CorpusTo { get; init; }
+    public int IssueCount { get; init; }
+    public int NewsletterCount { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
 }
 
-/// <summary>A market event: a rate decision, an inflation print, a regulatory move, an IPO.</summary>
+/// <summary>
+/// One noteworthy market event: a rate decision, a macro release, a regulatory
+/// move, a listing, a deal.
+///
+/// <see cref="Newsletters"/> is the relevance measure and the reason the rebuilt
+/// report exists: how many independent publications carried a story is a
+/// statement about its importance that no wording can move. <see cref="IssueDate"/>
+/// is the date of the issue the wording came from — every statement carries one,
+/// so that ageing is visible rather than invisible.
+/// </summary>
 public sealed class MarketEvent
 {
     public long Id { get; init; }
@@ -93,24 +107,30 @@ public sealed class MarketEvent
     public DateOnly? EventDate { get; init; }
     public string? SourceName { get; init; }
     public string? SourceUrl { get; init; }
-    public DateTimeOffset FirstSeenAt { get; init; }
-    public DateTimeOffset LastSeenAt { get; init; }
-}
 
-/// <summary>
-/// Someone else's Elliott wave reading. Analyst and source are non-nullable in
-/// the source schema on purpose: a reading without an author would be one the
-/// model produced, and neither the writer nor this app may present such a thing.
-/// </summary>
-public sealed class ElliottWaveView
-{
-    public long Id { get; init; }
-    public string Symbol { get; init; } = "";
-    public string Analyst { get; init; } = "";
-    public string Reading { get; init; } = "";
-    public DateOnly? PublishedOn { get; init; }
-    public string SourceName { get; init; } = "";
-    public string SourceUrl { get; init; } = "";
+    /// <summary>
+    /// Where the row came from: <c>corpus</c> (written from a newsletter issue,
+    /// no link by nature), <c>measured</c> (computed from our own quote series,
+    /// links to the API), <c>model</c>, <c>matched</c> or <c>none</c>. An empty
+    /// link is only a defect for the last of those.
+    /// </summary>
+    public string SourceOrigin { get; init; } = "";
+
+    /// <summary>Slugs of every newsletter that carried this. Empty for a row that came from no newsletter.</summary>
+    public IReadOnlyList<string> Newsletters { get; init; } = [];
+
+    public DateOnly? IssueDate { get; init; }
+    public long? IssueId { get; init; }
+    public bool FiguresFlagged { get; init; }
+
+    /// <summary>
+    /// The run that last wrote this row. The page shows one report — the
+    /// entries of the run that also wrote the situation paragraph — because
+    /// "noteworthy" is a handful of things about now, not everything the
+    /// tooling has ever recorded.
+    /// </summary>
+    public long LastRunId { get; init; }
+
     public DateTimeOffset FirstSeenAt { get; init; }
     public DateTimeOffset LastSeenAt { get; init; }
 }
@@ -118,25 +138,26 @@ public sealed class ElliottWaveView
 /// <summary>The whole market report of one point in time, as displayed on one page.</summary>
 public sealed record MarketReport(
     IReadOnlyList<MarketQuote> Quotes,
-    IReadOnlyList<MarketDriver> Drivers,
-    IReadOnlyList<MarketEvent> Events,
-    IReadOnlyList<ElliottWaveView> WaveViews)
+    MarketSituation? Situation,
+    IReadOnlyList<MarketEvent> Events)
 {
-    public static readonly MarketReport Empty = new([], [], [], []);
+    public static readonly MarketReport Empty = new([], null, []);
 
-    public bool IsEmpty =>
-        Quotes.Count == 0 && Drivers.Count == 0 && Events.Count == 0 && WaveViews.Count == 0;
+    public bool IsEmpty => Quotes.Count == 0 && Situation is null && Events.Count == 0;
 
     /// <summary>Newest timestamp anywhere in the report — how current the page is.</summary>
     public DateTimeOffset? LastUpdated
     {
         get
         {
-            var stamps = Quotes.Select(q => q.ObservedAt)
-                .Concat(Drivers.Select(d => d.LastSeenAt))
-                .Concat(Events.Select(e => e.LastSeenAt))
-                .Concat(WaveViews.Select(w => w.LastSeenAt))
+            var stamps = Quotes.Select(quote => quote.ObservedAt)
+                .Concat(Events.Select(marketEvent => marketEvent.LastSeenAt))
                 .ToList();
+            if (Situation is { } situation)
+            {
+                stamps.Add(situation.CreatedAt);
+            }
+
             return stamps.Count == 0 ? null : stamps.Max();
         }
     }

@@ -3,15 +3,18 @@
 @using Dashboard.Domain.Research
 @inject IResearchRepository Research
 
-@* The market report as the research tooling recorded it. Every figure carries
-   the source that supplied it and the timestamp that source reported — this page
-   never presents a number as its own, and adds no forecast or recommendation. *@
+@* The market report as the research tooling recorded it: a paragraph on how
+   things stand, the figures it deliberately does not quote, and the few events
+   several newsletters carried. This page presents no number as its own and adds
+   no forecast or recommendation. *@
 
 <PageTitle>Marktbericht</PageTitle>
 
 <PageHeader Title="Marktbericht" Meta="@Meta" />
 
-<div class="detail-body">
+@* is-scroll: the situation, the quote tables and the entries stacked together
+   are taller than the viewport by design. *@
+<div class="detail-body is-scroll">
     @if (_report is null)
     {
         <p class="rs-empty">Wird geladen…</p>
@@ -25,6 +28,24 @@
     }
     else
     {
+        @if (_report.Situation is { } situation)
+        {
+            <section class="rs-group">
+                <h2 class="mono-label">DIE LAGE</h2>
+                @if (situation.FiguresFlagged)
+                {
+                    @* The one place a wrong figure would be noticed is gone with
+                       the old report's inline numbers. The mark replaces it. *@
+                    <p class="rs-disclaimer">
+                        Dieser Text gibt eine Zahl wieder, die das Tooling selbst
+                        abruft — siehe Tabelle unten.
+                    </p>
+                }
+                <p class="rs-situation">@situation.Body</p>
+                <p class="rs-source">@CorpusMeta(situation)</p>
+            </section>
+        }
+
         @foreach (var (assetClass, heading) in Sections)
         {
             var quotes = _report.Quotes.Where(q => q.AssetClass == assetClass).ToList();
@@ -66,81 +87,38 @@
             </section>
         }
 
-        @if (_report.Drivers.Count > 0)
-        {
-            <section class="rs-group">
-                <h2 class="mono-label">WAS SICH BEWEGT HAT</h2>
-                @foreach (var driver in _report.Drivers)
-                {
-                    <article class="rs-item">
-                        <div class="rs-item-head">
-                            <span class="rs-badge rs-badge-@BadgeClass(driver.Causality)">
-                                @CausalityLabel(driver.Causality)
-                            </span>
-                            @if (!string.IsNullOrWhiteSpace(driver.Symbol))
-                            {
-                                <span class="rs-symbol">@driver.Symbol</span>
-                            }
-                            <span class="rs-category">@ScopeLabel(driver.Scope)</span>
-                        </div>
-                        <p class="rs-summary">@driver.Statement</p>
-                        <div class="rs-source">@SourceMarkup(driver.SourceName, driver.SourceUrl)</div>
-                    </article>
-                }
-            </section>
-        }
-
         @if (_report.Events.Count > 0)
         {
             <section class="rs-group">
-                <h2 class="mono-label">EREIGNISSE</h2>
+                <h2 class="mono-label">BEMERKENSWERT</h2>
                 @foreach (var marketEvent in _report.Events)
                 {
                     <article class="rs-item">
                         <div class="rs-item-head">
                             <span class="rs-category">@CategoryLabel(marketEvent.Category)</span>
-                            @if (!string.IsNullOrWhiteSpace(marketEvent.Region))
+                            @if (Agreement(marketEvent) is { } agreement)
                             {
-                                <span class="rs-club">@marketEvent.Region</span>
+                                @* How many publications carried it. The importance
+                                   measure the tooling computes, and the only one
+                                   no wording can move. *@
+                                <span class="rs-badge @AgreementClass(marketEvent)">@agreement</span>
                             }
-                            @if (marketEvent.EventDate is { } date)
+                            @if (marketEvent.IssueDate is { } issued)
                             {
-                                <span class="rs-date">@date.ToString("dd.MM.")</span>
+                                <span class="rs-date">Ausgabe @issued.ToString("dd.MM.")</span>
+                            }
+                            else if (marketEvent.EventDate is { } happened)
+                            {
+                                <span class="rs-date">@happened.ToString("dd.MM.")</span>
+                            }
+                            @if (marketEvent.FiguresFlagged)
+                            {
+                                <span class="rs-badge rs-badge-flagged">Zahl geprüft</span>
                             }
                         </div>
                         <h3 class="rs-headline">@marketEvent.Headline</h3>
                         <p class="rs-summary">@marketEvent.Summary</p>
-                        <div class="rs-source">@SourceMarkup(marketEvent.SourceName, marketEvent.SourceUrl)</div>
-                    </article>
-                }
-            </section>
-        }
-
-        @* Wave readings are always someone else's assessment. The section stays
-           away entirely when none was recorded — nothing is generated to fill it. *@
-        @if (_report.WaveViews.Count > 0)
-        {
-            <section class="rs-group">
-                <h2 class="mono-label">WELLENDEUTUNGEN — FREMDE EINSCHÄTZUNG</h2>
-                <p class="rs-disclaimer">
-                    Deutungen Dritter, unverändert wiedergegeben. Weder dieses
-                    Dashboard noch das Recherche-Tooling zählt selbst Wellen.
-                </p>
-                @foreach (var view in _report.WaveViews)
-                {
-                    <article class="rs-item">
-                        <div class="rs-item-head">
-                            <span class="rs-symbol">@view.Symbol</span>
-                            <span class="rs-club">@view.Analyst</span>
-                            @if (view.PublishedOn is { } published)
-                            {
-                                <span class="rs-date">@published.ToString("dd.MM.yyyy")</span>
-                            }
-                        </div>
-                        <p class="rs-summary">@view.Reading</p>
-                        <div class="rs-source">
-                            <a href="@view.SourceUrl" target="_blank" rel="noopener noreferrer">@view.SourceName</a>
-                        </div>
+                        <div class="rs-source">@Provenance(marketEvent)</div>
                     </article>
                 }
             </section>
@@ -167,6 +145,50 @@
         _report = await Research.GetMarketReportAsync();
     }
 
+    /// <summary>
+    /// Which issues the paragraph was drawn from. It carries no single date —
+    /// it is written from a whole window — so the window is what makes its age
+    /// visible.
+    /// </summary>
+    private static string CorpusMeta(MarketSituation situation)
+    {
+        var parts = new List<string>();
+        if (situation.IssueCount > 0)
+        {
+            parts.Add($"{situation.IssueCount} Ausgaben");
+        }
+
+        if (situation.NewsletterCount > 0)
+        {
+            parts.Add($"{situation.NewsletterCount} Newsletter");
+        }
+
+        if (situation is { CorpusFrom: { } from, CorpusTo: { } to })
+        {
+            parts.Add(from == to
+                ? from.ToString("dd.MM.yyyy")
+                : $"{from:dd.MM.} – {to:dd.MM.yyyy}");
+        }
+
+        return parts.Count == 0 ? "" : "Aus " + string.Join(", ", parts);
+    }
+
+    private string? Agreement(MarketEvent marketEvent)
+    {
+        var carried = marketEvent.Newsletters.Count;
+        if (carried == 0)
+        {
+            return null;
+        }
+
+        var total = _report?.Situation?.NewsletterCount ?? 0;
+        return total > carried ? $"{carried} von {total}" : $"{carried}×";
+    }
+
+    // More than one publication on the same event is the signal; one is not.
+    private string AgreementClass(MarketEvent marketEvent) =>
+        marketEvent.Newsletters.Count > 1 ? "rs-badge-confirmed" : "rs-badge-unknown";
+
     private static string FormatValue(MarketQuote quote) => quote.Unit switch
     {
         "percent" => $"{quote.Value:0.##} %",
@@ -187,53 +209,60 @@
         _ => "rs-flat",
     };
 
-    private static string CausalityLabel(Causality causality) => causality switch
-    {
-        Causality.Evidenced => "belegt",
-        Causality.Plausible => "plausibel",
-        Causality.Unclear => "unklar",
-        _ => "unbekannt",
-    };
-
-    private static string BadgeClass(Causality causality) => causality switch
-    {
-        Causality.Evidenced => "confirmed",
-        Causality.Plausible => "reported",
-        Causality.Unclear => "rumour",
-        _ => "unknown",
-    };
-
-    private static string ScopeLabel(string scope) => scope switch
-    {
-        "crypto" => "Krypto",
-        "equities" => "Aktien",
-        "macro" => "Makro",
-        _ => scope,
-    };
-
     private static string CategoryLabel(string category) => category switch
     {
         "rate_decision" => "Zinsentscheid",
         "inflation" => "Inflation",
+        "macro_data" => "Konjunkturdaten",
         "policy_regulation" => "Politik / Regulierung",
-        "ipo" => "IPO",
+        "ipo" => "Börsengang",
+        "listing" => "Neu handelbar",
+        "deal" => "Übernahme / Finanzierung",
         "other" => "Sonstiges",
         _ => category,
     };
 
-    private static MarkupString SourceMarkup(string? name, string? url)
+    /// <summary>
+    /// Where an entry came from, in the terms of its own origin.
+    ///
+    /// A corpus row has no link and that is not a defect: its source is a
+    /// newsletter issue, and naming the publications says more than a missing
+    /// URL ever could. Only <c>none</c> is a genuinely unattributed row.
+    /// </summary>
+    private static MarkupString Provenance(MarketEvent marketEvent)
     {
-        if (!string.IsNullOrWhiteSpace(url))
+        if (marketEvent.Newsletters.Count > 0)
         {
-            var label = System.Net.WebUtility.HtmlEncode(name ?? "Quelle");
-            var href = System.Net.WebUtility.HtmlEncode(url);
+            var names = marketEvent.Newsletters.Select(NewsletterLabel);
+            return Escaped(string.Join(", ", names));
+        }
+
+        if (!string.IsNullOrWhiteSpace(marketEvent.SourceUrl))
+        {
+            var label = System.Net.WebUtility.HtmlEncode(marketEvent.SourceName ?? "Quelle");
+            var href = System.Net.WebUtility.HtmlEncode(marketEvent.SourceUrl);
             return new MarkupString(
                 $"<a href=\"{href}\" target=\"_blank\" rel=\"noopener noreferrer\">{label}</a>");
         }
 
-        var text = string.IsNullOrWhiteSpace(name)
+        var text = string.IsNullOrWhiteSpace(marketEvent.SourceName)
             ? "Quelle nicht angegeben"
-            : System.Net.WebUtility.HtmlEncode(name) + " — kein Artikellink";
+            : System.Net.WebUtility.HtmlEncode(marketEvent.SourceName) + " — kein Artikellink";
         return new MarkupString($"<span class=\"rs-source-unlinked\">{text}</span>");
     }
+
+    private static MarkupString Escaped(string text) =>
+        new(System.Net.WebUtility.HtmlEncode(text));
+
+    // The slug is an address, not a title. Anything unknown is shown as it is:
+    // a newsletter added upstream must appear, not vanish behind a fallback.
+    private static string NewsletterLabel(string slug) => slug switch
+    {
+        "axios" => "Axios",
+        "theupside" => "The Daily Upside",
+        "milkroad" => "Milk Road",
+        "dealbook" => "NYT DealBook",
+        "firstft" => "FT FirstFT",
+        _ => slug,
+    };
 }
