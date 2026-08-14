@@ -10,7 +10,9 @@
 
 <PageHeader Title="Nachrichten" Meta="@Meta" />
 
-<div class="detail-body">
+@* is-scroll: the list is as long as the run made it — the ceilings live in the
+   research tooling, not in this page's height. *@
+<div class="detail-body is-scroll">
     @if (_items is null)
     {
         <p class="rs-empty">Wird geladen…</p>
