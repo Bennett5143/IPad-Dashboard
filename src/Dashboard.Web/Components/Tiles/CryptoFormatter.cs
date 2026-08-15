@@ -26,6 +26,17 @@ public static class CryptoFormatter
         return sign + pct.ToString("0.0", De) + " %";
     }
 
+    /// <summary>
+    /// Tagesveränderung fürs Badge im Wochenkalender: mit Vorzeichen, eine Nachkommastelle.
+    /// Getrennt von <see cref="Percent(double)"/>, weil die Tagesreihe in <c>decimal</c> rechnet —
+    /// Kurse sind Geld, nicht Gleitkomma.
+    /// </summary>
+    public static string DailyChange(decimal changePercent)
+    {
+        var sign = changePercent > 0 ? "+" : string.Empty;
+        return sign + changePercent.ToString("0.0", De) + " %";
+    }
+
     /// <summary>Marktkapitalisierung kompakt (Bio./Mrd./Mio. €).</summary>
     public static string MarketCap(decimal? cap) => cap switch
     {

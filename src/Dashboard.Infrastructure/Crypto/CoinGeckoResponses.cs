@@ -14,3 +14,10 @@ internal sealed record CoinGeckoMarket(
 
 internal sealed record CoinGeckoSparkline(
     [property: JsonPropertyName("price")] IReadOnlyList<double>? Price);
+
+/// <summary>
+/// Antwort von <c>coins/{id}/market_chart</c>: Paare aus Zeitstempel (Millisekunden seit Epoch)
+/// und Kurs. Nur <c>prices</c> wird gelesen — Marktkapitalisierung und Volumen interessieren hier nicht.
+/// </summary>
+internal sealed record CoinGeckoMarketChart(
+    [property: JsonPropertyName("prices")] IReadOnlyList<decimal[]> Prices);

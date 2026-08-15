@@ -60,6 +60,8 @@ public sealed class CryptoRefreshService : BackgroundService
             var market = scope.ServiceProvider.GetRequiredService<ICryptoMarketProvider>();
             var sentimentProvider = scope.ServiceProvider.GetRequiredService<IMarketSentimentProvider>();
 
+            var history = scope.ServiceProvider.GetRequiredService<ICryptoHistoryProvider>();
+
             var coins = await market.GetMarketAsync(ct);
 
             // Stimmung ist best-effort: scheitert sie, behalten wir den zuletzt bekannten Wert.
@@ -73,7 +75,24 @@ public sealed class CryptoRefreshService : BackgroundService
                 _logger.LogWarning(ex, "Krypto: Marktstimmung nicht abrufbar – letzter Wert bleibt.");
             }
 
-            _state.Update(new CryptoSnapshot(coins, sentiment, _options.SummaryCoinId, _clock.UtcNow));
+            // Die Tagesreihe trägt nur das Badge im Wochenkalender – ebenfalls best-effort. Sie darf
+            // die Kurse weder aufhalten noch als veraltet erscheinen lassen.
+            var dailyChanges = _state.Current?.DailyChanges;
+            try
+            {
+                var fetched = await history.GetDailyChangesAsync(ct);
+                if (fetched.Count > 0)
+                {
+                    dailyChanges = fetched;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Krypto: Tagesreihe nicht abrufbar – letzte Reihe bleibt.");
+            }
+
+            _state.Update(new CryptoSnapshot(
+                coins, sentiment, _options.SummaryCoinId, _clock.UtcNow, dailyChanges));
             _logger.LogInformation("Krypto: Snapshot aktualisiert ({Count} Coins).", coins.Count);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

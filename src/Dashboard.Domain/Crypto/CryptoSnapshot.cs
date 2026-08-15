@@ -11,8 +11,16 @@ public sealed record CryptoSnapshot(
     IReadOnlyList<CoinQuote> Coins,
     MarketSentiment? Sentiment,
     string SummaryCoinId,
-    DateTimeOffset RetrievedAtUtc) : ISnapshot
+    DateTimeOffset RetrievedAtUtc,
+    IReadOnlyList<MarketDay>? DailyChanges = null) : ISnapshot
 {
+    /// <summary>Die Tagesveränderungen für das Badge im Wochenkalender; leer, wenn keine vorliegen.</summary>
+    public IReadOnlyList<MarketDay> Days => DailyChanges ?? [];
+
+    /// <summary>Die Veränderungen eines Kalendertags; leer, wenn für den Tag nichts vorliegt.</summary>
+    public IReadOnlyList<DailyChange> ChangesOn(DateOnly date) =>
+        Days.FirstOrDefault(day => day.Date == date)?.Changes ?? [];
+
     /// <summary>
     /// Leit-Münze für die Summary-Kachel (per <see cref="SummaryCoinId"/>); fällt auf die
     /// erste – also kapitalstärkste – Münze zurück, falls die konfigurierte Id fehlt.
