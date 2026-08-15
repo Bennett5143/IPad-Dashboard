@@ -24,10 +24,15 @@ public sealed class CryptoOptions
 
     /// <summary>
     /// CoinGecko-Slugs der Watchlist. Reihenfolge egal – die Anzeige sortiert nach
-    /// Marktkapitalisierung. In <c>appsettings.Local.json</c> überschreibbar.
+    /// Marktkapitalisierung. Vorgabe in <c>appsettings.json</c>, überschreibbar in
+    /// <c>appsettings.Local.json</c>; leer = kein Markt-Abruf.
+    /// <para>
+    /// Kein Vorgabewert an der Property: der Configuration-Binder hängt an eine vorbelegte Collection
+    /// an, statt sie zu ersetzen — derselbe Coin in Code und Konfiguration stünde sonst doppelt in
+    /// der Liste (siehe <c>FootballOptions.LeagueCodes</c>).
+    /// </para>
     /// </summary>
-    public IReadOnlyList<string> CoinIds { get; init; } =
-        ["bitcoin", "ethereum", "solana"];
+    public IReadOnlyList<string> CoinIds { get; init; } = [];
 
     /// <summary>Leit-Münze der Summary-Kachel (CoinGecko-Slug).</summary>
     public string SummaryCoinId { get; init; } = "bitcoin";
