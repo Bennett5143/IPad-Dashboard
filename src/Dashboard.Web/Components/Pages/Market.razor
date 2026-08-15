@@ -1,25 +1,27 @@
 @page "/crypto/market"
 @layout DetailLayout
 @using Dashboard.Domain.Research
+@rendermode InteractiveServer
 @inject IResearchRepository Research
 
 @* The market report as the research tooling recorded it: a paragraph on how
-   things stand, the figures it deliberately does not quote, and the few events
-   several newsletters carried. This page presents no number as its own and adds
-   no forecast or recommendation. *@
+   things stand, and the few events several newsletters carried — one at a time,
+   arrows and swiping. This page presents no number as its own and adds no
+   forecast or recommendation. The quote tables are gone: the prices that matter
+   here are on /crypto, live, and repeating them invited two truths. *@
 
 <PageTitle>Marktbericht</PageTitle>
 
-<PageHeader Title="Marktbericht" Meta="@Meta" />
+<PageHeader Title="Marktbericht" Meta="@Meta">
+    <span class="mono-label" id="@CounterId"></span>
+</PageHeader>
 
-@* is-scroll: the situation, the quote tables and the entries stacked together
-   are taller than the viewport by design. *@
-<div class="detail-body is-scroll">
+<div class="detail-body">
     @if (_report is null)
     {
         <p class="rs-empty">Wird geladen…</p>
     }
-    else if (_report.IsEmpty)
+    else if (!HasContent)
     {
         <p class="rs-empty">
             Kein Marktbericht vorhanden. Das Recherche-Tooling hat für diese
@@ -30,15 +32,12 @@
     {
         @if (_report.Situation is { } situation)
         {
-            <section class="rs-group">
+            <section class="rs-situation-block">
                 <h2 class="mono-label">DIE LAGE</h2>
                 @if (situation.FiguresFlagged)
                 {
-                    @* The one place a wrong figure would be noticed is gone with
-                       the old report's inline numbers. The mark replaces it. *@
                     <p class="rs-disclaimer">
-                        Dieser Text gibt eine Zahl wieder, die das Tooling selbst
-                        abruft — siehe Tabelle unten.
+                        Dieser Text gibt eine Zahl wieder, die das Tooling selbst abgerufen hat.
                     </p>
                 }
                 <p class="rs-situation">@situation.Body</p>
@@ -46,95 +45,25 @@
             </section>
         }
 
-        @foreach (var (assetClass, heading) in Sections)
-        {
-            var quotes = _report.Quotes.Where(q => q.AssetClass == assetClass).ToList();
-            if (quotes.Count == 0) { continue; }
-
-            <section class="rs-group">
-                <h2 class="mono-label">@heading</h2>
-                <table class="rs-quotes">
-                    <thead>
-                        <tr>
-                            <th>Wert</th>
-                            <th class="rs-num">Stand</th>
-                            <th class="rs-num">24 h</th>
-                            <th class="rs-num">7 T</th>
-                            <th class="rs-num">30 T</th>
-                            <th>Quelle</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var quote in quotes.OrderBy(q => q.Symbol))
-                        {
-                            <tr>
-                                <td>
-                                    <span class="rs-symbol">@quote.Symbol</span>
-                                    <span class="rs-name">@quote.Name</span>
-                                </td>
-                                <td class="rs-num">@FormatValue(quote)</td>
-                                <td class="rs-num @ChangeClass(quote.Change24hPct)">@FormatChange(quote.Change24hPct)</td>
-                                <td class="rs-num @ChangeClass(quote.Change7dPct)">@FormatChange(quote.Change7dPct)</td>
-                                <td class="rs-num @ChangeClass(quote.Change30dPct)">@FormatChange(quote.Change30dPct)</td>
-                                <td class="rs-source">
-                                    @quote.Source
-                                    <span class="rs-date">@quote.ObservedAt.ToLocalTime().ToString("dd.MM. HH:mm")</span>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </section>
-        }
-
         @if (_report.Events.Count > 0)
         {
-            <section class="rs-group">
-                <h2 class="mono-label">BEMERKENSWERT</h2>
-                @foreach (var marketEvent in _report.Events)
-                {
-                    <article class="rs-item">
-                        <div class="rs-item-head">
-                            <span class="rs-category">@CategoryLabel(marketEvent.Category)</span>
-                            @if (Agreement(marketEvent) is { } agreement)
-                            {
-                                @* How many publications carried it. The importance
-                                   measure the tooling computes, and the only one
-                                   no wording can move. *@
-                                <span class="rs-badge @AgreementClass(marketEvent)">@agreement</span>
-                            }
-                            @if (marketEvent.IssueDate is { } issued)
-                            {
-                                <span class="rs-date">Ausgabe @issued.ToString("dd.MM.")</span>
-                            }
-                            else if (marketEvent.EventDate is { } happened)
-                            {
-                                <span class="rs-date">@happened.ToString("dd.MM.")</span>
-                            }
-                            @if (marketEvent.FiguresFlagged)
-                            {
-                                <span class="rs-badge rs-badge-flagged">Zahl geprüft</span>
-                            }
-                        </div>
-                        <h3 class="rs-headline">@marketEvent.Headline</h3>
-                        <p class="rs-summary">@marketEvent.Summary</p>
-                        <div class="rs-source">@Provenance(marketEvent)</div>
-                    </article>
-                }
-            </section>
+            <h2 class="mono-label rs-deck-heading">BEMERKENSWERT</h2>
+            <NewsDeck Items="_deck" CounterElementId="@CounterId" />
         }
     }
 </div>
 
 @code {
-    private MarketReport? _report;
+    private const string CounterId = "market-counter";
 
-    private static readonly (string AssetClass, string Heading)[] Sections =
-    {
-        ("crypto", "KRYPTO"),
-        ("index", "INDIZES"),
-        ("policy_rate", "LEITZINSEN"),
-    };
+    private MarketReport? _report;
+    private IReadOnlyList<NewsDeckItem> _deck = [];
+
+    /// <summary>
+    /// Was die Seite zeigt, sind Lage und Einträge — die Kurstabellen sind entfallen. Ein Bericht
+    /// aus reinen Kursen ist für diese Seite deshalb leer, auch wenn er Zeilen hat.
+    /// </summary>
+    private bool HasContent => _report is { } report && (report.Situation is not null || report.Events.Count > 0);
 
     private string? Meta => _report?.LastUpdated is { } stamp
         ? $"STAND {stamp.ToLocalTime():dd.MM. HH:mm}"
@@ -143,6 +72,7 @@
     protected override async Task OnInitializedAsync()
     {
         _report = await Research.GetMarketReportAsync();
+        _deck = MarketReportViewBuilder.Build(_report);
     }
 
     /// <summary>
@@ -172,97 +102,4 @@
 
         return parts.Count == 0 ? "" : "Aus " + string.Join(", ", parts);
     }
-
-    private string? Agreement(MarketEvent marketEvent)
-    {
-        var carried = marketEvent.Newsletters.Count;
-        if (carried == 0)
-        {
-            return null;
-        }
-
-        var total = _report?.Situation?.NewsletterCount ?? 0;
-        return total > carried ? $"{carried} von {total}" : $"{carried}×";
-    }
-
-    // More than one publication on the same event is the signal; one is not.
-    private string AgreementClass(MarketEvent marketEvent) =>
-        marketEvent.Newsletters.Count > 1 ? "rs-badge-confirmed" : "rs-badge-unknown";
-
-    private static string FormatValue(MarketQuote quote) => quote.Unit switch
-    {
-        "percent" => $"{quote.Value:0.##} %",
-        "index_points" => quote.Value.ToString("N2"),
-        _ => quote.Currency is null
-            ? quote.Value.ToString("0.########")
-            : $"{quote.Value:0.########} {quote.Currency}",
-    };
-
-    private static string FormatChange(decimal? change) =>
-        change is null ? "—" : $"{change.Value:+0.00;-0.00;0.00} %";
-
-    private static string ChangeClass(decimal? change) => change switch
-    {
-        null => "rs-flat",
-        > 0 => "rs-up",
-        < 0 => "rs-down",
-        _ => "rs-flat",
-    };
-
-    private static string CategoryLabel(string category) => category switch
-    {
-        "rate_decision" => "Zinsentscheid",
-        "inflation" => "Inflation",
-        "macro_data" => "Konjunkturdaten",
-        "policy_regulation" => "Politik / Regulierung",
-        "ipo" => "Börsengang",
-        "listing" => "Neu handelbar",
-        "deal" => "Übernahme / Finanzierung",
-        "other" => "Sonstiges",
-        _ => category,
-    };
-
-    /// <summary>
-    /// Where an entry came from, in the terms of its own origin.
-    ///
-    /// A corpus row has no link and that is not a defect: its source is a
-    /// newsletter issue, and naming the publications says more than a missing
-    /// URL ever could. Only <c>none</c> is a genuinely unattributed row.
-    /// </summary>
-    private static MarkupString Provenance(MarketEvent marketEvent)
-    {
-        if (marketEvent.Newsletters.Count > 0)
-        {
-            var names = marketEvent.Newsletters.Select(NewsletterLabel);
-            return Escaped(string.Join(", ", names));
-        }
-
-        if (!string.IsNullOrWhiteSpace(marketEvent.SourceUrl))
-        {
-            var label = System.Net.WebUtility.HtmlEncode(marketEvent.SourceName ?? "Quelle");
-            var href = System.Net.WebUtility.HtmlEncode(marketEvent.SourceUrl);
-            return new MarkupString(
-                $"<a href=\"{href}\" target=\"_blank\" rel=\"noopener noreferrer\">{label}</a>");
-        }
-
-        var text = string.IsNullOrWhiteSpace(marketEvent.SourceName)
-            ? "Quelle nicht angegeben"
-            : System.Net.WebUtility.HtmlEncode(marketEvent.SourceName) + " — kein Artikellink";
-        return new MarkupString($"<span class=\"rs-source-unlinked\">{text}</span>");
-    }
-
-    private static MarkupString Escaped(string text) =>
-        new(System.Net.WebUtility.HtmlEncode(text));
-
-    // The slug is an address, not a title. Anything unknown is shown as it is:
-    // a newsletter added upstream must appear, not vanish behind a fallback.
-    private static string NewsletterLabel(string slug) => slug switch
-    {
-        "axios" => "Axios",
-        "theupside" => "The Daily Upside",
-        "milkroad" => "Milk Road",
-        "dealbook" => "NYT DealBook",
-        "firstft" => "FT FirstFT",
-        _ => slug,
-    };
 }
