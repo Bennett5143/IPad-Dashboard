@@ -30,8 +30,8 @@ so UI code sees domain types only; concrete infrastructure appears solely in
 
 ## The vertical slice pattern (external API → UI)
 
-Every data-pulling feature (weather, football, transit, WHOOP, crypto,
-calendar) is built the same way:
+Every data-pulling feature (weather, football, transit, WHOOP, crypto)
+is built the same way:
 
 1. **Domain**: records + port + a singleton `…State : ObservableState<TSnapshot>`.
    The state holds the latest snapshot in memory, can `MarkStale()`, and raises
@@ -65,8 +65,8 @@ minimum (honesty over impressiveness).
   `/heatmap`, `/runs`, `/habits`, `/status`) which use `DetailLayout` with a
   shared `Rail`.
 - **Home is an e-ink-style bento** (no-scroll, tuned for 1024×768): analog
-  clock, WHOOP rings, weather with hourly cards, month grid + day agenda from
-  the calendar feed, and a rail with status glyph.
+  clock, WHOOP rings, weather with hourly cards, the week over football and
+  price development, and a rail with status glyph.
 - **Paper theme**: two palettes (`data-theme="eink"` day / `"night"`) over one
   token set in `wwwroot/app.css` — the single source for all colors/sizes.
   A tiny plain-JS snippet in `App.razor` flips the theme on a 20:00–08:00

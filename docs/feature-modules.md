@@ -75,12 +75,19 @@ sentiment; both keyless. Market data is mandatory (failure → stale), sentiment
 is best-effort (keeps last value). `Domain/Crypto`, `CoinGeckoClient` +
 `FearGreedClient`, page `/crypto`.
 
-## Calendar — ICS feed
+## Week calendar — football and price development
 
-Server-side fetch of one or more ICS URLs (Ical.Net), powering the home month
-grid + day agenda. `Domain/Calendar` (`CalendarState`),
-`Infrastructure/Calendar/IcsCalendarClient` + `CalendarRefreshService`,
-component `EinkCalendar`. No persistence — pure live state.
+The full-width region at the bottom of the home page: seven day columns Mon–Sun
+(Berlin), each with that day's fixtures of the tracked clubs and a badge
+carrying Bitcoin's change for that day. A Champions League matchday is
+condensed into a single entry — the clubs involved do not appear separately.
+Future days carry no badge.
+
+`FootballWeekBuilder` builds the week from the football snapshot,
+`EinkWeek` renders it, and the daily series comes from the crypto snapshot
+(`CoinGeckoClient` as `ICryptoHistoryProvider`, best-effort like the market
+sentiment). There is no appointment integration: the former ICS/Apple calendar
+slice was removed with this region.
 
 ## Research pages — football news & market report
 

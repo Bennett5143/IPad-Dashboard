@@ -30,7 +30,7 @@ Whoop__ClientSecret=...
 EOF
 chmod 600 dashboard.secrets.env
 
-# 3. Private-but-not-secret config (location, transit stops, calendar URLs)
+# 3. Private-but-not-secret config (location, transit stops, tracked clubs)
 cp src/Dashboard.Web/appsettings.Local.json.example src/Dashboard.Web/appsettings.Local.json
 # fill it in; the file is mounted read-only into the container
 
