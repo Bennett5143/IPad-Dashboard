@@ -1,6 +1,9 @@
 .detail-shell {
     display: flex;
-    height: 100dvh;
+    /* Wie die Kiosk-Hülle angeheftet statt über die Viewport-Höhe gemessen — sonst wandert der
+       Rahmen auf iOS mit der Browser-Leiste und die Seite bekommt einen Scroll-Rest. */
+    position: fixed;
+    inset: 0;
     overflow: hidden;
     background-color: var(--bg);
     color: var(--ink);
@@ -14,7 +17,7 @@
 .detail-content {
     flex: 1;
     min-width: 0;
-    height: 100dvh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;

@@ -128,6 +128,14 @@ html {
     -webkit-font-smoothing: antialiased;
 }
 
+/* Kiosk: das Dokument selbst hat keinen scrollbaren Bereich. Was scrollen darf, sagt das
+   jeweilige Panel (z. B. `.detail-body.is-scroll`), nie die Seite als Ganzes. */
+html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
 body {
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
