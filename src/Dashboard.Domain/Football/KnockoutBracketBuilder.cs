@@ -145,7 +145,9 @@ public static class KnockoutBracketBuilder
             EarliestKickoff: legs[0].KickoffUtc);
     }
 
-    private static string StageLabel(string stage) => stage switch
+    /// <summary>Deutscher Name einer K.o.-Runde; unbekannte Stages bleiben, wie sie kommen.
+    /// Öffentlich, weil der Wochenkalender denselben Namen für seinen CL-Sammeleintrag braucht.</summary>
+    public static string StageLabel(string stage) => stage switch
     {
         "PLAYOFFS" => "Playoffs",
         "LAST_32" => "Sechzehntelfinale",
