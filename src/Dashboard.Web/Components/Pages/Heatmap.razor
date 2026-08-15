@@ -6,10 +6,11 @@
 @inject IRunPlaceStore RunPlaces
 @inject IStravaTokenStore TokenStore
 @inject ISyncStateStore SyncStateStore
-@inject IClock Clock
 @inject IJSRuntime JS
-@inject NavigationManager Nav
-@inject Microsoft.Extensions.Options.IOptions<MapOptions> MapView
+
+@* Ein Ort zur Zeit, in fester Ansicht. Die Karte lässt sich nicht verschieben und nicht zoomen:
+   auf dem offline iPad liegen nur die Kacheln der Orts-Ausschnitte vor, eine bewegliche Karte
+   liefe zwangsläufig in graue Flächen. Der Slider wählt den Ort. *@
 
 <PageTitle>Lauf-Heatmap</PageTitle>
 
@@ -25,24 +26,21 @@
             <a class="btn-connect" href="/strava/connect">Mit Strava verbinden</a>
         </div>
     }
+    else if (_places.Count == 0)
+    {
+        <p class="heatmap-hint">Noch keine Orte — die Zuordnung läuft mit dem nächsten Sync.</p>
+    }
     else
     {
         <div class="heatmap-controls">
-            @if (Place is null)
-            {
-                <div class="tab-row-items" role="group" aria-label="Zeitraum">
-                    <button class="tab @RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
-                    <button class="tab @RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRangeAsync(RunTimeRange.TwelveMonths)">12 Monate</button>
-                    <button class="tab @RangeCss(RunTimeRange.All)" @onclick="() => SetRangeAsync(RunTimeRange.All)">Alle</button>
+            <div class="place-slider">
+                <input type="range" min="0" max="@(_places.Count - 1)" step="1" value="@_index"
+                       aria-label="Ort" @onchange="OnSliderAsync" />
+                <div class="place-slider-head">
+                    <span class="place-slider-name">@Current.Name</span>
+                    <span class="mono-label">@Current.RunCount ORTE-LÄUFE · @(_index + 1)/@_places.Count</span>
                 </div>
-            }
-            else
-            {
-                <div class="cluster-banner">
-                    <span>Ort · @_runs.Count Läufe</span>
-                    <button class="cluster-reset" @onclick="ResetPlace">alle Läufe anzeigen</button>
-                </div>
-            }
+            </div>
 
             <div class="heatmap-stats">
                 <div class="stat"><span class="stat-value">@_stats.RunCount</span><span class="stat-label">Läufe</span></div>
@@ -79,36 +77,50 @@
 
     private const string MapElementId = "heatmap-map";
 
-    /// <summary>Optionaler Filter: nur die Läufe dieser Standard-Runde anzeigen (Tap auf /runs).</summary>
+    /// <summary>Ort, mit dem die Seite öffnet (Tap auf /runs).</summary>
     [Parameter, SupplyParameterFromQuery] public int? Place { get; set; }
 
     private bool _connected;
-    private RunTimeRange _range = RunTimeRange.TwelveMonths;
     private string _layer = "heat";
+    private IReadOnlyList<RunPlace> _places = [];
+    private int _index;
     private IReadOnlyList<Run> _runs = [];
     private RunStats _stats = new(0, 0, TimeSpan.Zero, null);
     private SyncSnapshot _sync = new(null, null, null);
     private IJSObjectReference? _module;
 
+    private RunPlace Current => _places[Math.Clamp(_index, 0, _places.Count - 1)];
+
     protected override async Task OnInitializedAsync()
     {
         _connected = await TokenStore.HasTokensAsync();
         _sync = await SyncStateStore.GetAsync();
-        if (_connected)
+        if (!_connected)
         {
-            await LoadRunsAsync();
+            return;
         }
+
+        _places = await RunPlaces.GetPlacesAsync();
+        if (_places.Count == 0)
+        {
+            return;
+        }
+
+        // Mit ?place= öffnet die Seite auf dem angetippten Ort, sonst auf dem meistgelaufenen.
+        var requested = Place is { } id ? _places.ToList().FindIndex(place => place.Id == id) : -1;
+        _index = requested >= 0 ? requested : 0;
+
+        await LoadRunsAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && _connected)
+        if (firstRender && _connected && _places.Count > 0)
         {
             await RenderMapAsync();
 
             // Sicherheitsnetz: Der erste Aufbau kann je nach Layout-/Stylesheet-Timing eine leere
-            // Karte erzeugen – erst ein zweiter Render rendert zuverlässig (wie ein Zeitraum-Klick).
-            // Daher nach kurzer Verzögerung einmal neu aufbauen.
+            // Karte erzeugen – erst ein zweiter Render rendert zuverlässig.
             await Task.Delay(300);
             try
             {
@@ -123,32 +135,21 @@
 
     private async Task LoadRunsAsync()
     {
-        if (Place is { } placeId)
-        {
-            // Einen Ort anzeigen: alle Läufe dieses Ortes, unabhängig vom Zeitraum.
-            var ids = (await RunPlaces.GetRunIdsForPlaceAsync(placeId)).ToHashSet();
-            var all = await RunRepository.GetRunsAsync(null);
-            _runs = all.Where(r => ids.Contains(r.Id)).ToList();
-        }
-        else
-        {
-            var cutoff = _range.CutoffUtc(Clock.UtcNow);
-            _runs = await RunRepository.GetRunsAsync(cutoff);
-        }
+        var ids = (await RunPlaces.GetRunIdsForPlaceAsync(Current.Id)).ToHashSet();
+        var all = await RunRepository.GetRunsAsync(null);
 
+        _runs = all.Where(run => ids.Contains(run.Id)).ToList();
         _stats = RunStatsCalculator.Calculate(_runs);
     }
 
-    private void ResetPlace() => Nav.NavigateTo("/heatmap", forceLoad: true);
-
-    private async Task SetRangeAsync(RunTimeRange range)
+    private async Task OnSliderAsync(ChangeEventArgs args)
     {
-        if (range == _range)
+        if (!int.TryParse(args.Value?.ToString(), out var index) || index == _index)
         {
             return;
         }
 
-        _range = range;
+        _index = Math.Clamp(index, 0, _places.Count - 1);
         await LoadRunsAsync();
         await RenderMapAsync();
     }
@@ -159,17 +160,20 @@
         // damit nach jedem App-Neustart automatisch die aktuelle Datei geladen wird.
         _module ??= await JS.InvokeAsync<IJSObjectReference>("import", $"./js/heatmap.js?v={AppAssets.Version}");
 
-        // Pro Lauf Punkte + (sofern vorhanden) Streams; die JS verbindet sie zu Linien und
-        // färbt je nach Ebene segmentweise ein.
         var runs = HeatmapPayloadBuilder.Build(_runs);
 
-        // Gesamt-Ansicht auf den Heimat-Standort zentrieren (sonst zerren entfernte Läufe die
-        // Karte auf halb Europa). Bei einer einzelnen Runde stattdessen auf deren Läufe passen
-        // (fitBounds in der JS), daher dort kein Fokus.
-        var focus = Place is null
-            ? new { lat = MapView.Value.Latitude, lng = MapView.Value.Longitude, zoom = MapView.Value.Zoom }
-            : null;
-        await _module.InvokeVoidAsync("render", MapElementId, runs, _layer, focus);
+        // Der Rahmen ist die Ausdehnung des Ortes — dasselbe Rechteck, dessen Kacheln vorgeladen
+        // sind. Damit kann die Ansicht nicht in ungeladene Bereiche zeigen.
+        var bounds = Current.Bounds;
+        var frame = new
+        {
+            minLat = bounds.MinLat,
+            minLon = bounds.MinLon,
+            maxLat = bounds.MaxLat,
+            maxLon = bounds.MaxLon,
+        };
+
+        await _module.InvokeVoidAsync("render", MapElementId, runs, _layer, frame);
     }
 
     private async Task SetLayerAsync(string layer)
@@ -186,18 +190,11 @@
         }
     }
 
-    private string RangeCss(RunTimeRange range) => range == _range ? "is-active" : string.Empty;
-
     private string LayerCss(string layer) => layer == _layer ? "is-active" : string.Empty;
 
-    private string MetaText => Place is not null
-        ? "ORT"
-        : _range switch
-        {
-            RunTimeRange.FourWeeks => "4 WOCHEN",
-            RunTimeRange.All => "ALLE",
-            _ => "12 MONATE"
-        };
+    private string MetaText => _places.Count == 0
+        ? "KEINE ORTE"
+        : Current.Name.ToUpperInvariant();
 
     private string LegendText => _layer switch
     {

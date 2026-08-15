@@ -257,6 +257,9 @@ try
         http.DefaultRequestHeaders.UserAgent.TryParseAdd(tileOptions.UserAgent);
     });
 
+    // Lädt die Kacheln der Lauf-Orte vor — genau die Ausschnitte, die die Heatmap zeigt.
+    builder.Services.AddHostedService<PlaceTileWarmupService>();
+
     // Wappen-/Flaggen-Proxy: gleicher Offline-Gedanke wie beim Kachel-Proxy. Vereinswappen und
     // Nationalflaggen (football-data.org) werden server-seitig geholt/gecacht und über /crests
     // ausgeliefert, damit das iPad kein Bild direkt aus dem Internet laden muss (Sektion „Crests").
