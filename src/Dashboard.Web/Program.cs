@@ -136,6 +136,20 @@ try
     // HttpClient (Basis-URL, User-Agent, Demo-Key) wie die Watchlist.
     builder.Services.AddTransient<ICryptoHistoryProvider>(sp =>
         (CoinGeckoClient)sp.GetRequiredService<ICryptoMarketProvider>());
+
+    // Kursverläufe der Detailseite: eigener typed Client, weil er auf Anforderung lädt und
+    // zwischenspeichert statt im Refresh mitzulaufen.
+    builder.Services.AddMemoryCache();
+    builder.Services.AddHttpClient<ICoinHistoryProvider, CoinHistoryClient>(http =>
+    {
+        http.BaseAddress = new Uri(cryptoOptions.MarketBaseUrl);
+        http.Timeout = TimeSpan.FromSeconds(10);
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd("IPad-Dashboard/1.0");
+        if (!string.IsNullOrWhiteSpace(cryptoOptions.MarketApiKey))
+        {
+            http.DefaultRequestHeaders.Add("x-cg-demo-api-key", cryptoOptions.MarketApiKey);
+        }
+    });
     builder.Services.AddHttpClient<IMarketSentimentProvider, FearGreedClient>(http =>
     {
         http.BaseAddress = new Uri(cryptoOptions.SentimentBaseUrl);

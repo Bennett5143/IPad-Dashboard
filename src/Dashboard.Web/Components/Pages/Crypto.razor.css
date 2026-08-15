@@ -94,12 +94,40 @@
     flex: none;
 }
 
-/* Jede Zeile nimmt denselben Anteil der Resthöhe — so endet die Tabelle bündig
-   an der Fußzeile statt mit einem Loch darunter. */
+/* Elf Coins plus eine aufgeklappte Zeile passen nicht mehr auf eine Bildschirmhöhe — die Zeilen
+   tragen deshalb ihre natürliche Höhe, und die Seite scrollt (`detail-body.is-scroll`). */
 .coin-row {
     border-top: 1px solid var(--rule);
-    flex: 1;
-    min-height: 0;
+    flex: none;
+    min-height: 46px;
+    cursor: pointer;
+}
+
+.coin-row.is-expanded {
+    background-color: var(--track);
+}
+
+/* Der aufgeklappte Verlauf: volle Breite, groß genug, um eine Woche wirklich zu lesen. */
+.coin-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0 16px;
+    border-top: 1px solid var(--rule);
+}
+
+.coin-detail ::deep .chart-frame {
+    height: 160px;
+}
+
+.coin-detail-link {
+    align-self: flex-start;
+    font-family: var(--font-family-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 6px 0;
 }
 
 .coin-head .r,

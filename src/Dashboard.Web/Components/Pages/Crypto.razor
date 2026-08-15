@@ -2,6 +2,7 @@
 @layout DetailLayout
 @implements IDisposable
 @inject CryptoState CryptoState
+@inject NavigationManager Nav
 @rendermode InteractiveServer
 
 <PageTitle>Krypto</PageTitle>
@@ -16,7 +17,8 @@
     </div>
 </div>
 
-<div class="detail-body">
+@* is-scroll: die vollständige Watchlist plus eine aufgeklappte Zeile geht bewusst über 768 px. *@
+<div class="detail-body is-scroll">
     @if (_snapshot is null)
     {
         <p class="crypto-empty">Krypto-Daten gerade nicht verfügbar.</p>
@@ -52,12 +54,14 @@
                     <span class="r">7 TAGE</span>
                     <span class="r">MARKTKAP.</span>
                 </div>
-                @for (var i = 0; i < _snapshot.Coins.Count && i < MaxCoins; i++)
+                @foreach (var c in _snapshot.Coins)
                 {
-                    var c = _snapshot.Coins[i];
                     var up = c.Change24hPct >= 0;
                     var tag = c.Symbol.Length <= 3 ? c.Symbol : c.Symbol[..3];
-                    <div class="coin-row">
+                    var expanded = _expanded == c.Id;
+
+                    <div class="coin-row @(expanded ? "is-expanded" : null)" role="button" tabindex="0"
+                         aria-expanded="@expanded" @onclick="() => Toggle(c.Id)">
                         <span class="coin-id">
                             <span class="chip coin-chip">@tag</span>
                             <span class="coin-names">
@@ -75,6 +79,22 @@
                         </span>
                         <span class="r coin-cap">@CryptoFormatter.MarketCap(c.MarketCap)</span>
                     </div>
+
+                    @if (expanded)
+                    {
+                        <div class="coin-detail">
+                            <ChartFrame CssClass="coin-detail-chart"
+                                        XLabel="Sieben Tage" YLabel="Kurs (€)"
+                                        RangeStart="@Low(c)" RangeEnd="@High(c)">
+                                <Sparkline Values="c.Sparkline7d" Fill="true"
+                                           CssClass="@(up ? "coin-spark--up" : "coin-spark--down")" />
+                            </ChartFrame>
+                            <button class="coin-detail-link" @onclick:stopPropagation="true"
+                                    @onclick="() => OpenDetail(c.Id)">
+                                Details · Stunde bis Jahr ›
+                            </button>
+                        </div>
+                    }
                 }
             </section>
         }
@@ -90,12 +110,13 @@
 </div>
 
 @code {
-    private const int MaxCoins = 6;
-
     private static readonly TimeZoneInfo BerlinTz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
     private CryptoSnapshot? _snapshot;
     private bool _isStale;
+
+    /// <summary>Die eine offene Zeile; <c>null</c> = alle zu.</summary>
+    private string? _expanded;
 
     private string Meta => _snapshot is null
         ? "EUR · COINGECKO"
@@ -117,6 +138,28 @@
     {
         _snapshot = CryptoState.Current;
         _isStale = CryptoState.IsStale;
+    }
+
+    /// <summary>Höchstens eine Zeile ist offen — zwei Charts nebeneinander hätten keinen Platz.</summary>
+    private void Toggle(string coinId) => _expanded = _expanded == coinId ? null : coinId;
+
+    private void OpenDetail(string coinId) => Nav.NavigateTo($"/crypto/{coinId}");
+
+    private static string? Low(CoinQuote coin) => Extreme(coin, lowest: true);
+
+    private static string? High(CoinQuote coin) => Extreme(coin, lowest: false);
+
+    // Die Achsen-Eckwerte kommen aus der 7-Tage-Reihe, die die Watchlist ohnehin mitbringt —
+    // ein zusätzlicher Abruf nur fürs Minimum wäre verschwendet.
+    private static string? Extreme(CoinQuote coin, bool lowest)
+    {
+        var values = coin.Sparkline7d.OfType<double>().ToList();
+        if (values.Count == 0)
+        {
+            return null;
+        }
+
+        return CryptoFormatter.Price((decimal)(lowest ? values.Min() : values.Max()));
     }
 
     private static string LocalTime(DateTimeOffset utc) =>
