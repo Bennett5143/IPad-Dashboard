@@ -35,17 +35,35 @@ public class HabitsHeatmapBuilderTests
     }
 
     [Fact]
-    public void Build_AllKinds_IntensityIsCountOfHabits()
+    public void Build_AllKinds_IntensityIsCountOfActiveHabits()
     {
         var done = Done(
             (HabitKind.Strength, [Today]),
             (HabitKind.Zone2Run, [Today]),
-            (HabitKind.JumpRope, [Today]));
+            (HabitKind.Vo2MaxIntervals, [Today]));
 
         var view = HabitsHeatmapBuilder.Build(done, kind: null, Today);
 
         var todayCell = view.Cells.Single(c => c.Weekday == 4 && c.Week == HabitsHeatmapBuilder.Weeks - 1);
-        Assert.Equal(HabitsHeatmapBuilder.Bucket(3, 5), todayCell.Bucket);
+        Assert.Equal(HabitsHeatmapBuilder.Bucket(3, HabitCatalog.Active.Count), todayCell.Bucket);
+    }
+
+    /// <summary>
+    /// Einträge abgewählter Gewohnheiten liegen weiter in der Historie — sie dürfen die Intensität
+    /// eines Tages aber nicht mehr anheben, sonst zählte die Heatmap etwas, das nirgends steht.
+    /// </summary>
+    [Fact]
+    public void Build_AllKinds_IgnoresDroppedHabits()
+    {
+        var withDropped = HabitsHeatmapBuilder.Build(
+            Done((HabitKind.Strength, [Today]), (HabitKind.JumpRope, [Today])), kind: null, Today);
+        var withoutDropped = HabitsHeatmapBuilder.Build(
+            Done((HabitKind.Strength, [Today])), kind: null, Today);
+
+        var current = HabitsHeatmapBuilder.Weeks - 1;
+        Assert.Equal(
+            withoutDropped.Cells.Single(c => c.Weekday == 4 && c.Week == current).Bucket,
+            withDropped.Cells.Single(c => c.Weekday == 4 && c.Week == current).Bucket);
     }
 
     [Fact]

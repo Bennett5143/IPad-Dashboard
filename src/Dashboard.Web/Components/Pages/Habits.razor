@@ -104,7 +104,7 @@
     private static readonly TimeZoneInfo BerlinTz =
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
-    private readonly HabitKind[] _kinds = Enum.GetValues<HabitKind>();
+    private readonly IReadOnlyList<HabitKind> _kinds = HabitCatalog.Active;
     private HabitKind? _kind;
     private int _year;
     private IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>> _done =

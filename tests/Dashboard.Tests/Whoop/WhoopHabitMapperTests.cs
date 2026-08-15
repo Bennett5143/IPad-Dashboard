@@ -14,11 +14,8 @@ public class WhoopHabitMapperTests
     [Theory]
     [InlineData("running", 0.0, HabitKind.Zone2Run)]
     [InlineData("running", 0.30, HabitKind.Vo2MaxIntervals)]
-    [InlineData("jumping rope", 0.0, HabitKind.JumpRope)]
-    [InlineData("jump_rope", 0.0, HabitKind.JumpRope)]
     [InlineData("weightlifting", 0.0, HabitKind.Strength)]
     [InlineData("functional fitness", 0.0, HabitKind.Strength)]
-    [InlineData("yoga", 0.0, HabitKind.Stretching)]
     public void MapKind_MapsKnownSports(string sport, double share, HabitKind expected)
     {
         Assert.Equal(expected, WhoopHabitMapper.MapKind(Workout(sport, share)));
@@ -31,6 +28,34 @@ public class WhoopHabitMapperTests
     public void MapKind_ReturnsNull_ForUntrackedSports(string sport)
     {
         Assert.Null(WhoopHabitMapper.MapKind(Workout(sport)));
+    }
+
+    /// <summary>
+    /// Seilspringen und Dehnen führt der Tracker nicht mehr — der Auto-Fill darf dafür keine
+    /// Einträge mehr erzeugen, sonst entstünden Häkchen für Gewohnheiten, die niemand sieht.
+    /// </summary>
+    [Theory]
+    [InlineData("jumping rope")]
+    [InlineData("jump_rope")]
+    [InlineData("yoga")]
+    [InlineData("pilates")]
+    public void MapKind_ReturnsNull_ForSportsWithoutATrackedHabit(string sport)
+    {
+        Assert.Null(WhoopHabitMapper.MapKind(Workout(sport)));
+    }
+
+    [Fact]
+    public void MapKind_OnlyEverReturnsAnActiveHabit()
+    {
+        string[] sports = ["running", "weightlifting", "jumping rope", "yoga", "cycling"];
+
+        foreach (var kind in sports.Select(sport => WhoopHabitMapper.MapKind(Workout(sport))))
+        {
+            if (kind is { } mapped)
+            {
+                Assert.True(Dashboard.Domain.Habits.HabitCatalog.IsActive(mapped));
+            }
+        }
     }
 
     [Fact]

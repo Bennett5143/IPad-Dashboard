@@ -149,13 +149,18 @@
     private string _whoopWorkoutLabel = "–";
     private Dashboard.Domain.Status.SystemMetrics? _system;
     private string _dbLabel = "–";
+    /// <summary>So viele Warnungen zeigt die Seite — mehr liest am Kiosk ohnehin niemand.</summary>
+    private const int VisibleWarnings = 5;
+
     private IReadOnlyList<RecentLogEntry> _logs = [];
 
     protected override async Task OnInitializedAsync()
     {
         var now = Clock.UtcNow;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, BerlinTz).DateTime);
-        _logs = RecentLogs.Recent;
+        // Angezeigt werden die fünf jüngsten; der Ringpuffer hält weiter mehr, damit die Diagnose
+        // über die Anzeige hinaus nichts verliert.
+        _logs = RecentLogs.Recent.Take(VisibleWarnings).ToList();
 
         _slices = StatusViewBuilder.BuildSliceRows(
             Sources.Select(s => (s.SliceName, s.HasData, s.IsStale, s.LastUpdatedUtc)), now);

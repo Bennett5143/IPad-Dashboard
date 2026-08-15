@@ -31,15 +31,14 @@ public static class HabitsHeatmapBuilder
     private const int RecentWeekBars = 12;
 
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
-    private static readonly int KindCount = Enum.GetValues<HabitKind>().Length;
+    /// <summary>Die volle Intensität eines Tages: alle geführten Gewohnheiten erledigt.</summary>
+    private static readonly int KindCount = HabitCatalog.Active.Count;
 
     public static string Label(HabitKind kind) => kind switch
     {
         HabitKind.Strength => "Gym",
         HabitKind.Zone2Run => "Z2-Lauf",
         HabitKind.Vo2MaxIntervals => "VO2 Max",
-        HabitKind.JumpRope => "Seilspringen",
-        HabitKind.Stretching => "Dehnen",
         _ => kind.ToString()
     };
 
@@ -53,11 +52,15 @@ public static class HabitsHeatmapBuilder
 
         int Level(DateOnly d) => kind is { } k
             ? (doneByKind.TryGetValue(k, out var set) && set.Contains(d) ? 1 : 0)
-            : doneByKind.Count(kv => kv.Value.Contains(d));
+            // „Alle" heißt: alle geführten. Einträge abgewählter Gewohnheiten liegen weiter in der
+            // Historie, dürfen die Intensität eines Tages aber nicht mehr anheben.
+            : doneByKind.Count(kv => HabitCatalog.IsActive(kv.Key) && kv.Value.Contains(d));
 
         int CountInRange(DateOnly from, DateOnly to) => kind is { } k
             ? (doneByKind.TryGetValue(k, out var set) ? set.Count(d => d >= from && d <= to) : 0)
-            : doneByKind.Sum(kv => kv.Value.Count(d => d >= from && d <= to));
+            : doneByKind
+                .Where(kv => HabitCatalog.IsActive(kv.Key))
+                .Sum(kv => kv.Value.Count(d => d >= from && d <= to));
 
         var cells = new List<HabitHeatCell>();
         var months = new List<HabitMonthLabel>();
