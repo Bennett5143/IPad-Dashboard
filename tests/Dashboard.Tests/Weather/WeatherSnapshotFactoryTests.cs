@@ -186,6 +186,38 @@ public class WeatherSnapshotFactoryTests
         Assert.All(snapshot.Hourly, h => Assert.True(h.Time > TimeZoneInfo.ConvertTime(NowUtc, BerlinTz)));
     }
 
+    /// <summary>
+    /// Die Stundenleiste zeigt zwölf Spalten; liefert die Factory weniger, endet sie vor dem
+    /// rechten Rand — genau der Fehler, den die Seite vorher hatte (acht Spalten, fünf Werte).
+    /// </summary>
+    [Fact]
+    public void Hourly_WithTwelveConfigured_ReturnsTwelveSteps()
+    {
+        // OWM-Raster: 3 h je Schritt, also 16 Schritte für die nächsten zwei Tage.
+        var first = new DateTimeOffset(2026, 6, 10, 12, 0, 0, TimeSpan.Zero);
+        var steps = Enumerable.Range(0, 16)
+            .Select(i => Step(first.AddHours(i * 3), 15, 0.1, WeatherCondition.Clouds))
+            .ToArray();
+
+        var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 12);
+
+        Assert.Equal(12, snapshot.Hourly.Count);
+    }
+
+    [Fact]
+    public void Hourly_WithFewerStepsThanConfigured_ReturnsWhatThereIs()
+    {
+        var steps = new[]
+        {
+            Utc(10, 13, 18, 0.1, WeatherCondition.Clear),
+            Utc(10, 16, 20, 0.2, WeatherCondition.Clouds)
+        };
+
+        var snapshot = WeatherSnapshotFactory.Create(Current, steps, NowUtc, BerlinTz, 12);
+
+        Assert.Equal(2, snapshot.Hourly.Count);
+    }
+
     [Fact]
     public void RetrievedAt_IsTheProvidedNow()
     {

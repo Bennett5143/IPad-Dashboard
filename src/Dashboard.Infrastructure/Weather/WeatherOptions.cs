@@ -22,6 +22,11 @@ public sealed class WeatherOptions
 
     public TimeSpan RefreshInterval { get; init; } = TimeSpan.FromMinutes(15);
 
-    /// <summary>Anzahl der Schritte in der stündlichen Vorschau (OWM-Raster: 3 h pro Schritt).</summary>
-    public int HourlyCount { get; init; } = 4;
+    /// <summary>
+    /// Anzahl der Schritte in der stündlichen Vorschau (OWM-Raster: 3 h pro Schritt). Zwölf füllen
+    /// die Leiste auf <c>/weather</c> über die volle Breite und reichen damit rund anderthalb Tage
+    /// voraus. Weniger als die Seite Spalten hat, darf es nicht sein — sonst endet die Leiste vor
+    /// dem rechten Rand.
+    /// </summary>
+    public int HourlyCount { get; init; } = 12;
 }

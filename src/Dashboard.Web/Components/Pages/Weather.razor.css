@@ -68,6 +68,7 @@
 
 /* ===== Temperaturverlauf: füllt die Resthöhe ===== */
 
+/* Der Verlauf füllt die Resthöhe; ChartFrame legt die Achsenbeschriftung darum. */
 .wx-trend {
     flex: 1;
     min-height: 0;
@@ -81,11 +82,27 @@
     stroke-linejoin: round;
 }
 
+/* Der Rahmen muss die Höhe durchreichen, sonst fällt die Kurve auf ihre Eigenhöhe zurück. */
+.wx-trend ::deep .chart-frame,
+.wx-trend ::deep .chart-area {
+    height: 100%;
+    min-height: 0;
+}
+
+.wx-trend ::deep .chart-frame {
+    display: flex;
+    flex-direction: column;
+}
+
+.wx-trend ::deep .chart-area {
+    flex: 1;
+}
+
 /* ===== Stundenleiste ===== */
 
 .wx-hours {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(12, 1fr);
     border-top: 1px solid var(--rule);
     flex: none;
 }
