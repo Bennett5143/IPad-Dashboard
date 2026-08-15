@@ -77,7 +77,7 @@
                     }
                     else
                     {
-                        <div class="hvv-deps">
+                        <div class="hvv-deps @(deps.Count >= DeparturesPerColumn ? "is-full" : null)">
                             @for (var i = 0; i < deps.Count; i++)
                             {
                                 var d = deps[i];
@@ -96,7 +96,8 @@
 </div>
 
 @code {
-    private const int DeparturesPerColumn = 7;
+    /// <summary>Sechs füllen die Spalte, ohne sie zu überladen; mehr liefert der Client ohnehin nicht.</summary>
+    private const int DeparturesPerColumn = 6;
     private const int AxisMinutes = 30;
 
     /// <summary>Ein Tick auf der 30-Minuten-Achse. <see cref="Left"/> ist invariant vorformatiert,
