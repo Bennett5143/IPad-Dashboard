@@ -25,9 +25,15 @@ public sealed class FootballOptions
 
     /// <summary>
     /// Ligen, deren vollständige Tabelle auf <c>/football</c> gezeigt wird (Top-5-Tabellen, je 1
-    /// Standings-Call). Standardmäßig die fünf großen Ligen. Unabhängig von den getrackten Vereinen.
+    /// Standings-Call). Unabhängig von den getrackten Vereinen; leer = keine Ligatabellen.
+    /// <para>
+    /// Hier steht bewusst <em>kein</em> Vorgabewert — die Vorgabe steht in <c>appsettings.json</c>.
+    /// Der Configuration-Binder hängt an eine vorbelegte Collection an, statt sie zu ersetzen:
+    /// dieselben Codes im Code und in der Konfiguration ergäben jede Liga doppelt, inklusive
+    /// doppeltem Standings-Call je Refresh.
+    /// </para>
     /// </summary>
-    public IReadOnlyList<string> LeagueCodes { get; init; } = ["PL", "PD", "BL1", "SA", "FL1"];
+    public IReadOnlyList<string> LeagueCodes { get; init; } = [];
 
     /// <summary>Code der Champions League (immer geholt: Ligaphase-Tabelle + K.o.-Bracket). Leer = aus.</summary>
     public string ChampionsLeagueCode { get; init; } = "CL";

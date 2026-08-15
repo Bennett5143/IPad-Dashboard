@@ -199,6 +199,45 @@ public class FootballDataClientTests
         Assert.Equal(1, standingsCalls); // genau ein /standings-Call für PD
     }
 
+    /// <summary>
+    /// Regression: eine doppelt konfigurierte Liga ergab zwei Tabellen und damit zwei Pills in der
+    /// Auswahl. Ursache war der Configuration-Binder (siehe <c>OptionsListBindingTests</c>); hier
+    /// hält der Client selbst dagegen.
+    /// </summary>
+    [Fact]
+    public async Task GetFootballAsync_WithDuplicateLeagueCode_BuildsOneTableAndCallsStandingsOnce()
+    {
+        var standingsCalls = 0;
+        var handler = new StubHttpMessageHandler(request =>
+        {
+            if (request.RequestUri!.AbsolutePath.Contains("standings", StringComparison.Ordinal))
+            {
+                standingsCalls++;
+                return StubHttpMessageHandler.Json(StandingsJson);
+            }
+
+            return StubHttpMessageHandler.Json(MatchesJson);
+        });
+
+        var http = new HttpClient(handler) { BaseAddress = new Uri("https://test.local/") };
+        var options = Options.Create(new FootballOptions
+        {
+            ApiKey = "test-key",
+            InterCallDelay = TimeSpan.Zero,
+            LeagueCodes = ["PD", "PD"],
+            ChampionsLeagueCode = "",
+            Teams = [new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" }]
+        });
+
+        var snapshot = await new FootballDataClient(
+            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance)
+            .GetFootballAsync();
+
+        Assert.NotNull(snapshot.LeagueTables);
+        Assert.Single(snapshot.LeagueTables!);
+        Assert.Equal(1, standingsCalls);
+    }
+
     [Fact]
     public async Task GetFootballAsync_BuildsLeagueTable_MarkingEveryTrackedTeam()
     {

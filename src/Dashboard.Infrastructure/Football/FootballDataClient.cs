@@ -123,8 +123,10 @@ public sealed class FootballDataClient : IFootballProvider
         var trackedIds = _options.Teams.Select(t => t.TeamId).ToHashSet();
 
         // 3) Top-5-Ligatabellen in konfigurierter Reihenfolge; jeder hier getrackte Verein wird markiert.
+        // Distinct als Gürtel zum Hosenträger in FootballOptions: eine doppelt konfigurierte Liga
+        // darf nie zwei Tabellen (und damit zwei Pills in der Auswahl) ergeben.
         var leagueTables = new List<LeagueTable>();
-        foreach (var code in _options.LeagueCodes)
+        foreach (var code in _options.LeagueCodes.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             if (standingsByComp.TryGetValue(code, out var response)
                 && ExtractRows(response, trackedIds) is { Count: > 0 } rows)
