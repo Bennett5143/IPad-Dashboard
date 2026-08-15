@@ -1,0 +1,84 @@
+@using Dashboard.Domain.Crypto
+@implements IDisposable
+@inject FootballState FootballState
+@inject CryptoState CryptoState
+
+@* Wochenkalender (Home, volle Breite): sieben Tagesspalten Mo–So, je Tag oben ein Badge mit der
+   Kursentwicklung und darunter die Spiele der verfolgten Vereine. Ein Champions-League-Spieltag
+   steht als ein Eintrag da, nicht als sechs Zeilen. Reine Anzeige — die Woche baut
+   FootballWeekBuilder, die Tagesreihe kommt aus dem Krypto-Snapshot. *@
+<div class="eink-week">
+    @foreach (var day in _week)
+    {
+        <section class="wk-day @(day.IsToday ? "is-today" : null) @(day.IsPast ? "is-past" : null)">
+            <header class="wk-head">
+                <span class="wk-day-label">@day.DayLabel</span>
+                <span class="wk-date">@day.DateLabel</span>
+                @if (Badge(day) is { } badge)
+                {
+                    <span class="wk-badge @(badge.ChangePercent >= 0 ? "is-up" : "is-down")">
+                        @CryptoFormatter.DailyChange(badge.ChangePercent)
+                    </span>
+                }
+                else if (ShowsBadge(day))
+                {
+                    <span class="wk-badge is-empty">–</span>
+                }
+            </header>
+
+            <ul class="wk-list">
+                @foreach (var entry in day.Entries)
+                {
+                    <li class="wk-entry @(entry.IsAggregate ? "is-aggregate" : null)">
+                        <span class="wk-time">@(entry.IsFinished && entry.Result is { } result ? result : entry.Time)</span>
+                        <span class="wk-title">@entry.Title</span>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<FootballWeekDay> _week = [];
+    private CryptoSnapshot? _crypto;
+
+    protected override void OnInitialized()
+    {
+        FootballState.Changed += OnChanged;
+        CryptoState.Changed += OnChanged;
+        ReadState();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        ReadState();
+        StateHasChanged();
+    });
+
+    private void ReadState()
+    {
+        var football = FootballState.Current;
+        _week = football is null ? EmptyWeek() : FootballWeekBuilder.Build(football);
+        _crypto = CryptoState.Current;
+    }
+
+    /// <summary>
+    /// Ohne Fußball-Snapshot steht die Woche trotzdem — sonst wäre die halbe Hauptseite leer, nur
+    /// weil ein Abruf noch läuft. Die Tage kommen dann aus dem Krypto-Stand bzw. aus „heute".
+    /// </summary>
+    private IReadOnlyList<FootballWeekDay> EmptyWeek() =>
+        FootballWeekBuilder.Build(new FootballSnapshot([], _crypto?.RetrievedAtUtc ?? DateTimeOffset.UtcNow));
+
+    /// <summary>Badges tragen nur vergangene Tage und heute — die Zukunft hat keinen Kurs.</summary>
+    private static bool ShowsBadge(FootballWeekDay day) => day.IsPast || day.IsToday;
+
+    private DailyChange? Badge(FootballWeekDay day) =>
+        ShowsBadge(day) ? _crypto?.ChangesOn(day.Date).FirstOrDefault() : null;
+
+    public void Dispose()
+    {
+        FootballState.Changed -= OnChanged;
+        CryptoState.Changed -= OnChanged;
+    }
+}

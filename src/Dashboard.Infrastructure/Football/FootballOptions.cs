@@ -15,10 +15,12 @@ public sealed class FootballOptions
     public TimeSpan RefreshInterval { get; init; } = TimeSpan.FromMinutes(20);
 
     /// <summary>
-    /// Pause zwischen zwei API-Calls eines Refreshs. football-data.org Free-Tier erlaubt 10/min;
-    /// 8 s lässt einen Call Puffer (≤8/min). In Tests auf <see cref="TimeSpan.Zero"/> setzen.
+    /// Pause zwischen zwei API-Calls eines Refreshs. football-data.org Free-Tier erlaubt 10/min.
+    /// Mit sechs Vereinen sind es 12 Calls je Refresh; bei 8 s liefen zwei davon nachweislich in
+    /// ein 429, mit 10 s bleibt der Refresh bei 6 Calls/Minute. In Tests auf
+    /// <see cref="TimeSpan.Zero"/> setzen.
     /// </summary>
-    public TimeSpan InterCallDelay { get; init; } = TimeSpan.FromSeconds(8);
+    public TimeSpan InterCallDelay { get; init; } = TimeSpan.FromSeconds(10);
 
     public int RecentCount { get; init; } = 3;
     public int UpcomingCount { get; init; } = 2;
