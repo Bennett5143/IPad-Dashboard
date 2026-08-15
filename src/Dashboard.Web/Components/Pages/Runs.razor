@@ -2,7 +2,7 @@
 @layout DetailLayout
 @rendermode InteractiveServer
 @inject IRunRepository RunRepository
-@inject IRouteClusterStore RouteClusters
+@inject IRunPlaceStore RunPlaces
 @inject IStravaTokenStore TokenStore
 @inject IClock Clock
 @inject NavigationManager Nav
@@ -74,33 +74,46 @@
             </section>
         }
 
-        @if (_clusters.Count > 0)
+        @if (_places.Count > 0)
         {
             <section class="runs-region routes">
-                <h2>Standard-Runden</h2>
+                <h2>Orte</h2>
                 <p class="routes-hint">
-                    Ähnlich verlaufende Läufe werden automatisch zu „Runden" gebündelt (richtungsunabhängig,
-                    Toleranz ~150 m). Eine Runde antippen zeigt ihre Läufe auf der Karte.
+                    Läufe werden nach ihrem Startpunkt zu Orten gebündelt — egal, wie die Strecke an dem
+                    Tag verlief. Einen Ort antippen zeigt seine Läufe auf der Karte; auf den Namen tippen
+                    benennt ihn um.
                 </p>
                 <table class="runs-table">
                     <thead>
                         <tr>
-                            <th scope="col">Runde</th>
+                            <th scope="col">Ort</th>
                             <th scope="col" class="num">Läufe</th>
-                            <th scope="col" class="num">Ø Distanz</th>
+                            <th scope="col" class="num">Distanz</th>
                             <th scope="col" class="num">Ø Pace</th>
-                            <th scope="col" class="num">Bestzeit</th>
+                            <th scope="col" class="num">Letzter Lauf</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var cluster in _clusters)
+                        @foreach (var place in _places)
                         {
-                            <tr class="runs-row" @onclick="() => OpenCluster(cluster.Id)">
-                                <td class="run-name">@cluster.Name</td>
-                                <td class="num mono">@cluster.Members</td>
-                                <td class="num mono">@cluster.Distance</td>
-                                <td class="num mono pace">@cluster.Pace</td>
-                                <td class="num mono">@cluster.BestTime</td>
+                            <tr class="runs-row" @onclick="() => OpenPlace(place.Id)">
+                                <td class="run-name">
+                                    @if (_renaming == place.Id)
+                                    {
+                                        <input class="place-name-input" value="@place.Name"
+                                               @onclick:stopPropagation="true"
+                                               @onchange="e => RenameAsync(place.Id, e.Value?.ToString())" />
+                                    }
+                                    else
+                                    {
+                                        <button class="place-name" @onclick:stopPropagation="true"
+                                                @onclick="() => _renaming = place.Id">@place.Name</button>
+                                    }
+                                </td>
+                                <td class="num mono">@place.Runs</td>
+                                <td class="num mono">@place.Distance</td>
+                                <td class="num mono pace">@place.Pace</td>
+                                <td class="num mono">@place.LastRun</td>
                             </tr>
                         }
                     </tbody>
@@ -151,7 +164,10 @@
     private IReadOnlyList<Run> _allRuns = [];
     private IReadOnlyList<RunListRow> _rows = [];
     private RunReviewView? _review;
-    private IReadOnlyList<RouteClusterRow> _clusters = [];
+    private IReadOnlyList<RunPlaceRow> _places = [];
+
+    /// <summary>Der Ort, dessen Name gerade bearbeitet wird.</summary>
+    private int? _renaming;
 
     // Mono-Meta im PageHeader: das gewählte Rückblicksjahr, sonst das aktuelle Jahr.
     private string Meta => (_review?.Year ?? Clock.UtcNow.Year).ToString();
@@ -169,8 +185,20 @@
         _allRuns = await RunRepository.GetRunSummariesAsync(null);
         var years = RunReviewCalculator.AvailableYears(_allRuns);
         _review = years.Count > 0 ? RunReviewViewBuilder.Build(_allRuns, years[0]) : null;
-        _clusters = RunViewBuilder.BuildRouteClusters(await RouteClusters.GetSummariesAsync());
+        _places = RunViewBuilder.BuildRunPlaces(await RunPlaces.GetSummariesAsync());
         ApplyRange();
+    }
+
+    private async Task RenameAsync(int placeId, string? name)
+    {
+        _renaming = null;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        await RunPlaces.RenameAsync(placeId, name);
+        _places = RunViewBuilder.BuildRunPlaces(await RunPlaces.GetSummariesAsync());
     }
 
     private void ApplyRange()
@@ -201,7 +229,7 @@
 
     // Voller Seitenaufruf statt interaktiver Navigation: Leaflet rendert sonst nach In-App-Nav
     // eine leere/schwarze Karte (Container beim Init noch nicht endgültig vermessen).
-    private void OpenCluster(int clusterId) => Nav.NavigateTo($"/heatmap?cluster={clusterId}", forceLoad: true);
+    private void OpenPlace(int placeId) => Nav.NavigateTo($"/heatmap?place={placeId}", forceLoad: true);
 
     private string RangeCss(RunTimeRange range) => range == _range ? "is-active" : string.Empty;
 }

@@ -2,7 +2,7 @@
 @layout DetailLayout
 @rendermode InteractiveServer
 @inject IRunRepository RunRepository
-@inject IRouteClusterStore RouteClusters
+@inject IRunPlaceStore RunPlaces
 @inject IClock Clock
 
 <PageTitle>@(_header?.Name ?? "Lauf")</PageTitle>
@@ -20,7 +20,7 @@
         <section class="run-hero">
             <div class="run-hero-main">
                 <span class="mono-label">
-                    DISTANZ@(_cluster is null ? null : $" · {_cluster.Name.ToUpperInvariant()}")
+                    DISTANZ@(_place is null ? null : $" · {_place.Name.ToUpperInvariant()}")
                 </span>
                 <span class="run-hero-num">@_header.Distance</span>
             </div>
@@ -82,7 +82,7 @@
     private bool _notFound;
     private RunDetailHeader? _header;
     private RunProfile? _profile;
-    private RouteClusterInfo? _cluster;
+    private RunPlaceInfo? _place;
     private IReadOnlyList<BestEffortRow> _bestEfforts = [];
 
     protected override async Task OnInitializedAsync()
@@ -97,7 +97,7 @@
         _header = RunViewBuilder.BuildDetailHeader(run);
         _profile = RunProfileBuilder.Build(run);
         _bestEfforts = RunViewBuilder.BuildBestEfforts(BestEffortsCalculator.Compute(run));
-        _cluster = await RouteClusters.GetClusterForRunAsync(Id);
+        _place = await RunPlaces.GetPlaceForRunAsync(Id);
     }
 
     private RenderFragment ProfileBlock(

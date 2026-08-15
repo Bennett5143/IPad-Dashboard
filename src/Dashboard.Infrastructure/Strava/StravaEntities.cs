@@ -25,18 +25,26 @@ internal sealed class RunActivityEntity
     public double[]? AltitudesMeters { get; set; }
     public int[]? HeartRates { get; set; }
 
-    // Routen-Erkennung (FA-8.17): Cluster-Zuordnung; RouteMatchedUtc = bearbeitet (auch ohne Match).
-    public int? RouteClusterId { get; set; }
-    public DateTimeOffset? RouteMatchedUtc { get; set; }
+    // Orts-Zuordnung; PlaceAssignedUtc = bearbeitet (auch ohne Ort, etwa ohne Strecke).
+    public int? PlaceId { get; set; }
+    public DateTimeOffset? PlaceAssignedUtc { get; set; }
 }
 
-/// <summary>Eine erkannte „Standard-Runde" (FA-8.17); Repräsentant ist der erste zugeordnete Lauf.</summary>
-internal sealed class RouteClusterEntity
+/// <summary>
+/// Ein Ort, an dem gelaufen wird. Mittelpunkt = Mittel der Startpunkte, die Grenzen umschließen
+/// alle Strecken des Ortes und tragen später den Kartenausschnitt und das Kachel-Warmup.
+/// </summary>
+internal sealed class RunPlaceEntity
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public long RepresentativeRunId { get; set; }
-    public double RepresentativeDistanceMeters { get; set; }
+    public double CentreLatitude { get; set; }
+    public double CentreLongitude { get; set; }
+    public double MinLatitude { get; set; }
+    public double MinLongitude { get; set; }
+    public double MaxLatitude { get; set; }
+    public double MaxLongitude { get; set; }
+    public int RunCount { get; set; }
     public DateTimeOffset CreatedUtc { get; set; }
 }
 
