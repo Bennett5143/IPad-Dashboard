@@ -16,16 +16,16 @@ internal sealed class RunActivityEntityConfiguration : IEntityTypeConfiguration<
         builder.Property(e => e.StreamsFetched).HasDefaultValue(false);
         builder.HasIndex(e => e.StartUtc);
         builder.HasIndex(e => e.StreamsFetched);
-        builder.HasIndex(e => e.RouteMatchedUtc); // ungeordnete Läufe für die Routen-Erkennung finden
-        builder.HasIndex(e => e.RouteClusterId);
+        builder.HasIndex(e => e.PlaceAssignedUtc); // noch nicht zugeordnete Läufe finden
+        builder.HasIndex(e => e.PlaceId);
     }
 }
 
-internal sealed class RouteClusterEntityConfiguration : IEntityTypeConfiguration<RouteClusterEntity>
+internal sealed class RunPlaceEntityConfiguration : IEntityTypeConfiguration<RunPlaceEntity>
 {
-    public void Configure(EntityTypeBuilder<RouteClusterEntity> builder)
+    public void Configure(EntityTypeBuilder<RunPlaceEntity> builder)
     {
-        builder.ToTable("RouteClusters");
+        builder.ToTable("RunPlaces");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Name).HasMaxLength(80);
     }

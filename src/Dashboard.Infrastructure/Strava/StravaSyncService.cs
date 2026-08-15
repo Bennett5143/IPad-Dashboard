@@ -74,7 +74,7 @@ public sealed class StravaSyncService : BackgroundService
 
             await BackfillDetailsAsync(provider, repository, syncState, ct);
             await BackfillStreamsAsync(provider, repository, ct);
-            await ClusterRoutesAsync(scope, repository, ct);
+            await AssignPlacesAsync(scope, repository, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -167,17 +167,17 @@ public sealed class StravaSyncService : BackgroundService
         }
     }
 
-    // Routen-Erkennung (FA-8.17): noch nicht zugeordnete Läufe (älteste zuerst) gegen die
-    // Cluster-Repräsentanten matchen oder neuen Cluster eröffnen. Rein CPU-/DB-gebunden
-    // (kein API-Call), aber gedrosselt, damit der Pi pro Zyklus nicht zu lange rechnet.
+    // Orts-Zuordnung: noch nicht zugeordnete Läufe (älteste zuerst) dem nächstgelegenen Ort
+    // zuordnen oder einen neuen eröffnen. Rein CPU-/DB-gebunden (kein API-Call), aber gedrosselt,
+    // damit der Pi pro Zyklus nicht zu lange rechnet.
     private const int MaxRoutesPerCycle = 50;
 
-    private async Task ClusterRoutesAsync(IServiceScope scope, IRunRepository repository, CancellationToken ct)
+    private async Task AssignPlacesAsync(IServiceScope scope, IRunRepository repository, CancellationToken ct)
     {
         try
         {
-            var store = scope.ServiceProvider.GetRequiredService<IRouteClusterStore>();
-            var ids = await store.GetUnmatchedRunIdsAsync(MaxRoutesPerCycle, ct);
+            var store = scope.ServiceProvider.GetRequiredService<IRunPlaceStore>();
+            var ids = await store.GetUnassignedRunIdsAsync(MaxRoutesPerCycle, ct);
             if (ids.Count == 0)
             {
                 return;
@@ -188,30 +188,30 @@ public sealed class StravaSyncService : BackgroundService
             foreach (var id in ids)
             {
                 var run = await repository.GetRunAsync(id, ct);
-                if (run is null || run.Track.Count < 2)
+                if (run is null || run.Track.Count == 0)
                 {
-                    await store.MarkUnclusterableAsync(id, _clock.UtcNow, ct);
+                    await store.MarkUnassignableAsync(id, _clock.UtcNow, ct);
                     continue;
                 }
 
-                // Repräsentanten je Lauf neu laden – ein in dieser Runde neu eröffneter Cluster
-                // soll für spätere Läufe sofort als Kandidat zur Verfügung stehen.
-                var reps = await store.GetRepresentativesAsync(ct);
-                var match = RouteClusterer.FindBestCluster(run.DistanceMeters, run.Track, reps);
-                if (match is { } clusterId)
+                // Kandidaten je Lauf neu laden – ein in dieser Runde neu eröffneter Ort soll für
+                // spätere Läufe sofort zur Verfügung stehen.
+                var candidates = await store.GetCandidatesAsync(ct);
+                var match = RunPlaceMatcher.FindPlace(run.Track[0], candidates);
+                if (match is { } placeId)
                 {
-                    await store.AssignAsync(id, clusterId, _clock.UtcNow, ct);
+                    await store.AssignAsync(id, placeId, run.Track, _clock.UtcNow, ct);
                     assigned++;
                 }
                 else
                 {
-                    await store.CreateClusterAsync(id, run.DistanceMeters, _clock.UtcNow, ct);
+                    await store.CreatePlaceAsync(id, run.Track, _clock.UtcNow, ct);
                     created++;
                 }
             }
 
             _logger.LogInformation(
-                "Strava: Routen-Erkennung – {Assigned} Läufe zugeordnet, {Created} neue Runden.", assigned, created);
+                "Strava: Orts-Zuordnung – {Assigned} Läufe zugeordnet, {Created} neue Orte.", assigned, created);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -219,7 +219,7 @@ public sealed class StravaSyncService : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Strava: Routen-Erkennung fehlgeschlagen – nächster Zyklus versucht es erneut.");
+            _logger.LogWarning(ex, "Strava: Orts-Zuordnung fehlgeschlagen – nächster Zyklus versucht es erneut.");
         }
     }
 }

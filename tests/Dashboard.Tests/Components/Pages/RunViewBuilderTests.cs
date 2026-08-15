@@ -54,28 +54,30 @@ public class RunViewBuilderTests
     }
 
     [Fact]
-    public void BuildRouteClusters_FormatsSummaries()
+    public void BuildRunPlaces_FormatsSummaries()
     {
-        var row = Assert.Single(RunViewBuilder.BuildRouteClusters(
+        var lastRun = new DateTimeOffset(2026, 8, 12, 17, 0, 0, TimeSpan.Zero);
+
+        var row = Assert.Single(RunViewBuilder.BuildRunPlaces(
         [
-            new RouteClusterSummary(1, "Runde 1", 7, 5.2, 5.5, TimeSpan.FromMinutes(26.5)),
+            new RunPlaceSummary(1, "Alster", 7, 52.4, 5.5, lastRun),
         ]));
 
-        Assert.Equal("Runde 1", row.Name);
-        Assert.Equal("7×", row.Members);
-        Assert.Equal("5,2 km", row.Distance);
-        Assert.Equal("5:30 /km", row.Pace);    // 5,5 min/km
-        Assert.Equal("26:30 min", row.BestTime);
+        Assert.Equal("Alster", row.Name);
+        Assert.Equal("7×", row.Runs);
+        Assert.Equal("52,4 km", row.Distance);  // Gesamtdistanz, nicht Ø je Lauf
+        Assert.Equal("5:30 /km", row.Pace);     // 5,5 min/km
+        Assert.Equal("12.08.2026", row.LastRun);
     }
 
     [Fact]
-    public void BuildRouteClusters_HandlesMissingPace()
+    public void BuildRunPlaces_HandlesMissingPaceAndDate()
     {
-        var row = Assert.Single(RunViewBuilder.BuildRouteClusters(
-            [new RouteClusterSummary(2, "Runde 2", 1, 4.0, null, null)]));
+        var row = Assert.Single(RunViewBuilder.BuildRunPlaces(
+            [new RunPlaceSummary(2, "Ort 2", 1, 4.0, null, null)]));
 
         Assert.Equal("–", row.Pace);
-        Assert.Equal("–", row.BestTime);
+        Assert.Equal("–", row.LastRun);
     }
 
     [Fact]

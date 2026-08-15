@@ -3,7 +3,7 @@
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 @inject IRunRepository RunRepository
-@inject IRouteClusterStore RouteClusters
+@inject IRunPlaceStore RunPlaces
 @inject IStravaTokenStore TokenStore
 @inject ISyncStateStore SyncStateStore
 @inject IClock Clock
@@ -28,7 +28,7 @@
     else
     {
         <div class="heatmap-controls">
-            @if (Cluster is null)
+            @if (Place is null)
             {
                 <div class="tab-row-items" role="group" aria-label="Zeitraum">
                     <button class="tab @RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRangeAsync(RunTimeRange.FourWeeks)">4 Wochen</button>
@@ -39,8 +39,8 @@
             else
             {
                 <div class="cluster-banner">
-                    <span>Standard-Runde · @_runs.Count Läufe</span>
-                    <button class="cluster-reset" @onclick="ResetCluster">alle Läufe anzeigen</button>
+                    <span>Ort · @_runs.Count Läufe</span>
+                    <button class="cluster-reset" @onclick="ResetPlace">alle Läufe anzeigen</button>
                 </div>
             }
 
@@ -80,7 +80,7 @@
     private const string MapElementId = "heatmap-map";
 
     /// <summary>Optionaler Filter: nur die Läufe dieser Standard-Runde anzeigen (Tap auf /runs).</summary>
-    [Parameter, SupplyParameterFromQuery] public int? Cluster { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int? Place { get; set; }
 
     private bool _connected;
     private RunTimeRange _range = RunTimeRange.TwelveMonths;
@@ -123,10 +123,10 @@
 
     private async Task LoadRunsAsync()
     {
-        if (Cluster is { } clusterId)
+        if (Place is { } placeId)
         {
-            // Eine Runde anzeigen: alle Läufe dieses Clusters, unabhängig vom Zeitraum.
-            var ids = (await RouteClusters.GetRunIdsForClusterAsync(clusterId)).ToHashSet();
+            // Einen Ort anzeigen: alle Läufe dieses Ortes, unabhängig vom Zeitraum.
+            var ids = (await RunPlaces.GetRunIdsForPlaceAsync(placeId)).ToHashSet();
             var all = await RunRepository.GetRunsAsync(null);
             _runs = all.Where(r => ids.Contains(r.Id)).ToList();
         }
@@ -139,7 +139,7 @@
         _stats = RunStatsCalculator.Calculate(_runs);
     }
 
-    private void ResetCluster() => Nav.NavigateTo("/heatmap", forceLoad: true);
+    private void ResetPlace() => Nav.NavigateTo("/heatmap", forceLoad: true);
 
     private async Task SetRangeAsync(RunTimeRange range)
     {
@@ -166,7 +166,7 @@
         // Gesamt-Ansicht auf den Heimat-Standort zentrieren (sonst zerren entfernte Läufe die
         // Karte auf halb Europa). Bei einer einzelnen Runde stattdessen auf deren Läufe passen
         // (fitBounds in der JS), daher dort kein Fokus.
-        var focus = Cluster is null
+        var focus = Place is null
             ? new { lat = MapView.Value.Latitude, lng = MapView.Value.Longitude, zoom = MapView.Value.Zoom }
             : null;
         await _module.InvokeVoidAsync("render", MapElementId, runs, _layer, focus);
@@ -190,8 +190,8 @@
 
     private string LayerCss(string layer) => layer == _layer ? "is-active" : string.Empty;
 
-    private string MetaText => Cluster is not null
-        ? "STANDARD-RUNDE"
+    private string MetaText => Place is not null
+        ? "ORT"
         : _range switch
         {
             RunTimeRange.FourWeeks => "4 WOCHEN",

@@ -10,9 +10,9 @@ public sealed record RunListRow(
 public sealed record RunDetailHeader(
     string Name, string Date, string Distance, string Duration, string Pace, string HeartRate, string Elevation);
 
-/// <summary>Eine Zeile der „Standard-Runden"-Übersicht (FA-8.17). <see cref="Id"/> verlinkt auf die Heatmap.</summary>
-public sealed record RouteClusterRow(
-    int Id, string Name, string Members, string Distance, string Pace, string BestTime);
+/// <summary>Eine Zeile der Orts-Übersicht. <see cref="Id"/> verlinkt auf die Heatmap des Ortes.</summary>
+public sealed record RunPlaceRow(
+    int Id, string Name, string Runs, string Distance, string Pace, string LastRun);
 
 /// <summary>Eine Bestzeit eines Laufs (z. B. „5 km – 24:30").</summary>
 public sealed record BestEffortRow(string Distance, string Time);
@@ -38,14 +38,16 @@ public static class RunViewBuilder
             HeartRate(run),
             Elevation(run))).ToList();
 
-    public static IReadOnlyList<RouteClusterRow> BuildRouteClusters(IReadOnlyList<RouteClusterSummary> clusters) =>
-        clusters.Select(c => new RouteClusterRow(
-            c.Id,
-            c.Name,
-            $"{c.MemberCount}×",
-            $"{c.AverageDistanceKm.ToString("0.0", German)} km",
-            c.AveragePaceMinPerKm is { } pace ? FormatPaceValue(pace) : "–",
-            c.BestTime is { } best ? Duration(best) : "–")).ToList();
+    /// <summary>Orts-Zeilen: Gesamtdistanz statt Ø-Distanz — an einem Ort zählt, wie viel dort
+    /// zusammenkam, nicht wie lang eine einzelne Runde war.</summary>
+    public static IReadOnlyList<RunPlaceRow> BuildRunPlaces(IReadOnlyList<RunPlaceSummary> places) =>
+        places.Select(place => new RunPlaceRow(
+            place.Id,
+            place.Name,
+            $"{place.RunCount}×",
+            $"{place.TotalDistanceKm.ToString("0.0", German)} km",
+            place.AveragePaceMinPerKm is { } pace ? FormatPaceValue(pace) : "–",
+            place.LastRunUtc is { } last ? last.ToLocalTime().ToString("dd.MM.yyyy", German) : "–")).ToList();
 
     /// <summary>Nur die tatsächlich gelaufenen Bestzeiten (Distanzen ≥ Lauflänge entfallen).</summary>
     public static IReadOnlyList<BestEffortRow> BuildBestEfforts(IReadOnlyList<BestEffort> efforts) =>
