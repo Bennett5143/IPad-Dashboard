@@ -1,0 +1,86 @@
+/* Eine Meldung zur Zeit: Pfeil, Panel, Pfeil. Die Panels liegen nebeneinander in einem
+   scroll-snap-Container — das Wischen macht damit der Browser. */
+.deck {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.deck-track {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.deck-track::-webkit-scrollbar {
+    display: none;
+}
+
+.deck-panel {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 2px;
+    overflow-y: auto;
+}
+
+/* Kopfzeile: Kontext in Mono, Teile durch einen Mittelpunkt getrennt. */
+.deck-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.deck-head-part + .deck-head-part::before {
+    content: "·";
+    margin-right: 8px;
+    color: var(--faint);
+}
+
+.deck-panel ::deep .rs-badge {
+    align-self: flex-start;
+}
+
+.deck-source {
+    margin-top: auto;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+}
+
+/* Pfeile: groß genug für den Daumen, still genug fürs Papier. */
+.deck-arrow {
+    align-self: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--ink);
+    background: var(--track);
+}
+
+.deck-arrow.is-disabled {
+    color: var(--faint);
+    background: transparent;
+    cursor: default;
+}

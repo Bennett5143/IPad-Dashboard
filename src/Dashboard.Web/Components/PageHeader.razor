@@ -9,6 +9,7 @@
     {
         <span class="page-header-meta">@Meta</span>
     }
+    @ChildContent
 </header>
 
 @code {
@@ -16,4 +17,8 @@
 
     /// <summary>Mono-Meta rechts im Header (z. B. <c>HAMBURG · STAND 14:30</c>).</summary>
     [Parameter] public string? Meta { get; set; }
+
+    /// <summary>Optionaler Zusatz rechts neben dem Meta — z. B. der Positionszähler einer
+    /// Blätter-Ansicht, den die JS direkt im DOM fortschreibt.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 }

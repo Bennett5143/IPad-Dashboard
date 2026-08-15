@@ -1,84 +1,43 @@
 @page "/football/news"
 @layout DetailLayout
 @using Dashboard.Domain.Research
+@rendermode InteractiveServer
 @inject IResearchRepository Research
 
 @* Football news written by the research tooling. This page only reads: the rows
-   belong to the `research` schema, which another repository owns and migrates. *@
+   belong to the `research` schema, which another repository owns and migrates.
+   One item at a time — arrows and swiping; no links, because the display context
+   has no internet to open them with. *@
 
 <PageTitle>Fußball-Nachrichten</PageTitle>
 
-<PageHeader Title="Nachrichten" Meta="@Meta" />
+<PageHeader Title="Nachrichten" Meta="@Meta">
+    <span class="mono-label" id="@CounterId"></span>
+</PageHeader>
 
-@* is-scroll: the list is as long as the run made it — the ceilings live in the
-   research tooling, not in this page's height. *@
-<div class="detail-body is-scroll">
+<div class="detail-body">
     @if (_items is null)
     {
         <p class="rs-empty">Wird geladen…</p>
     }
-    else if (_items.Count == 0)
-    {
-        <p class="rs-empty">
-            Keine Meldungen vorhanden. Das Recherche-Tooling hat für diese
-            Datenbank noch nichts geschrieben.
-        </p>
-    }
     else
     {
-        @foreach (var group in _items.GroupBy(item => item.Competition))
-        {
-            <section class="rs-group">
-                <h2 class="mono-label">@group.Key.ToUpperInvariant()</h2>
-
-                @foreach (var item in group)
-                {
-                    <article class="rs-item">
-                        <div class="rs-item-head">
-                            <span class="rs-badge rs-badge-@BadgeClass(item.Confidence)">
-                                @ConfidenceLabel(item.Confidence)
-                            </span>
-                            @if (!string.IsNullOrWhiteSpace(item.Club))
-                            {
-                                <span class="rs-club">@item.Club</span>
-                            }
-                            <span class="rs-category">@CategoryLabel(item.Category)</span>
-                            @if (item.ReportedOn is { } reported)
-                            {
-                                <span class="rs-date">@reported.ToString("dd.MM.")</span>
-                            }
-                        </div>
-
-                        <h3 class="rs-headline">@item.Headline</h3>
-                        <p class="rs-summary">@item.Summary</p>
-
-                        <div class="rs-source">
-                            @if (!string.IsNullOrWhiteSpace(item.SourceUrl))
-                            {
-                                <a href="@item.SourceUrl" target="_blank" rel="noopener noreferrer">
-                                    @(item.SourceName ?? "Quelle")
-                                </a>
-                            }
-                            else if (!string.IsNullOrWhiteSpace(item.SourceName))
-                            {
-                                @* No link is shown as no link. A section front page
-                                   was dropped upstream rather than passed off as a source. *@
-                                <span class="rs-source-unlinked">@item.SourceName — kein Artikellink</span>
-                            }
-                            else
-                            {
-                                <span class="rs-source-unlinked">Quelle nicht angegeben</span>
-                            }
-                        </div>
-                    </article>
-                }
-            </section>
-        }
+        <NewsDeck Items="_deck" CounterElementId="@CounterId">
+            <EmptyContent>
+                <p class="rs-empty">
+                    Keine Meldungen vorhanden. Das Recherche-Tooling hat für diese
+                    Datenbank noch nichts geschrieben.
+                </p>
+            </EmptyContent>
+        </NewsDeck>
     }
 </div>
 
 @code {
+    private const string CounterId = "news-counter";
+
     private IReadOnlyList<FootballNewsItem>? _items;
+    private IReadOnlyList<NewsDeckItem> _deck = [];
 
     private string? Meta => _items is { Count: > 0 }
         ? $"STAND {_items.Max(item => item.LastSeenAt).ToLocalTime():dd.MM. HH:mm}"
@@ -87,34 +46,6 @@
     protected override async Task OnInitializedAsync()
     {
         _items = await Research.GetFootballNewsAsync();
+        _deck = FootballNewsViewBuilder.Build(_items);
     }
-
-    private static string ConfidenceLabel(NewsConfidence confidence) => confidence switch
-    {
-        NewsConfidence.Confirmed => "bestätigt",
-        NewsConfidence.Reported => "berichtet",
-        NewsConfidence.Rumour => "Gerücht",
-        _ => "unbekannt",
-    };
-
-    private static string BadgeClass(NewsConfidence confidence) => confidence switch
-    {
-        NewsConfidence.Confirmed => "confirmed",
-        NewsConfidence.Reported => "reported",
-        NewsConfidence.Rumour => "rumour",
-        _ => "unknown",
-    };
-
-    private static string CategoryLabel(string category) => category switch
-    {
-        "transfer" => "Transfer",
-        "contract" => "Vertrag",
-        "coach" => "Trainer",
-        "injury" => "Verletzung",
-        "club_governance" => "Verein",
-        "competition_structure" => "Wettbewerb",
-        "sporting_situation" => "Sportlich",
-        "other" => "Sonstiges",
-        _ => category,
-    };
 }
