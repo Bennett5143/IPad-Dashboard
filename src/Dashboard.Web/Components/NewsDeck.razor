@@ -1,0 +1,103 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@* Blätter-Ansicht für die Meldungen des Recherche-Tools: eine Meldung zur Zeit, Pfeile links und
+   rechts, Wischen dazwischen.
+
+   Alle Meldungen stehen von Anfang an im DOM, nebeneinander in einem scroll-snap-Container. Das
+   Wischen macht damit der Browser, und der Zähler wandert per JS direkt im DOM — kein Roundtrip
+   über den Blazor-Circuit je Geste, was auf dem iPad den Unterschied zwischen flüssig und zäh
+   ausmacht. Nur die Pfeile gehen über Blazor; sie werden selten getippt. *@
+
+@if (Items.Count == 0)
+{
+    @EmptyContent
+}
+else
+{
+    <div class="deck">
+        <button class="deck-arrow" id="@($"{_id}-prev")" aria-label="Vorherige Meldung"
+                @onclick="() => PageAsync(-1)">‹</button>
+
+        <div class="deck-track" id="@_id">
+            @foreach (var item in Items)
+            {
+                <article class="deck-panel">
+                    <div class="deck-head">
+                        @foreach (var part in item.HeaderParts)
+                        {
+                            <span class="deck-head-part">@part</span>
+                        }
+                    </div>
+
+                    @if (item.Badge is { } badge)
+                    {
+                        <span class="rs-badge @badge.CssClass">@badge.Label</span>
+                    }
+
+                    <h3 class="rs-headline">@item.Headline</h3>
+                    <p class="rs-summary">@item.Summary</p>
+
+                    @if (!string.IsNullOrWhiteSpace(item.Source))
+                    {
+                        @* Bewusst kein Link: im Anzeigekontext gibt es kein Internet. *@
+                        <span class="deck-source">@item.Source</span>
+                    }
+                </article>
+            }
+        </div>
+
+        <button class="deck-arrow" id="@($"{_id}-next")" aria-label="Nächste Meldung"
+                @onclick="() => PageAsync(1)">›</button>
+    </div>
+}
+
+@code {
+    /// <summary>Die Meldungen in der Reihenfolge, in der geblättert wird.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<NewsDeckItem> Items { get; set; } = [];
+
+    /// <summary>Was statt der Ansicht steht, wenn es nichts zu zeigen gibt.</summary>
+    [Parameter] public RenderFragment? EmptyContent { get; set; }
+
+    /// <summary>Element-Id des Zählers, den die JS beschreibt (z. B. im Seiten-Header).</summary>
+    [Parameter] public string? CounterElementId { get; set; }
+
+    private readonly string _id = $"deck-{Guid.NewGuid():N}";
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || Items.Count == 0)
+        {
+            return;
+        }
+
+        _module = await JS.InvokeAsync<IJSObjectReference>(
+            "import", $"./js/newsdeck.js?v={AppAssets.Version}");
+        await _module.InvokeVoidAsync("attach", _id, CounterElementId);
+    }
+
+    private async Task PageAsync(int direction)
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("page", _id, direction);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("detach", _id);
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit bereits getrennt – nichts zu tun.
+            }
+        }
+    }
+}

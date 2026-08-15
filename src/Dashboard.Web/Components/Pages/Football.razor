@@ -70,79 +70,15 @@
             }
         </div>
 
-        @* „Deine Vereine" steht jetzt permanent neben der Tabelle statt hinter einem eigenen Tab. *@
-        <aside class="fb-aside">
-            @foreach (var team in Teams)
-            {
-                <section class="fb-team">
-                    <span class="fb-team-name">
-                        @if (_showCrests && FootballFormatter.CrestSrc(team.CrestUrl) is { } crest)
-                        {
-                            <img class="fb-crest" src="@crest" alt="" width="20" height="20" loading="lazy" />
-                        }
-                        @team.TeamName
-                    </span>
-                    <span class="mono-label">
-                        PLATZ @FootballFormatter.Position(team.Standing) · @PointsLabel(team.Standing)
-                    </span>
-
-                    <div class="fb-form" aria-label="Form der letzten Spiele">
-                        @foreach (var match in Form(team))
-                        {
-                            <span class="fb-form-box @FormCss(match.Outcome)">@FootballFormatter.OutcomeLabel(match.Outcome)</span>
-                        }
-                    </div>
-
-                    @if (team.Upcoming.FirstOrDefault() is { } next)
-                    {
-                        <div class="fb-next">
-                            <span class="mono-label">NÄCHSTES SPIEL</span>
-                            <span class="fb-next-text">
-                                @FootballFormatter.DateTimeLabel(next.KickoffUtc) · @next.Opponent
-                                (@FootballFormatter.Venue(next))
-                            </span>
-                        </div>
-                    }
-                </section>
-            }
-
-            <section class="fb-week">
-                <span class="mono-label">DIESE WOCHE</span>
-                @if (_week is null || !FootballWeekBuilder.HasMatches(_week))
-                {
-                    <span class="fb-week-empty">Keine Spiele.</span>
-                }
-                else
-                {
-                    @foreach (var entry in WeekEntries())
-                    {
-                        <div class="fb-week-row">
-                            <span class="fb-week-time">@(entry.IsFinished ? entry.Result : entry.Time)</span>
-                            <span class="fb-week-match">@entry.TeamName @entry.Venue @entry.Opponent</span>
-                        </div>
-                    }
-                }
-            </section>
-        </aside>
     </div>
 </div>
 
 @code {
-    /// <summary>Länge der Formreihe im Aside.</summary>
-    private const int FormLength = 5;
-
-    /// <summary>So viele Begegnungen passen unter „Diese Woche", ohne das Aside zu sprengen.</summary>
-    private const int WeekRows = 5;
-
     private IReadOnlyList<LeagueTable>? _tables;
     private ChampionsLeague? _cl;
     private IReadOnlyList<TournamentView>? _tournaments;
-    private IReadOnlyList<FootballTeamSnapshot> _teams = Array.Empty<FootballTeamSnapshot>();
-    private IReadOnlyList<FootballWeekDay>? _week;
     private string _tab = "tables";
     private bool _showCrests = true;
-
-    private IReadOnlyList<FootballTeamSnapshot> Teams => _teams;
 
     protected override void OnInitialized()
     {
@@ -164,12 +100,10 @@
         _tables = snapshot?.LeagueTables;
         _cl = snapshot?.Cl;
         _tournaments = snapshot?.Tournaments;
-        _teams = snapshot?.Teams ?? (IReadOnlyList<FootballTeamSnapshot>)Array.Empty<FootballTeamSnapshot>();
-        _week = snapshot is null ? null : FootballWeekBuilder.Build(snapshot);
     }
 
-    // Tab-Reihenfolge: Tabellen · Champions League · aktive Turniere.
-    // „Vereine" entfällt — das Aside zeigt sie jetzt dauerhaft.
+    // Tab-Reihenfolge: Tabellen · Champions League · aktive Turniere. Die Vereinssicht entfällt
+    // hier ganz — die Woche über alle verfolgten Vereine steht auf der Hauptseite.
     private IReadOnlyList<(string Key, string Label)> Tabs()
     {
         var tabs = new List<(string, string)> { ("tables", "Tabellen") };
@@ -208,19 +142,6 @@
         var code = _tab[2..];
         return _tournaments.FirstOrDefault(t => t.Code == code);
     }
-
-    // Die jüngsten Spiele stehen zuerst; die Formreihe liest sich von alt nach neu.
-    private static IEnumerable<Match> Form(FootballTeamSnapshot team) =>
-        team.RecentResults.OrderByDescending(m => m.KickoffUtc).Take(FormLength).Reverse();
-
-    private static string FormCss(MatchOutcome? outcome) =>
-        outcome == MatchOutcome.Win ? "is-win" : "is-other";
-
-    private static string PointsLabel(TablePosition? standing) =>
-        standing is null ? "–" : $"{standing.Points} PKT";
-
-    private IEnumerable<FootballWeekEntry> WeekEntries() =>
-        (_week ?? Array.Empty<FootballWeekDay>()).SelectMany(d => d.Entries).Take(WeekRows);
 
     public void Dispose() => FootballState.Changed -= OnChanged;
 }

@@ -4,13 +4,15 @@
     white-space: nowrap;
 }
 
-/* ===== Body: Tabelle links, „Deine Vereine" rechts ===== */
+/* ===== Body: die Tabelle über die volle Breite =====
+   Die Vereinsspalte ist entfallen; Form und nächstes Spiel aller verfolgten Vereine stehen
+   im Wochenkalender auf der Hauptseite. */
 
 .fb-body {
     flex: 1;
     min-height: 0;
-    display: grid;
-    grid-template-columns: 1.75fr 1fr;
+    display: flex;
+    flex-direction: column;
 }
 
 .fb-main {
@@ -18,16 +20,6 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    padding-right: 22px;
-}
-
-.fb-aside {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-width: 0;
-    padding: 12px 0 0 22px;
-    border-left: 1px solid var(--rule);
 }
 
 .fb-bracket {
@@ -40,105 +32,6 @@
     margin: 0 0 10px;
 }
 
-/* ===== Ein getrackter Verein ===== */
-
-.fb-team {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-}
-
-.fb-team-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 17px;
-    font-weight: 600;
-    min-width: 0;
-}
-
-.fb-crest {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    flex: none;
-}
-
-.fb-form {
-    display: flex;
-    gap: 4px;
-}
-
-/* Sieg trägt den Akzent, alles andere bleibt Fläche — Farbe nur am Datenpunkt. */
-.fb-form-box {
-    width: 20px;
-    height: 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    font-family: var(--font-family-mono);
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.fb-form-box.is-win {
-    background: var(--accent);
-    color: var(--bg);
-}
-
-.fb-form-box.is-other {
-    background: var(--track);
-    color: var(--muted);
-}
-
-.fb-next {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding-top: 8px;
-    border-top: 1px solid var(--rule);
-}
-
-.fb-next-text {
-    font-size: 14px;
-    color: var(--muted);
-}
-
-/* ===== Dritter Block: diese Woche ===== */
-
-.fb-week {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-top: 8px;
-    border-top: 1px solid var(--rule);
-}
-
-.fb-week-row {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    min-width: 0;
-}
-
-.fb-week-time {
-    font-family: var(--font-family-mono);
-    font-size: 0.6875rem; /* 11px */
-    font-variant-numeric: tabular-nums;
-    color: var(--muted);
-    flex: none;
-}
-
-.fb-week-match {
-    font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.fb-week-empty,
 .fb-empty {
     color: var(--muted);
 }
