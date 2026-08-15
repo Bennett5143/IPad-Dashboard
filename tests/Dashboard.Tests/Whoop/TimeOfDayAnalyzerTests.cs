@@ -55,14 +55,26 @@ public class TimeOfDayAnalyzerTests
         Assert.Null(TimeOfDayAnalyzer.EnergyPerMinute(Workout(kilojoule: null)));
     }
 
+    /// <summary>
+    /// Die Auswertung wertet Workouts aus, nicht Gewohnheiten: Seilspringen behält seine Kategorie,
+    /// obwohl der Habit-Tracker es nicht mehr führt.
+    /// </summary>
     [Fact]
-    public void CategoryFor_MapsViaHabitKind()
+    public void CategoryFor_MapsViaTheSport_NotViaTheHabit()
     {
         Assert.Equal(TrainingCategory.Running, TimeOfDayAnalyzer.CategoryFor(Workout()));
         Assert.Equal(TrainingCategory.Strength, TimeOfDayAnalyzer.CategoryFor(Workout(sport: "weightlifting")));
         Assert.Equal(TrainingCategory.JumpRope, TimeOfDayAnalyzer.CategoryFor(Workout(sport: "jumping rope")));
         Assert.Null(TimeOfDayAnalyzer.CategoryFor(Workout(sport: "cycling")));
-        Assert.Null(TimeOfDayAnalyzer.CategoryFor(Workout(sport: "yoga"))); // Dehnen bewusst außen vor
+        Assert.Null(TimeOfDayAnalyzer.CategoryFor(Workout(sport: "yoga"))); // Dehnen hat kein Effektivitätsmaß
+    }
+
+    /// <summary>Der Habit-Tracker führt Seilspringen nicht mehr — die Kategorie bleibt trotzdem.</summary>
+    [Fact]
+    public void CategoryFor_JumpRope_SurvivesTheHabitBeingDropped()
+    {
+        Assert.Null(WhoopHabitMapper.MapKind(Workout(sport: "jumping rope")));
+        Assert.Equal(TrainingCategory.JumpRope, TimeOfDayAnalyzer.CategoryFor(Workout(sport: "jumping rope")));
     }
 
     [Fact]

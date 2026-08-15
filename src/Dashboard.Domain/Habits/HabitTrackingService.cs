@@ -39,7 +39,7 @@ public sealed class HabitTrackingService
         var todaysEmom = await _repository.GetEmomAsync(date, ct);
         var running = await _repository.GetRunningForDateAsync(date, ct);
 
-        return Enum.GetValues<HabitKind>()
+        return HabitCatalog.Active
             .Select(kind => new HabitSummary(
                 Kind: kind,
                 IsDoneToday: completedToday.Contains(kind),

@@ -1,5 +1,3 @@
-using Dashboard.Domain.Enums;
-
 namespace Dashboard.Domain.Whoop;
 
 /// <summary>Berliner Tageszeit-Fenster eines Trainingsstarts.</summary>
@@ -52,13 +50,17 @@ public static class TimeOfDayAnalyzer
         };
     }
 
-    /// <summary>Trainingsart eines Workouts; <c>null</c> für alles ohne Effektivitätsmaß.</summary>
+    /// <summary>
+    /// Trainingsart eines Workouts; <c>null</c> für alles ohne Effektivitätsmaß. Fragt die
+    /// Sportart direkt ab statt über den Habit-Mapper: die Auswertung wertet Workouts aus, nicht
+    /// Gewohnheiten, und darf ihre Kategorien nicht verlieren, wenn eine Gewohnheit abgewählt wird.
+    /// </summary>
     public static TrainingCategory? CategoryFor(WhoopWorkout workout) =>
-        WhoopHabitMapper.MapKind(workout) switch
+        WhoopSportClassifier.Classify(workout) switch
         {
-            HabitKind.Zone2Run or HabitKind.Vo2MaxIntervals => TrainingCategory.Running,
-            HabitKind.Strength => TrainingCategory.Strength,
-            HabitKind.JumpRope => TrainingCategory.JumpRope,
+            WhoopSport.Running => TrainingCategory.Running,
+            WhoopSport.Strength => TrainingCategory.Strength,
+            WhoopSport.JumpRope => TrainingCategory.JumpRope,
             _ => null
         };
 

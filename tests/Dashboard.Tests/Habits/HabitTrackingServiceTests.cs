@@ -14,9 +14,47 @@ public class HabitTrackingServiceTests
 
         var summaries = await service.GetSummaryForAsync(new DateOnly(2026, 5, 20));
 
-        Assert.Equal(Enum.GetValues<HabitKind>().Length, summaries.Count);
+        Assert.Equal(HabitCatalog.Active.Count, summaries.Count);
         Assert.All(summaries, s => Assert.False(s.IsDoneToday));
         Assert.All(summaries, s => Assert.Equal(0, s.WeekCount));
+    }
+
+    /// <summary>
+    /// Der Tracker führt genau die aktiven Gewohnheiten. Abgewählte bleiben im Enum, weil ihre
+    /// Zeilen als String in der Datenbank liegen und lesbar bleiben müssen — sichtbar sind sie nicht.
+    /// </summary>
+    [Fact]
+    public async Task GetSummary_ListsOnlyTheActiveHabits()
+    {
+        var repo = new FakeHabitEntryRepository();
+        var service = BuildService(repo, new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
+
+        var summaries = await service.GetSummaryForAsync(new DateOnly(2026, 5, 20));
+
+        Assert.Equal(
+            [HabitKind.Strength, HabitKind.Zone2Run, HabitKind.Vo2MaxIntervals],
+            summaries.Select(s => s.Kind));
+        Assert.DoesNotContain(summaries, s => s.Kind is HabitKind.JumpRope or HabitKind.Stretching);
+    }
+
+    /// <summary>
+    /// Historie einer abgewählten Gewohnheit: sie lädt fehlerfrei und taucht in keiner Zusammen-
+    /// fassung auf. Ohne diese Zusicherung bräuchte das Abwählen eine Datenwanderung.
+    /// </summary>
+    [Fact]
+    public async Task GetSummary_IgnoresEntriesOfDroppedHabits()
+    {
+        var date = new DateOnly(2026, 5, 20);
+        var repo = new FakeHabitEntryRepository();
+        await repo.AddAsync(new HabitEntry { Date = date, Kind = HabitKind.JumpRope });
+        await repo.AddAsync(new HabitEntry { Date = date, Kind = HabitKind.Strength });
+
+        var service = BuildService(repo, new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero));
+        var summaries = await service.GetSummaryForAsync(date);
+
+        Assert.Equal(3, summaries.Count);
+        Assert.True(summaries.Single(s => s.Kind == HabitKind.Strength).IsDoneToday);
+        Assert.DoesNotContain(summaries, s => s.Kind == HabitKind.JumpRope);
     }
 
     [Fact]
