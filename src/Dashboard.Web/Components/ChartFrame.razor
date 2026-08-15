@@ -9,6 +9,14 @@
         <span class="chart-y-label">@YLabel</span>
     }
     <div class="chart-area">
+        @if (YMax is not null || YMin is not null)
+        {
+            @* Skalenwerte am linken Rand: erst mit ihnen sagt die Kurve, wie hoch sie steigt. *@
+            <div class="chart-y-ticks" aria-hidden="true">
+                <span>@YMax</span>
+                <span>@YMin</span>
+            </div>
+        }
         @ChildContent
         @if (RangeStart is not null || RangeEnd is not null)
         {
@@ -39,6 +47,13 @@
 
     /// <summary>Optionaler Wert am rechten Rand unter der Kurve (z. B. Maximum/Endwert).</summary>
     [Parameter] public string? RangeEnd { get; set; }
+
+    /// <summary>Oberer Skalenwert der Y-Achse (z. B. <c>24 °C</c>). Mit <see cref="YMin"/> zusammen
+    /// beschriftet er die Achse selbst, statt nur ihre Einheit zu nennen.</summary>
+    [Parameter] public string? YMax { get; set; }
+
+    /// <summary>Unterer Skalenwert der Y-Achse.</summary>
+    [Parameter] public string? YMin { get; set; }
 
     /// <summary>Zusätzliche CSS-Klassen für den Rahmen.</summary>
     [Parameter] public string? CssClass { get; set; }

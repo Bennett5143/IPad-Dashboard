@@ -51,9 +51,16 @@
             </dl>
         </section>
 
-        @* Der Verlauf nimmt die Resthöhe zwischen Hero und Stundenleiste. *@
+        @* Der Verlauf nimmt die Resthöhe zwischen Hero und Stundenleiste. Die Achsen sagen, was
+           die Kurve sonst verschweigt: wie warm es oben ist und welches Fenster sie zeigt. *@
         <div class="wx-trend">
-            <Sparkline Values="hourlyTemps" Fill="true" />
+            @* Die Beschriftung gehört zur Kurve, und die zeichnet den ganzen Verlauf — nicht nur
+               die Spalten der Leiste darunter. *@
+            <ChartFrame XLabel="@TrendWindow(_snapshot.Hourly)" YLabel="Temperatur"
+                        YMax="@Extreme(hourlyTemps, highest: true)"
+                        YMin="@Extreme(hourlyTemps, highest: false)">
+                <Sparkline Values="hourlyTemps" Fill="true" />
+            </ChartFrame>
         </div>
 
         <div class="wx-hours">
@@ -86,7 +93,8 @@
 </div>
 
 @code {
-    private const int HourColumns = 8;
+    /// <summary>Zwölf Spalten füllen die Breite; die Config liefert genau so viele Stunden.</summary>
+    private const int HourColumns = 12;
 
     /// <summary>Ab dieser Regenwahrscheinlichkeit wird die Stunde in Tinte hervorgehoben.</summary>
     private const double RainThreshold = 0.30;
@@ -105,6 +113,38 @@
         ReadState();
         StateHasChanged();
     });
+
+    /// <summary>Größter bzw. kleinster Wert der Kurve, als Skalenwert der Y-Achse.</summary>
+    private static string? Extreme(IReadOnlyList<double?> values, bool highest)
+    {
+        var present = values.OfType<double>().ToList();
+        if (present.Count == 0)
+        {
+            return null;
+        }
+
+        return WeatherFormatter.Temperature(highest ? present.Max() : present.Min());
+    }
+
+    /// <summary>
+    /// Welches Zeitfenster die Kurve zeigt. Das OWM-Raster liegt bei 3 h je Schritt, zwölf Schritte
+    /// reichen also über anderthalb Tage — deshalb steht der Wochentag dabei, sobald das Fenster
+    /// den Tag wechselt. „23 – 08 Uhr" allein läse sich wie neun Stunden.
+    /// </summary>
+    private static string TrendWindow(IReadOnlyList<HourlyForecast> hours)
+    {
+        if (hours.Count == 0)
+        {
+            return "Zeit";
+        }
+
+        var from = hours[0].Time;
+        var to = hours[^1].Time;
+        var format = from.Date == to.Date ? "HH" : "ddd HH";
+        var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+
+        return $"{from.ToString(format, de)} – {to.ToString(format, de)} Uhr";
+    }
 
     private void ReadState()
     {

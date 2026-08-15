@@ -15,6 +15,24 @@
 
 .chart-area {
     min-width: 0;
+    position: relative;
+}
+
+/* Skalenwerte liegen über der Kurve am linken Rand: sie kosten so keine Breite, und die
+   Kurve behält die volle Fläche. */
+.chart-y-ticks {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1px 0;
+    pointer-events: none;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
 }
 
 /* Start/Ende-Werte direkt unter der Kurve (z. B. min/max). */
