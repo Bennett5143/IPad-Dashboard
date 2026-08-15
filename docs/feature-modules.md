@@ -17,8 +17,11 @@ a pool of 365 DB-seeded entries (`Domain/Quotes`, idempotent `DbSeeder`).
 
 ## Habit tracker
 
-Five fixed sport habits, toggleable per day with weekly/yearly counters,
-backfill, optional run details (owned entity) and EMOM gym tracking.
+Three sport habits — strength, zone-2 run, VO2max intervals — toggleable per
+day with weekly/yearly counters, backfill, optional run details (owned entity)
+and EMOM gym tracking. `HabitCatalog` is the one list every view and counter
+reads; jump rope and stretching left the tracker but stay in `HabitKind`,
+because the value is persisted as a string and old rows must remain readable.
 `Domain/Habits/HabitTrackingService` + `HabitsTile`; `CompleteAsync` is the
 hook WHOOP auto-fill uses. `/habits` adds a GitHub-style year heatmap and
 streaks (`HabitsHeatmapBuilder`, `HabitStreakCalculator`).
@@ -32,13 +35,14 @@ detail page `/weather`.
 
 ## Football — football-data.org
 
-Tracked clubs (results, fixtures, standings), top-5 league tables, Champions
-League league phase + knockout bracket derived purely from fixtures
+Six tracked clubs (results, fixtures, standings), top-5 league tables,
+Champions League league phase + knockout bracket derived purely from fixtures
 (`KnockoutBracketBuilder`), and tournament windows (EM/WM). One API call per
-competition per refresh with an inter-call delay for the free tier. `/football`
-with reusable `StandingsTable`/`KnockoutBracketView`; crests come through the
-offline `/crests` proxy. A `IFabrizioAlertSource` seam awaits the X/social
-slice.
+competition per refresh — twelve in total, spaced ten seconds apart, which is
+what the free tier tolerates (eight was measured to hit a 429). `/football`
+shows one full-width table; form and next fixture of every club live in the
+week calendar on the home page instead. Crests come through the offline
+`/crests` proxy. A `IFabrizioAlertSource` seam awaits the X/social slice.
 
 ## Transit — HVV departures
 
@@ -52,11 +56,19 @@ page `/hvv`. Stations are private config (`appsettings.Local.json`).
 ## Run heatmap & runs — Strava
 
 OAuth2 sync of runs into PostGIS (incremental, rate-limit aware, stream
-backfill). `/heatmap`: Leaflet with heat/pace/elevation/direction/heart-rate
-layers, clickable routes, cluster filter. `/runs`: list + per-run SVG
-profiles, year in review (`RunReviewCalculator`), best efforts, and route
-clustering into "standard loops" in pure C# (`RouteClusterer`).
-`Infrastructure/Strava` owns tokens, sync and stores.
+backfill). `/runs`: list + per-run SVG profiles, year in review
+(`RunReviewCalculator`), best efforts, and the **places** — runs grouped by the
+proximity of their start point (`RunPlaceMatcher`, threshold 2 km), named in
+the UI. Route *shape* deliberately plays no part: the question is where I ran,
+not which route I took.
+
+`/heatmap` shows one place at a time in a view that cannot be dragged or
+zoomed, framed on that place's extent. That is what makes the tile set finite:
+`PlaceTileWarmupService` preloads exactly those rectangles (`PlaceMapView`
+computes the fitting zoom plus one reserve level), so the offline iPad never
+meets a grey tile. Layers (heat/pace/elevation/direction/heart rate) and the
+tap-a-route popup are unchanged. `Infrastructure/Strava` owns tokens, sync and
+stores.
 
 ## WHOOP — recovery, auto-fill, insights
 
@@ -70,10 +82,17 @@ fitness curve, recovery drivers. Windowed backfill fills history
 
 ## Crypto — CoinGecko + alternative.me
 
-Market watchlist (price, 24 h change, 7-day sparkline) and Fear & Greed
-sentiment; both keyless. Market data is mandatory (failure → stale), sentiment
-is best-effort (keeps last value). `Domain/Crypto`, `CoinGeckoClient` +
-`FearGreedClient`, page `/crypto`.
+Market watchlist of eleven coins (price, 24 h change, 7-day sparkline), Fear &
+Greed sentiment, and a daily change series for the week calendar's badge; all
+keyless. Market data is mandatory (failure → stale), sentiment and the daily
+series are best-effort (they keep their last value).
+
+`/crypto` lists every configured coin and expands one row at a time into a
+large seven-day chart; `/crypto/{coinId}` adds hour/day/week/month/year.
+Those histories are fetched **on demand** and cached per coin and range
+(`CoinHistoryClient`) — eleven coins times five ranges in the background would
+pull permanently on a free, hard-throttled source. `Domain/Crypto`,
+`CoinGeckoClient` + `FearGreedClient`.
 
 ## Week calendar — football and price development
 

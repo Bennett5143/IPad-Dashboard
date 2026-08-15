@@ -100,3 +100,22 @@ One squash PR per slice.
   produced by a separate tool are displayed from a `research` schema this app
   reads but never writes or migrates. Second read-only `DbContext`, migration
   exclusion enforced by tests, empty state when the schema is absent.
+- **Content over layout (Aug 2026)** — OpenSpec change `dashboard-refinements`:
+  the pages kept their look and changed what stands on them. The home calendar
+  became a week over football and price development, and the ICS/Apple calendar
+  slice was removed with it (#143); departures gained exclusion filters and show
+  six per station (#144); the football page dropped its club column and the news
+  pages became a swipeable deck without links (#145, #146); crypto grew to
+  eleven coins with expandable rows and a detail page per coin (#147); the
+  weather trend got labelled axes and twelve hours (#148); the habit tracker
+  narrowed to three habits (#149); and runs are now grouped by **place** rather
+  than by route shape, with a heatmap that shows one place in a view that cannot
+  move so its tiles can be preloaded (#150, #151).
+
+  Three things the implementation corrected about the plan. The duplicated
+  league picker came from the configuration binder appending code defaults to
+  configured values (#142) — it cost no API calls, as the plan had claimed.
+  Twelve football calls per refresh do not fit through eight-second spacing;
+  ten seconds does. And dropping a habit took a WHOOP training category with it,
+  because the analysis derived its category from the habit mapper — sport
+  classification is now its own concern.
