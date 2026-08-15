@@ -433,38 +433,31 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     margin: 0 0 6px;
 }
 
-.rs-club,
-.rs-symbol {
+.rs-club {
     font-family: var(--font-family-mono);
     font-size: 12px;
     letter-spacing: 0.04em;
     color: var(--ink);
 }
 
-.rs-name,
 .rs-category,
 .rs-date {
     font-size: 12px;
     color: var(--muted);
 }
 
-.rs-name { margin-left: 6px; }
-
 .rs-source {
     font-size: 12px;
     color: var(--muted);
 }
 
-.rs-source a { color: var(--accent); }
-
-/* A missing link is shown as missing — never replaced by a section page. */
-.rs-source-unlinked {
-    color: var(--faint);
-    font-style: italic;
-}
-
 /* The situation paragraph: the report's opening half, and the only prose on
    this page that is about the market as a whole rather than one event. */
+.rs-deck-heading {
+    margin: 14px 0 8px;
+    flex: none;
+}
+
 .rs-situation {
     font-size: 15px;
     line-height: 1.55;
@@ -516,42 +509,3 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     font-weight: 600;
 }
 
-/* ===== quote table ===== */
-
-.rs-quotes {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-.rs-quotes th {
-    text-align: left;
-    font-family: var(--font-family-mono);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 400;
-    padding: 4px 8px 4px 0;
-    border-bottom: 1px solid var(--rule);
-}
-
-.rs-quotes td {
-    padding: 5px 8px 5px 0;
-    border-bottom: 1px solid var(--track);
-    vertical-align: baseline;
-}
-
-.rs-quotes tr:last-child td { border-bottom: none; }
-
-.rs-num {
-    text-align: right;
-    font-family: var(--font-family-mono);
-    font-variant-numeric: tabular-nums;
-}
-
-.rs-quotes th.rs-num { text-align: right; }
-
-.rs-up { color: var(--bull); }
-.rs-down { color: var(--bear); }
-.rs-flat { color: var(--muted); }
