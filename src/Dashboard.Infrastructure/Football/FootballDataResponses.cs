@@ -15,7 +15,10 @@ internal sealed record FdMatch(
     [property: JsonPropertyName("competition")] FdCompetition Competition,
     [property: JsonPropertyName("homeTeam")] FdTeam HomeTeam,
     [property: JsonPropertyName("awayTeam")] FdTeam AwayTeam,
-    [property: JsonPropertyName("score")] FdScore Score);
+    [property: JsonPropertyName("score")] FdScore Score,
+    // Der Wochenkalender benennt damit den zusammengefassten CL-Spieltag. In der K.o.-Phase
+    // liefert die API hier null – dann trägt der Eintrag den Rundennamen aus Stage.
+    [property: JsonPropertyName("matchday")] int? Matchday = null);
 
 internal sealed record FdCompetition(
     [property: JsonPropertyName("name")] string Name,

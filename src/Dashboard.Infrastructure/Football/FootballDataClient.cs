@@ -287,7 +287,8 @@ public sealed class FootballDataClient : IFootballProvider
         var opponentGoals = isHome ? match.Score.FullTime?.Away : match.Score.FullTime?.Home;
 
         return new Match(
-            match.UtcDate, match.Competition.Code ?? match.Competition.Name, opponent, isHome, ownGoals, opponentGoals);
+            match.UtcDate, match.Competition.Code ?? match.Competition.Name, opponent, isHome, ownGoals, opponentGoals,
+            match.Matchday, match.Stage);
     }
 
     private static Fixture ToFixture(FdMatch match)

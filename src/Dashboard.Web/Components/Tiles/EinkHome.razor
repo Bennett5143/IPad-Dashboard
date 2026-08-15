@@ -1,10 +1,9 @@
 @implements IDisposable
 @inject WhoopState WhoopState
 
-@* e-ink paper home (spike, behind data-theme="eink"): no-scroll bento for 1024x768.
-   Top-left = analog clock + 3 WHOOP rings (Recovery colored by zone, Strain/Sleep
-   in ink); top-right = weather; bottom (full width) = calendar. The icon rail and
-   the health status move here in the navigation slice. *@
+@* e-ink paper home: no-scroll bento for 1024x768. Top-left = analog clock + 3 WHOOP rings
+   (Recovery colored by zone, Strain/Sleep in ink); top-right = weather; bottom (full width) =
+   the week over football and price development. *@
 <div class="eink-home" data-theme="eink">
     <section class="eink-tl">
         <AnalogClock />
@@ -23,7 +22,7 @@
     </section>
 
     <section class="eink-cal">
-        <EinkCalendar />
+        <EinkWeek />
     </section>
 
     <section class="eink-railrow">

@@ -1,6 +1,9 @@
 .kiosk-shell {
-    /* Exakt Viewport-Höhe und hartes Clipping: die Hauptansicht scrollt nie. */
-    height: 100dvh;
+    /* Angeheftet statt gemessen: `height: 100dvh` wanderte auf iOS mit der Browser-Leiste, und
+       zusammen mit den Safe-Area-Paddings stand die Hülle über dem Viewport — die Hauptseite ließ
+       sich ein Stück scrollen. Fixiert an allen vier Kanten gibt es keinen scrollbaren Bereich. */
+    position: fixed;
+    inset: 0;
     overflow: hidden;
     background-color: var(--bg);
     color: var(--ink);

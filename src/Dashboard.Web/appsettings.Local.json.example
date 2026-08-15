@@ -31,12 +31,16 @@
   // appsettings.json → Football:LeagueCodes (unabhängig von den hier getrackten Vereinen). Die
   // Champions League (Ligaphase + K.o.-Bracket) und EM/WM-Turnierfenster sind ebenfalls app-weit in
   // appsettings.json konfiguriert (Football:ChampionsLeagueCode / Football:Tournaments) – nicht hier.
+  // Diese Vereine tragen auch den Wochenkalender auf der Hauptseite: je Tag ihre Spiele, wobei
+  // ein Champions-League-Spieltag zu einem einzigen Eintrag verdichtet wird.
   "Football": {
     "Teams": [
-      { "Name": "Real Madrid", "TeamId": 86, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
-      { "Name": "Barcelona",   "TeamId": 81, "CompetitionCode": "PD", "Competitions": [ "PD", "CL" ] },
-      { "Name": "Liverpool",   "TeamId": 64, "CompetitionCode": "PL", "Competitions": [ "PL", "CL" ] },
-      { "Name": "HSV",         "TeamId": 7,  "CompetitionCode": "BL1", "Competitions": [ "BL1" ] }
+      { "Name": "Real Madrid", "TeamId": 86,  "CompetitionCode": "PD",  "Competitions": [ "PD", "CL" ] },
+      { "Name": "HSV",         "TeamId": 7,   "CompetitionCode": "BL1", "Competitions": [ "BL1" ] },
+      { "Name": "Bayern",      "TeamId": 5,   "CompetitionCode": "BL1", "Competitions": [ "BL1", "CL" ] },
+      { "Name": "AC Mailand",  "TeamId": 98,  "CompetitionCode": "SA",  "Competitions": [ "SA" ] },
+      { "Name": "PSG",         "TeamId": 524, "CompetitionCode": "FL1", "Competitions": [ "FL1", "CL" ] },
+      { "Name": "Liverpool",   "TeamId": 64,  "CompetitionCode": "PL",  "Competitions": [ "PL", "CL" ] }
     ]
   },
 
@@ -79,16 +83,6 @@
           { "Line": "S3", "Direction": "Pinneberg" }
         ]
       }
-    ]
-  },
-
-  // Apple-/iCloud-Kalender als veröffentlichte .ics-Abo-URL(s). In der Kalender-App den
-  // Kalender „Öffentlich freigeben" und den erzeugten webcal://- bzw. https://-Link hier
-  // eintragen (mehrere möglich). Kein Passwort nötig; ein echtes CalDAV-Konto-Passwort
-  // gehörte stattdessen in User-Secrets. Timezone/Intervall/Fenster stehen in appsettings.json.
-  "Calendar": {
-    "IcsUrls": [
-      "https://p00-caldav.icloud.com/published/2/XXXXXXXXXXXXXXXXXXXXXXXX"
     ]
   },
 

@@ -1,9 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-using Dashboard.Domain.Calendar;
 using Dashboard.Infrastructure;
-using Dashboard.Infrastructure.Calendar;
 using Dashboard.Infrastructure.Crests;
 using Dashboard.Infrastructure.Crypto;
 using Dashboard.Infrastructure.Football;
@@ -93,20 +91,6 @@ try
     });
     builder.Services.AddHostedService<WeatherRefreshService>();
 
-    // Calendar (published ICS subscription source)
-    var calendarOptions = builder.Configuration
-        .GetSection(CalendarOptions.SectionName)
-        .Get<CalendarOptions>() ?? new CalendarOptions();
-
-    builder.Services.Configure<CalendarOptions>(
-        builder.Configuration.GetSection(CalendarOptions.SectionName));
-    builder.Services.AddSingleton<CalendarState>();
-    builder.Services.AddHttpClient<ICalendarProvider, IcsCalendarClient>(http =>
-    {
-        http.Timeout = TimeSpan.FromSeconds(calendarOptions.HttpTimeoutSeconds);
-    });
-    builder.Services.AddHostedService<CalendarRefreshService>();
-
     // Football
     var footballOptions = builder.Configuration
         .GetSection(FootballOptions.SectionName)
@@ -148,6 +132,10 @@ try
             http.DefaultRequestHeaders.Add("x-cg-demo-api-key", cryptoOptions.MarketApiKey);
         }
     });
+    // Dieselbe Instanz trägt beide Rollen: die Tagesreihe braucht denselben konfigurierten
+    // HttpClient (Basis-URL, User-Agent, Demo-Key) wie die Watchlist.
+    builder.Services.AddTransient<ICryptoHistoryProvider>(sp =>
+        (CoinGeckoClient)sp.GetRequiredService<ICryptoMarketProvider>());
     builder.Services.AddHttpClient<IMarketSentimentProvider, FearGreedClient>(http =>
     {
         http.BaseAddress = new Uri(cryptoOptions.SentimentBaseUrl);
@@ -237,7 +225,6 @@ try
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CryptoState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<HvvState>());
     builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<WhoopState>());
-    builder.Services.AddSingleton<ISliceStatusSource>(sp => sp.GetRequiredService<CalendarState>());
     builder.Services.AddSingleton<ISystemMetricsProvider>(OperatingSystem.IsLinux()
         ? new LinuxSystemMetricsProvider()
         : new NullSystemMetricsProvider());

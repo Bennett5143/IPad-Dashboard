@@ -1,7 +1,9 @@
 /* No-scroll bento for the iPad 6 in landscape (1024x768). Two content columns
    on top (clock+rings | weather), the calendar spanning the full width below. */
 .eink-home {
-    height: 100dvh;
+    /* Füllt die angeheftete Kiosk-Hülle. Eine eigene Viewport-Höhe hätte sich mit deren Paddings
+       addiert — genau das war der Überstand, der die Seite scrollen ließ. */
+    height: 100%;
     overflow: hidden;
     display: grid;
     grid-template-columns: minmax(280px, 5fr) 7fr;
