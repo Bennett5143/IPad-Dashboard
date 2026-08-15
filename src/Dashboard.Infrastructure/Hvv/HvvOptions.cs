@@ -20,8 +20,9 @@ public sealed class HvvOptions
     /// <summary>Poll-Intervall. Wird zur Sicherheit auf min. 60 s angehoben (FA-6.04: max. 1 Req/min pro Haltestelle).</summary>
     public int PollIntervalSeconds { get; init; } = 60;
 
-    /// <summary>Maximale Anzahl angezeigter Abfahrten pro Haltestelle (nach Filterung).</summary>
-    public int MaxDepartures { get; init; } = 3;
+    /// <summary>Maximale Anzahl angezeigter Abfahrten pro Haltestelle (nach Filterung). Sechs füllen
+    /// eine Spalte auf <c>/hvv</c>, ohne sie zu überladen.</summary>
+    public int MaxDepartures { get; init; } = 6;
 
     public IReadOnlyList<HvvStationConfig> Stations { get; init; } = [];
 }
@@ -39,8 +40,9 @@ public sealed class HvvStationConfig
     public IReadOnlyList<HvvLineFilter> Lines { get; init; } = [];
 
     /// <summary>Bei gesetzten <see cref="Lines"/>: wie viele Abfahrten je Gruppe behalten werden
-    /// (z. B. 1 = nur die nächste je Linie/Gruppe). Ohne Filter ungenutzt.</summary>
-    public int DeparturesPerGroup { get; init; } = 2;
+    /// (z. B. 1 = nur die nächste je Linie/Gruppe). Ohne Filter ungenutzt. Der Deckel je Haltestelle
+    /// bleibt <see cref="HvvOptions.MaxDepartures"/>.</summary>
+    public int DeparturesPerGroup { get; init; } = 6;
 
     public int MaxList { get; init; } = 40;
     public int MaxTimeOffsetMinutes { get; init; } = 120;
@@ -50,12 +52,21 @@ public sealed class HvvStationConfig
 /// Filtert Abfahrten nach Linie und Fahrtrichtung. <see cref="Line"/> ist der Liniennname
 /// (z. B. „42", „S3"), <see cref="Direction"/> ein Teilstring des Richtungstexts der API
 /// (z. B. „Zielrichtung"); beides wird case-insensitiv geprüft. Leere <see cref="Direction"/>
-/// = alle Richtungen dieser Linie.
+/// = alle Richtungen dieser Linie, sofern sie nicht in <see cref="ExcludeDirections"/> steht.
 /// </summary>
 public sealed class HvvLineFilter
 {
     public string Line { get; init; } = string.Empty;
     public string Direction { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Zielrichtungen, die nie gezeigt werden (Teilstrings, case-insensitiv). Gedacht für
+    /// „alles außer diesen Endhaltestellen" — robuster als eine Aufzählung aller gewünschten
+    /// Richtungen, weil eine neue Zielrichtung derselben Linie dann sichtbar wird, statt
+    /// stillschweigend zu fehlen. Greift vor der Gruppenzuordnung: eine verworfene Abfahrt
+    /// belegt keinen Platz im Kontingent ihrer Gruppe.
+    /// </summary>
+    public IReadOnlyList<string> ExcludeDirections { get; init; } = [];
 
     /// <summary>Optionale Gruppe für „nächste N je Gruppe". Mehrere Linien mit gleicher Gruppe
     /// teilen sich ein Kontingent (z. B. „143" und „443" → Gruppe „143/443"). Leer = die Linie

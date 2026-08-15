@@ -140,6 +140,102 @@ public class HvvDepartureClientTests
         Assert.Equal(2, board.Departures.Count);
     }
 
+    /// <summary>Zwei 143er (einer davon Richtung Strucksbarg) und ein 443er, alle im Zeitfenster.</summary>
+    private const string BusResponse =
+        """
+        {
+          "returnCode": "OK",
+          "time": { "date": "10.06.2026", "time": "14:00" },
+          "departures": [
+            { "line": { "name": "143", "direction": "Strucksbarg", "type": { "simpleType": "BUS", "shortInfo": "Bus" } },
+              "timeOffset": 2, "delay": null },
+            { "line": { "name": "143", "direction": "Harburg Rathaus", "type": { "simpleType": "BUS", "shortInfo": "Bus" } },
+              "timeOffset": 5, "delay": null },
+            { "line": { "name": "443", "direction": "Harburg Rathaus", "type": { "simpleType": "BUS", "shortInfo": "Bus" } },
+              "timeOffset": 9, "delay": null }
+          ]
+        }
+        """;
+
+    private static HvvLineFilter Bus(string line, params string[] excluded) => new()
+    {
+        Line = line,
+        Group = "143/443",
+        ExcludeDirections = excluded
+    };
+
+    [Fact]
+    public async Task GetDeparturesAsync_DropsExcludedDirections()
+    {
+        var options = Options(lines: [Bus("143", "Strucksbarg"), Bus("443", "Strucksbarg")]);
+
+        var board = (await CreateClient(options, BusResponse).GetDeparturesAsync()).Stations[0];
+
+        Assert.Equal(2, board.Departures.Count);
+        Assert.DoesNotContain(board.Departures, d => d.Direction.Contains("Strucksbarg", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Der Ausschluss greift vor der Gruppenzuordnung: sonst verbrauchte die verworfene Abfahrt
+    /// den einzigen Platz der Gruppe und die Spalte bliebe leer.
+    /// </summary>
+    [Fact]
+    public async Task GetDeparturesAsync_ExcludedDeparture_TakesNoSlotInItsGroupQuota()
+    {
+        var onePerGroup = new HvvOptions
+        {
+            Endpoint = "https://test.local/departureList",
+            Version = 47,
+            MaxDepartures = 6,
+            Stations =
+            [
+                new HvvStationConfig
+                {
+                    Name = "Lichtenauerweg",
+                    MasterId = "Master:42008",
+                    City = "Hamburg",
+                    DeparturesPerGroup = 1,
+                    Lines = [Bus("143", "Strucksbarg"), Bus("443", "Strucksbarg")]
+                }
+            ]
+        };
+
+        var board = (await CreateClient(onePerGroup, BusResponse).GetDeparturesAsync()).Stations[0];
+
+        // Die früheste Fahrt (Strucksbarg, +2) ist raus; das eine Kontingent trägt die 143 um +5.
+        var departure = Assert.Single(board.Departures);
+        Assert.Equal("143", departure.LineName);
+        Assert.Equal("Harburg Rathaus", departure.Direction);
+    }
+
+    [Fact]
+    public async Task GetDeparturesAsync_WithoutExcludedDirections_KeepsEveryDirection()
+    {
+        var options = Options(lines: [Bus("143"), Bus("443")]);
+
+        var board = (await CreateClient(options, BusResponse).GetDeparturesAsync()).Stations[0];
+
+        Assert.Equal(3, board.Departures.Count);
+    }
+
+    /// <summary>
+    /// Eine spätere, laxere Regel darf eine bewusst ausgeschlossene Richtung nicht wieder
+    /// hereinlassen — sonst hinge das Ergebnis an der Reihenfolge in der Konfiguration.
+    /// </summary>
+    [Fact]
+    public async Task GetDeparturesAsync_ALaterRuleDoesNotReadmitAnExcludedDirection()
+    {
+        var options = Options(lines:
+        [
+            Bus("143", "Strucksbarg"),
+            new HvvLineFilter { Line = "143", Group = "143 alle" }
+        ]);
+
+        var board = (await CreateClient(options, BusResponse).GetDeparturesAsync()).Stations[0];
+
+        Assert.DoesNotContain(board.Departures, d => d.Direction.Contains("Strucksbarg", StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task GetDeparturesAsync_MarksStationUnavailable_OnNonOkReturnCode()
     {

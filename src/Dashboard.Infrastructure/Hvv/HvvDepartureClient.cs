@@ -96,22 +96,35 @@ public sealed class HvvDepartureClient : IHvvProvider
     }
 
     // Bestimmt die Gruppe einer Abfahrt anhand der ersten passenden Filter-Regel (Linie +
-    // optional Richtungs-Teilstring). null = keine Regel passt → Abfahrt verwerfen. Leere
-    // Gruppe in der Regel ⇒ die Linie selbst ist die Gruppe.
+    // optional Richtungs-Teilstring). null = keine Regel passt oder die Zielrichtung ist
+    // ausgeschlossen → Abfahrt verwerfen. Leere Gruppe in der Regel ⇒ die Linie selbst ist die
+    // Gruppe. Weil hier null herauskommt, bevor DepartureSelector zählt, belegt eine
+    // ausgeschlossene Abfahrt keinen Platz im Kontingent ihrer Gruppe.
     private static string? GroupKeyFor(Departure departure, IReadOnlyList<HvvLineFilter> lines)
     {
         foreach (var f in lines)
         {
-            if (string.Equals(departure.LineName, f.Line, StringComparison.OrdinalIgnoreCase)
-                && (string.IsNullOrWhiteSpace(f.Direction)
-                    || departure.Direction.Contains(f.Direction, StringComparison.OrdinalIgnoreCase)))
+            if (!string.Equals(departure.LineName, f.Line, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrWhiteSpace(f.Direction)
+                    && !departure.Direction.Contains(f.Direction, StringComparison.OrdinalIgnoreCase)))
             {
-                return string.IsNullOrWhiteSpace(f.Group) ? f.Line : f.Group;
+                continue;
             }
+
+            // Die erste passende Regel entscheidet — auch gegen die Abfahrt. Eine spätere,
+            // laxere Regel darf eine bewusst ausgeschlossene Richtung nicht wieder hereinlassen.
+            return IsExcluded(departure, f)
+                ? null
+                : string.IsNullOrWhiteSpace(f.Group) ? f.Line : f.Group;
         }
 
         return null;
     }
+
+    private static bool IsExcluded(Departure departure, HvvLineFilter filter) =>
+        filter.ExcludeDirections.Any(excluded =>
+            !string.IsNullOrWhiteSpace(excluded)
+            && departure.Direction.Contains(excluded, StringComparison.OrdinalIgnoreCase));
 
     private static Departure MapDeparture(HvvDepartureDto dto, DateTimeOffset serverTime)
     {

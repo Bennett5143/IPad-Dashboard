@@ -147,14 +147,24 @@
     flex: none;
 }
 
-/* Die Liste bindet bis zur Unterkante: der Rest verteilt sich zwischen die Zeilen,
-   statt als Loch unter der letzten stehen zu bleiben. */
+/* Die Liste bindet bis zur Unterkante. `space-between` tat das nur mit voller Spalte — bei zwei
+   Abfahrten klebte eine oben, eine unten, dazwischen ein Loch. Ein fester Zeilenabstand ab oben
+   hält wenige Zeilen zusammen; die volle Spalte füllt sich über die wachsenden Zeilen selbst. */
 .hvv-deps {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+/* Volle Spalte: die Zeilen wachsen gleichmäßig und füllen sie bis zur Unterkante. Bei dünner
+   Datenlage bleibt es beim natürlichen Zeilenabstand oben — gedehnte Riesenzeilen wären schlimmer
+   als etwas Luft unten. */
+.hvv-deps.is-full > .hvv-dep {
+    flex: 1 1 0;
+    min-height: 0;
 }
 
 .hvv-dep {
