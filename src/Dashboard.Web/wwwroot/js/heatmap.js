@@ -338,7 +338,7 @@ function showRunPopup(map, e, runs) {
 
 // ---- Öffentliche API ----------------------------------------------------
 
-export async function render(elementId, runs, layer, focus) {
+export async function render(elementId, runs, layer, frame) {
     await ensureLeaflet();
     defineLayer();
 
@@ -353,7 +353,20 @@ export async function render(elementId, runs, layer, focus) {
         element._heat.map.remove();
     }
 
-    const map = L.map(element, { preferCanvas: true }).setView([53.55, 9.99], 11); // Default: Hamburg
+    // Unbewegliche Karte: kein Ziehen, kein Zoom, keine Zoom-Bedienung. Die Ansicht zeigt genau
+    // einen Ort, und die Kacheln dieses Ausschnitts sind vorgeladen — beweglich könnte sie in
+    // Bereiche laufen, für die auf dem offline iPad nichts vorliegt.
+    const map = L.map(element, {
+        preferCanvas: true,
+        dragging: false,
+        scrollWheelZoom: false,
+        touchZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        zoomControl: false,
+        tap: false
+    }).setView([53.55, 9.99], 11); // Default: Hamburg
     // Lokaler Kachel-Proxy (siehe /tiles-Endpoint): das offline iPad bekommt die Karte vom
     // LAN-Server, der sie online lädt + cached. Keine externe CDN-Abhängigkeit mehr.
     const baseLayer = L.tileLayer('/tiles/{z}/{x}/{y}.png', {
@@ -393,13 +406,16 @@ export async function render(elementId, runs, layer, focus) {
     // Bei In-App-Navigation hat der Container beim Init evtl. noch nicht die endgültige Größe –
     // Leaflet zeigt dann eine leere/schwarze Karte mit nicht geladenen Kacheln. Nach dem Layout
     // neu vermessen (invalidateSize) und Ausschnitt setzen; mehrfach, um Timing-Fenster abzudecken.
-    // Mit focus (Gesamt-Ansicht) auf den Heimat-Standort zentrieren statt über alle Läufe zu passen.
+    // Der Rahmen kommt vom Ort: genau dieses Rechteck ist auch vorgeladen. Ohne Rahmen bleibt
+    // der Ausschnitt über die Läufe selbst.
+    const frameBounds = frame
+        ? L.latLngBounds([frame.minLat, frame.minLon], [frame.maxLat, frame.maxLon])
+        : bounds;
+
     const fit = () => {
         map.invalidateSize();
-        if (focus) {
-            map.setView([focus.lat, focus.lng], focus.zoom);
-        } else if (bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [24, 24] });
+        if (frameBounds.isValid()) {
+            map.fitBounds(frameBounds, { padding: [24, 24] });
         }
     };
     fit();
