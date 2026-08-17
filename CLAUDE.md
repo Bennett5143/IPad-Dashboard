@@ -46,5 +46,10 @@ in gitignored `appsettings.Local.json`. Never commit the latter two.
 - Migrations: `dotnet ef database update`, applied manually (`dotnet-ef` is
   a local tool — `dotnet tool restore` from `src/`); migrations only roll
   forward.
-- One squash PR per slice. Deployment to the Pi host:
-  `./deploy.sh` — see [docs/deployment.md](docs/deployment.md).
+- Branching: feature branches fork from `dev` and land there as one squash
+  PR per slice. `dev` gets verified on the Pi's dev instance, then promoted
+  to `main` via a **merge-commit** PR (never squash — squashing would make
+  `dev` and `main` diverge). Only `dev → main` PRs target `main`; the
+  rulesets enforce the merge method per branch.
+- Deployment to the Pi host: `./deploy.sh` — see
+  [docs/deployment.md](docs/deployment.md).
