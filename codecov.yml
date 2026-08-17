@@ -13,3 +13,8 @@ comment:
   layout: "condensed_header, diff, flags"
   behavior: default
   require_changes: true
+
+# Belt and braces on top of the coverlet ExcludeByFile in .runsettings:
+# generated code stays out of the coverage denominator.
+ignore:
+  - "src/Dashboard.Infrastructure/Migrations"

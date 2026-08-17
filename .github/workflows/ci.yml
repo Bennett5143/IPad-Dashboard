@@ -98,3 +98,69 @@ jobs:
       # --verify-no-changes ist der Lint-Modus.
       - name: Format check
         run: dotnet format --verify-no-changes --no-restore
+
+  # Rehearses every EF migration against the production PostGIS image before a
+  # change can reach a deployable branch — migrations used to run for the first
+  # time live on the Pi. Also fails when the model drifted without a migration.
+  migrations-smoke:
+    name: Migrations smoke
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: imresamu/postgis:16-3.5
+        env:
+          POSTGRES_USER: dashboard
+          POSTGRES_PASSWORD: dashboard
+          POSTGRES_DB: dashboard
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dashboard -d dashboard"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=dashboard;Username=dashboard;Password=dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+
+      # dotnet-ef is a local tool; the manifest lives in src/.
+      - name: Restore EF tool
+        working-directory: src
+        run: dotnet tool restore
+
+      - name: Apply all migrations to an empty PostGIS
+        working-directory: src
+        run: >-
+          dotnet ef database update
+          --context DashboardDbContext
+          --project Dashboard.Infrastructure
+          --startup-project Dashboard.Web
+
+      - name: Fail on model drift without a migration
+        working-directory: src
+        run: >-
+          dotnet ef migrations has-pending-model-changes
+          --context DashboardDbContext
+          --project Dashboard.Infrastructure
+          --startup-project Dashboard.Web

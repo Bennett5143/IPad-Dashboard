@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wired into every `dotnet test` via RunSettingsFilePath in Directory.Build.props.
+     Coverage measures only hand-written code: EF migrations (incl. designer files
+     and the model snapshot) are generated and would otherwise dominate the
+     denominator, making the number meaningless. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
