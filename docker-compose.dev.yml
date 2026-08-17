@@ -1,0 +1,24 @@
+# Dev-instance override — runs the dev branch NEXT TO the main stack on the Pi:
+#
+#   docker compose -p dashboard-dev -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# (deploy.sh dev does exactly this.) The separate project name gives the dev
+# stack its own containers AND its own named volumes (compose prefixes volumes
+# per project) — so dev gets its own database for free. That isolation is
+# mandatory: migrations only roll forward, a dev schema must never touch the
+# main database. Secrets env and appsettings.Local.json are shared via the
+# base file.
+#
+# `ports: !override` replaces the base mapping instead of appending to it —
+# otherwise the dev stack would also try to bind main's ports.
+services:
+  db:
+    container_name: dashboard-db-dev
+    ports: !override
+      - "127.0.0.1:5433:5432"
+
+  app:
+    image: ghcr.io/bennett5143/ipad-dashboard:${APP_TAG:-dev}
+    container_name: dashboard-app-dev
+    ports: !override
+      - "5236:8080"

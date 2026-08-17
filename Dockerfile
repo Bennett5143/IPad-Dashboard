@@ -1,8 +1,12 @@
 # syntax=docker/dockerfile:1
 # Multi-stage build: SDK image compiles/publishes, slim ASP.NET runtime image serves.
-# Built directly on the target host (works on amd64 and arm64/Raspberry Pi alike).
+# Multi-arch aware: in CI (buildx) the build stage runs natively on the runner
+# ($BUILDPLATFORM) and cross-compiles for $TARGETARCH — no QEMU-emulated compiler.
+# In a plain single-arch `docker build` (Pi fallback, dev Mac) BuildKit sets both
+# to the host values, so nothing changes there.
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG TARGETARCH
 WORKDIR /src
 
 # Restore first with only the project/solution metadata so the NuGet layer is
@@ -12,7 +16,7 @@ COPY global.json Directory.Build.props Directory.Packages.props ./
 COPY src/Dashboard.Domain/Dashboard.Domain.csproj src/Dashboard.Domain/
 COPY src/Dashboard.Infrastructure/Dashboard.Infrastructure.csproj src/Dashboard.Infrastructure/
 COPY src/Dashboard.Web/Dashboard.Web.csproj src/Dashboard.Web/
-RUN dotnet restore src/Dashboard.Web/Dashboard.Web.csproj
+RUN dotnet restore src/Dashboard.Web/Dashboard.Web.csproj -a $TARGETARCH
 
 COPY src/ src/
 # Kein --no-restore: Das Web-SDK fügt Microsoft.AspNetCore.App.Internal.Assets
@@ -20,7 +24,7 @@ COPY src/ src/
 # existieren — im Metadaten-only-Restore oben fehlen sie. Der zweite Restore ist
 # dank des gewärmten NuGet-Caches schnell; der Layer oben bleibt der Cache-Wärmer.
 RUN dotnet publish src/Dashboard.Web/Dashboard.Web.csproj \
-    --configuration Release --output /app/publish
+    --configuration Release --output /app/publish -a $TARGETARCH
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

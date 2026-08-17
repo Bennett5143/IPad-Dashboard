@@ -456,5 +456,5 @@ openspec
 .claude/skills/openspec-*/
 .claude/commands/opsx/
 
-# deploy.sh rollback anchor (per-host state)
-.last-deploy
+# deploy.sh rollback anchors (per-host state, one per target: main/dev)
+.last-deploy*
