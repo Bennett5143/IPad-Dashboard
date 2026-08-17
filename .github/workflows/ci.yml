@@ -141,6 +141,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Restore
+        run: dotnet restore
+
       # dotnet-ef is a local tool; the manifest lives in src/.
       - name: Restore EF tool
         working-directory: src
