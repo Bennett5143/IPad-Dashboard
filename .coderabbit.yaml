@@ -1,0 +1,13 @@
+# CodeRabbit configuration — https://docs.coderabbit.ai/reference/yaml-template
+language: "en-US"
+reviews:
+  # Without base_branches CodeRabbit only reviews PRs into the default branch;
+  # feature PRs target dev, so both long-lived branches are listed.
+  auto_review:
+    enabled: true
+    base_branches:
+      - "main"
+      - "dev"
+  path_filters:
+    # openspec/ is a symlink into the gitignored private docs repo — nothing to review.
+    - "!openspec/**"
