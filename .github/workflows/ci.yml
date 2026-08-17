@@ -86,7 +86,7 @@ jobs:
       # Upload to Codecov (badge + informational PR comments, see codecov.yml).
       # fail_ci_if_error: false — a Codecov outage must never redden the pipeline.
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: coverage/**/coverage.cobertura.xml
           flags: unit
