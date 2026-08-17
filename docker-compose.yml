@@ -28,6 +28,11 @@ services:
   # (App läuft dann via `dotnet run` auf dem Host); auf dem Pi/Server startet
   # `docker compose up -d` beide Services.
   app:
+    # Normal path: pull the CI-built multi-arch image from GHCR (deploy.sh).
+    # APP_TAG selects the branch tag (main/dev) or a sha-<fullsha> rollback tag.
+    # build: . stays as fallback — `docker compose build app` still works when
+    # the registry or CI is unavailable.
+    image: ghcr.io/bennett5143/ipad-dashboard:${APP_TAG:-main}
     build: .
     container_name: dashboard-app
     restart: unless-stopped

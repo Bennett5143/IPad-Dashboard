@@ -1,13 +1,14 @@
 name: CI
 
 # Feature-Branches laufen über ihren PR (pull_request); ein zusätzlicher push-Trigger
-# auf '**' würde build-test pro PR doppelt starten. Daher push nur auf main
-# (Post-Merge-Validierung); die PR-Läufe decken die Feature-Branches ab.
+# auf '**' würde build-test pro PR doppelt starten. Daher push nur auf die beiden
+# langlebigen Branches (Post-Merge-Validierung); die PR-Läufe decken die
+# Feature-Branches ab.
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 # Alte Pipelines für denselben PR/Ref abbrechen, wenn ein neuer Push kommt.
 concurrency:

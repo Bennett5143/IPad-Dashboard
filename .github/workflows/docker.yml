@@ -1,0 +1,70 @@
+name: Docker
+
+# Builds and publishes the multi-arch app image for the two long-lived branches.
+# The Pi pulls these images (see deploy.sh); nothing is built on the Pi anymore.
+# Separate workflow from ci.yml: this one needs packages: write, ci.yml stays
+# read-only, and PR feedback latency is unaffected by the multi-arch build.
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  # GHCR requires a lowercase name; the owner is "Bennett5143", so deriving it
+  # from github.repository would break — hardcoded on purpose.
+  IMAGE: ghcr.io/bennett5143/ipad-dashboard
+
+jobs:
+  build-push:
+    name: Build & Push image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # QEMU is only needed for the runtime stage's RUN steps under arm64;
+      # the .NET build stage cross-compiles natively on the amd64 runner
+      # (see Dockerfile: --platform=$BUILDPLATFORM + -a $TARGETARCH).
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Branch tag (main/dev) is what compose pulls; the full-sha tag is the
+      # immutable rollback handle deploy.sh records. No latest tag on purpose.
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=long
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
