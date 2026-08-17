@@ -1,6 +1,7 @@
 # iPad-Dashboard
 
 [![CI](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Bennett5143/IPad-Dashboard/branch/main/graph/badge.svg)](https://codecov.io/gh/Bennett5143/IPad-Dashboard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
 
 A self-hosted personal dashboard that pulls health, sports, market, weather and

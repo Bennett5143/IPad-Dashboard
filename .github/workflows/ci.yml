@@ -83,6 +83,16 @@ jobs:
             coverage-report/
           retention-days: 14
 
+      # Upload to Codecov (badge + informational PR comments, see codecov.yml).
+      # fail_ci_if_error: false — a Codecov outage must never redden the pipeline.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage/**/coverage.cobertura.xml
+          flags: unit
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       # Format-Check am Ende: schnell und unabhängig vom Build-Erfolg.
       # --verify-no-changes ist der Lint-Modus.
       - name: Format check
