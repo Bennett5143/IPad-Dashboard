@@ -34,8 +34,8 @@ chmod 600 dashboard.secrets.env
 cp src/Dashboard.Web/appsettings.Local.json.example src/Dashboard.Web/appsettings.Local.json
 # fill it in; the file is mounted read-only into the container
 
-# 4. Build and start
-docker compose up -d --build
+# 4. First deploy (pulls the CI-built image from GHCR and starts the stack)
+./deploy.sh
 ```
 
 The app listens on port **5235** (mapped from the container's 8080). Pending EF
@@ -66,15 +66,48 @@ is set in the compose file); quotes are seeded on first run.
 ## Updating
 
 ```bash
-./deploy.sh            # latest origin/main
-./deploy.sh <ref>      # a specific tag/commit (also manual rollback)
+./deploy.sh                  # latest main image
+./deploy.sh dev              # latest dev image (second instance, see below)
+./deploy.sh main sha-<sha>   # an explicit image revision (also manual rollback)
 ```
 
-The script builds the new image before recreating the container (downtime is
-seconds), waits for `/health/ready`, and automatically rolls back to the
-previously deployed commit if the new version does not come up healthy.
-Volumes are untouched either way; migrations only ever roll forward — for a
-destructive migration, take a DB dump first (see below).
+Images are built by CI as multi-arch (amd64 + arm64) and published to
+`ghcr.io/bennett5143/ipad-dashboard` on every push to `main`/`dev`, tagged with
+the branch name and an immutable `sha-<fullsha>` tag. The script checks out the
+deployed branch (so the compose files match), pulls the image, recreates the
+container (downtime is seconds) and waits for `/health/ready`. If the new
+version does not come up healthy, it automatically redeploys the previously
+running image revision via its sha tag. Volumes are untouched either way;
+migrations only ever roll forward — for a destructive migration, take a DB dump
+first (see below).
+
+Run the script from a clean `main` checkout (a `dev` deploy leaves the working
+tree detached on `origin/dev`; the next `./deploy.sh` puts it back on `main`).
+
+If the registry or CI is unavailable, building locally remains possible:
+`docker compose build app && docker compose up -d`.
+
+## Running the dev branch side by side
+
+`./deploy.sh dev` starts a second, fully isolated instance of the `dev` branch
+next to the main stack: own containers (`dashboard-app-dev`, `dashboard-db-dev`),
+own named volumes (compose prefixes them per project) and its own database, on
+port **5236** (DB on `127.0.0.1:5433`). Isolation is mandatory — migrations only
+roll forward, so a newer dev schema must never touch the main database.
+
+The dev instance starts against an empty database (migrations + seeding run at
+startup). To rehearse migrations on real data, copy the main database in —
+always main → dev, never the reverse:
+
+```bash
+docker compose exec db pg_dump -U dashboard -Fc dashboard \
+  | docker compose -p dashboard-dev -f docker-compose.yml -f docker-compose.dev.yml \
+      exec -T db pg_restore -U dashboard -d dashboard --clean --if-exists
+```
+
+A copied database includes the Strava/WHOOP OAuth tokens — leave them to the
+main instance (see the token note below) and don't run the dev connect flows
+against the live APIs unless main's tokens are deliberately handed over.
 
 ## Moving an existing database in
 
