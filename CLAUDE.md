@@ -51,5 +51,12 @@ in gitignored `appsettings.Local.json`. Never commit the latter two.
   to `main` via a **merge-commit** PR (never squash — squashing would make
   `dev` and `main` diverge). Only `dev → main` PRs target `main`; the
   rulesets enforce the merge method per branch.
+- Before merging a PR, read the CodeRabbit review threads and answer them:
+  adopt the suggestion, or reply in the thread why not. When a finding
+  contradicts a deliberate convention (LAN-only kiosk, theme tokens, …),
+  teach CodeRabbit instead of re-arguing it per PR — reply
+  `@coderabbitai remember: <the convention>` or add a `path_instructions`
+  entry in `.coderabbit.yaml`; use your own judgment on which findings
+  warrant a learning.
 - Deployment to the Pi host: `./deploy.sh` — see
   [docs/deployment.md](docs/deployment.md).
