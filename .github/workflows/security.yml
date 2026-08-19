@@ -1,0 +1,51 @@
+name: Security scan
+
+# Scans the published main image — the one the Pi actually runs — for known
+# CVEs in app dependencies and Debian base-image packages. Advisory only:
+# findings land in Security → Code scanning and never gate a merge or deploy
+# (LAN-only kiosk; base-image CVEs are fixed by base-image updates, not by
+# app code).
+on:
+  schedule:
+    - cron: '30 5 * * 1'
+  workflow_dispatch:
+  # Re-scan whenever a fresh image was pushed. workflow_run only fires once
+  # this file exists on the default branch.
+  workflow_run:
+    workflows: [Docker]
+    types: [completed]
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  IMAGE: ghcr.io/bennett5143/ipad-dashboard
+
+jobs:
+  grype-scan:
+    name: Grype image scan
+    runs-on: ubuntu-latest
+    # After a Docker run, only scan successful main builds — dev images are
+    # throwaway and the scan target below is the main tag anyway.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Scan image with Grype
+        id: scan
+        uses: anchore/scan-action@v7
+        with:
+          image: ${{ env.IMAGE }}:main
+          fail-build: false
+          output-format: sarif
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
