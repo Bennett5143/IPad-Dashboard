@@ -89,9 +89,10 @@ If the registry or CI is unavailable, building locally remains possible:
 
 ## SBOM & security scanning
 
-Every build describes and checks itself; all of it is advisory and never blocks
-a merge or deploy (LAN-only kiosk — base-image CVEs are fixed by base-image
-updates, not by app code):
+Every CI build and published image describes and checks itself (the local
+`docker compose build` fallback gets neither attestations nor the SBOM
+artifact); all of it is advisory and never blocks a merge or deploy (LAN-only
+kiosk — base-image CVEs are fixed by base-image updates, not by app code):
 
 - **Image SBOM + provenance**: each pushed image carries per-platform SPDX SBOM
   and provenance attestations (covering the app and the Debian base-image
