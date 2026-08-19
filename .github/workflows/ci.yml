@@ -99,6 +99,17 @@ jobs:
       - name: Format check
         run: dotnet format --verify-no-changes --no-restore
 
+      # NuGetAudit visibility (advisory only, never fails the job): lists
+      # packages with known advisories, incl. transitive ones — see
+      # NuGetAuditMode in Directory.Build.props.
+      - name: Vulnerable packages summary
+        if: always()
+        run: |
+          echo "## Vulnerable NuGet packages" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          dotnet list package --vulnerable --include-transitive >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
   # Rehearses every EF migration against the production PostGIS image before a
   # change can reach a deployable branch — migrations used to run for the first
   # time live on the Pi. Also fails when the model drifted without a migration.
