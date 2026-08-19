@@ -87,6 +87,30 @@ tree detached on `origin/dev`; the next `./deploy.sh` puts it back on `main`).
 If the registry or CI is unavailable, building locally remains possible:
 `docker compose build app && docker compose up -d`.
 
+## SBOM & security scanning
+
+Every CI build and published image describes and checks itself (the local
+`docker compose build` fallback gets neither attestations nor the SBOM
+artifact); all of it is advisory and never blocks a merge or deploy (LAN-only
+kiosk — base-image CVEs are fixed by base-image updates, not by app code):
+
+- **Image SBOM + provenance**: each pushed image carries per-platform SPDX SBOM
+  and provenance attestations (covering the app and the Debian base-image
+  packages). Inspect them straight from the registry:
+
+  ```bash
+  docker buildx imagetools inspect ghcr.io/bennett5143/ipad-dashboard:main \
+    --format '{{ json .SBOM }}'
+  ```
+
+- **App SBOM**: every CI run uploads a CycloneDX JSON of the NuGet dependency
+  graph (direct + transitive) as the `sbom` workflow artifact.
+- **Vulnerability signals**: Grype scans the published `main` image (weekly and
+  after each image push) and OpenSSF Scorecard assesses the repo posture —
+  both report into GitHub → Security → Code scanning, next to CodeQL.
+  `dotnet restore` additionally audits all NuGet packages against known
+  advisories (`NuGetAuditMode=all`), summarized in each Build & Test run.
+
 ## Running the dev branch side by side
 
 `./deploy.sh dev` starts a second, fully isolated instance of the `dev` branch
