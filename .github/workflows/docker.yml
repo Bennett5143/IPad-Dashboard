@@ -58,12 +58,17 @@ jobs:
             type=ref,event=branch
             type=sha,format=long
 
+      # SBOM (SPDX, via Syft) and provenance are pushed as per-platform
+      # attestation manifests; docker pull on the Pi ignores them. Inspect with:
+      # docker buildx imagetools inspect $IMAGE:<tag> --format '{{ json .SBOM }}'
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          sbom: true
+          provenance: mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

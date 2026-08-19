@@ -4,5 +4,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <!-- Coverage exclusions for generated code; see .runsettings. -->
     <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
+    <!-- NuGetAudit: include transitive packages in advisory warnings (NU1901-NU1904). -->
+    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 </Project>
