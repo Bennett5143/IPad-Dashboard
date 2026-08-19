@@ -200,3 +200,50 @@ jobs:
           dotnet test --configuration Release --no-restore \
             --filter "Category=Integration" \
             --verbosity normal
+
+  # Generates a CycloneDX SBOM of the app's NuGet dependency graph (direct +
+  # transitive). Scoped to Dashboard.Web: its project.assets.json holds the full
+  # package closure via the project references, and test-only dependencies stay
+  # out. The image-level SPDX SBOM is attached as a registry attestation by
+  # docker.yml instead — this artifact is the human-downloadable counterpart.
+  sbom:
+    name: SBOM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+
+      # CycloneDX is a local tool like dotnet-ef; the manifest lives in src/.
+      - name: Restore tools
+        working-directory: src
+        run: dotnet tool restore
+
+      - name: Generate CycloneDX SBOM
+        working-directory: src
+        run: >-
+          dotnet dotnet-CycloneDX Dashboard.Web/Dashboard.Web.csproj
+          -o ../sbom -fn sbom.cyclonedx.json -F Json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom/sbom.cyclonedx.json
+          retention-days: 30
