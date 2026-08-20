@@ -82,7 +82,19 @@ public static class SparklineGeometry
     /// </para>
     /// Leer bei &lt; 2 zusammenhängenden Werten.
     /// </summary>
-    public static string ToSmoothPath(IReadOnlyList<double?> values, double width, double height, double pad = 2)
+    public static string ToSmoothPath(IReadOnlyList<double?> values, double width, double height, double pad = 2) =>
+        BuildSmooth(values, width, height, pad, closeToBaseline: false);
+
+    /// <summary>
+    /// Wie <see cref="ToSmoothPath"/>, aber jeder Teilpfad zur Grundlinie geschlossen: die Fläche
+    /// unter der weichen Kurve, für den Verlaufs-Fill. An einer Lücke schließt jede Folge für sich
+    /// — eine durchgehende Fläche behauptete sonst, was die Linie darüber gerade verschweigt.
+    /// </summary>
+    public static string ToSmoothAreaPath(IReadOnlyList<double?> values, double width, double height, double pad = 2) =>
+        BuildSmooth(values, width, height, pad, closeToBaseline: true);
+
+    private static string BuildSmooth(
+        IReadOnlyList<double?> values, double width, double height, double pad, bool closeToBaseline)
     {
         if (values is null || values.Count < 2)
         {
@@ -109,7 +121,15 @@ public static class SparklineGeometry
         var sb = new StringBuilder();
         foreach (var run in Runs(present))
         {
-            AppendRun(sb, run.Select(p => At(p.Index, p.Item!.Value)).ToList());
+            var points = run.Select(p => At(p.Index, p.Item!.Value)).ToList();
+            if (!AppendRun(sb, points) || !closeToBaseline)
+            {
+                continue;
+            }
+
+            sb.Append(" L").Append(Fmt(points[^1].X)).Append(',').Append(Fmt(height))
+              .Append(" L").Append(Fmt(points[0].X)).Append(',').Append(Fmt(height))
+              .Append(" Z");
         }
 
         return sb.ToString();
@@ -138,13 +158,13 @@ public static class SparklineGeometry
     /// Ein Teilpfad: <c>M</c> auf den ersten Punkt, dann je Segment ein <c>C</c>. Die Tangente in
     /// einem Punkt zeigt entlang der Verbindung seiner Nachbarn (Catmull-Rom, α=0); an den Enden
     /// wiederholt sich der Randpunkt. Ein Lauf mit nur einem Punkt zeichnet nichts — eine Linie
-    /// braucht zwei.
+    /// braucht zwei. Gibt zurück, ob etwas gezeichnet wurde.
     /// </summary>
-    private static void AppendRun(StringBuilder sb, IReadOnlyList<Point> points)
+    private static bool AppendRun(StringBuilder sb, IReadOnlyList<Point> points)
     {
         if (points.Count < 2)
         {
-            return;
+            return false;
         }
 
         if (sb.Length > 0)
@@ -168,6 +188,8 @@ public static class SparklineGeometry
               .Append(' ').Append(Fmt(c2.X)).Append(',').Append(Fmt(c2.Y))
               .Append(' ').Append(Fmt(p2.X)).Append(',').Append(Fmt(p2.Y));
         }
+
+        return true;
     }
 
     /// <summary>

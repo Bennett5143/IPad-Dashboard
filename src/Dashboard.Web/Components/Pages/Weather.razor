@@ -101,6 +101,9 @@
     /// <summary>Ab dieser Regenwahrscheinlichkeit wird die Stunde in Tinte hervorgehoben.</summary>
     private const double RainThreshold = 0.30;
 
+    /// <summary>Marken auf der Zeitachse des Verlaufs — vier lesen sich auf 1024 px noch sauber.</summary>
+    private const int TrendMarks = 4;
+
     private WeatherSnapshot? _snapshot;
 
     protected override void OnInitialized()
@@ -140,9 +143,15 @@
     }
 
     /// <summary>
-    /// Vier Marken gleichmäßig über das Fenster, erste links, letzte rechts. Das OWM-Raster liegt
-    /// bei 3 h je Schritt, zwölf Schritte reichen also über anderthalb Tage — deshalb steht der
-    /// Wochentag dabei, sobald das Fenster den Tag wechselt: „08" zweimal wäre mehrdeutig.
+    /// Vier Marken gleichmäßig über das Fenster, erste links, letzte rechts. Die Zeit wird auf der
+    /// Position <em>interpoliert</em>, nicht aus dem nächstgelegenen Datenpunkt genommen: eine
+    /// Achsenmarke benennt eine Stelle der Achse, keinen Messpunkt, und die vier Stützstellen des
+    /// Rasters liegen nicht auf Dritteln der Breite.
+    /// <para>
+    /// Das OWM-Raster liegt bei 3 h je Schritt, zwölf Schritte reichen also über anderthalb Tage —
+    /// deshalb steht der Wochentag dabei, sobald das Fenster den Tag wechselt: „08" zweimal wäre
+    /// mehrdeutig.
+    /// </para>
     /// </summary>
     private static IReadOnlyList<string> TrendTicks(IReadOnlyList<HourlyForecast> hours)
     {
@@ -151,13 +160,14 @@
             return [];
         }
 
-        var last = hours.Count - 1;
-        var format = hours[0].Time.Date == hours[last].Time.Date ? "HH" : "ddd HH";
+        var from = hours[0].Time;
+        var to = hours[^1].Time;
+        var format = from.Date == to.Date ? "HH" : "ddd HH";
         var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
-        var marks = Math.Min(4, hours.Count);
+        var span = to - from;
 
-        return Enumerable.Range(0, marks)
-            .Select(i => hours[marks == 1 ? 0 : i * last / (marks - 1)].Time.ToString(format, de))
+        return Enumerable.Range(0, TrendMarks)
+            .Select(i => from.Add(span * i / (TrendMarks - 1)).ToString(format, de))
             .ToList();
     }
 

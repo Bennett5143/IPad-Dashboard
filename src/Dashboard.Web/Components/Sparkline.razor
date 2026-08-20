@@ -2,7 +2,14 @@
      preserveAspectRatio="none" role="img" aria-hidden="true">
     @if (_area.Length > 0 && GradientId is not null)
     {
-        <polygon class="sparkline-area" points="@_area" fill="url(#@GradientId)" />
+        @if (Smooth)
+        {
+            <path class="sparkline-area" d="@_area" fill="url(#@GradientId)" />
+        }
+        else
+        {
+            <polygon class="sparkline-area" points="@_area" fill="url(#@GradientId)" />
+        }
     }
     @if (_path.Length > 0)
     {
@@ -39,6 +46,12 @@
     {
         _points = Smooth ? string.Empty : SparklineGeometry.ToPolylinePoints(Values, 120, 32);
         _path = Smooth ? SparklineGeometry.ToSmoothPath(Values, 120, 32) : string.Empty;
-        _area = GradientId is null ? string.Empty : SparklineGeometry.ToAreaPolygonPoints(Values, 120, 32);
+        // Die Fläche folgt der Linie – auch in ihren Lücken. Ein Polygon unter einer weichen
+        // Kurve liefe sonst über jede Lücke hinweg, die die Linie darüber offen lässt.
+        _area = GradientId is null
+            ? string.Empty
+            : Smooth
+                ? SparklineGeometry.ToSmoothAreaPath(Values, 120, 32)
+                : SparklineGeometry.ToAreaPolygonPoints(Values, 120, 32);
     }
 }

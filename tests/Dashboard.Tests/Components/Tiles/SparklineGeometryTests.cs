@@ -113,6 +113,24 @@ public class SparklineGeometryTests
         Assert.Equal(2, path.Count(c => c == 'M'));
     }
 
+    [Fact]
+    public void SmoothArea_ClosesEachRunToTheBaseline()
+    {
+        // Die Fläche folgt der Linie, auch in ihren Lücken: zwei Folgen, zwei geschlossene
+        // Teilflächen. Eine durchgehende Fläche behauptete, was die Linie darüber verschweigt.
+        var area = SparklineGeometry.ToSmoothAreaPath([0d, 5d, null, 8d, 10d], 120, 32);
+
+        Assert.Equal(2, area.Count(c => c == 'M'));
+        Assert.Equal(2, area.Count(c => c == 'Z'));
+    }
+
+    [Fact]
+    public void SmoothArea_ReturnsEmpty_WhenLineEmpty()
+    {
+        Assert.Equal(string.Empty, SparklineGeometry.ToSmoothAreaPath([5d], 120, 32));
+        Assert.Equal(string.Empty, SparklineGeometry.ToSmoothAreaPath([null, 5d], 120, 32));
+    }
+
     /// <summary>Die Pfadwerte sind auf zwei Nachkommastellen gerundet.</summary>
     private const double Tolerance = 0.01;
 }
