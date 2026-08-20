@@ -166,8 +166,10 @@
             <h2>Trainings-Häufigkeit <span class="wi-window">letzte 12 Monate</span></h2>
             @if (_todMatrix is null)
             {
+                @* Leer heißt hier zweierlei: die Historie wird noch aufgebaut, oder es gab in zwölf
+                   Monaten wirklich kein Training. Der Satz behauptet keins von beidem. *@
                 <p class="insights-msg">
-                    Workout-Historie wird noch aufgebaut – Fortschritt auf <a href="/status">/status</a>.
+                    Keine Trainings in den letzten 12 Monaten – Stand des Abgleichs auf <a href="/status">/status</a>.
                 </p>
             }
             else
