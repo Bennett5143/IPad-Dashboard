@@ -77,38 +77,15 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Sunset ---------------------------------------------------------------- */
-.wx-sunset {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-}
-
-.wx-sunset-icon { width: 18px; height: 18px; color: var(--ink); flex: none; }
-
-.wx-sunset-label {
-    font-family: var(--font-family-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    flex: 1;
-}
-
-.wx-sunset-time {
-    font-family: var(--font-family-mono);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
 /* Hourly cards ---------------------------------------------------------- */
+/* They take the height the high/low fact and the sunset row gave back: the strip
+   stretches instead of sitting on a fixed padding. */
 .wx-hours {
     display: flex;
     gap: 8px;
     margin-top: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .wx-hour {
@@ -117,7 +94,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 6px;
     padding: 8px 4px;
     border: 1px solid var(--rule);
     border-radius: 6px;
