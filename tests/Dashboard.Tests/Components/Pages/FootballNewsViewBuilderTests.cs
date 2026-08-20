@@ -27,21 +27,26 @@ public class FootballNewsViewBuilderTests
         };
 
     [Fact]
-    public void Build_HeaderCarriesLeagueClubCategoryAndDate()
+    public void Build_FillsTheBarAndTheMetaRow()
     {
-        var deck = FootballNewsViewBuilder.Build([Item()]);
+        var item = Assert.Single(FootballNewsViewBuilder.Build([Item()]));
 
-        Assert.Equal(["BUNDESLIGA", "HSV", "Transfer", "14.08."], Assert.Single(deck).HeaderParts);
+        Assert.Equal("BUNDESLIGA", item.Eyebrow);       // Kopfleiste links
+        Assert.Equal("HSV", item.EyebrowRight);         // Kopfleiste rechts
+        Assert.Equal("Transfer", item.Category);        // Meta-Zeile, erste Zelle
+        Assert.Equal("14.08.2026", item.Date);          // Meta-Zeile, zweite Zelle
     }
 
     [Fact]
-    public void Build_MissingFieldsLeaveNoEmptySeparator()
+    public void Build_MissingFieldsLeaveTheirCellEmpty()
     {
-        var deck = FootballNewsViewBuilder.Build([Item(club: null, reportedOn: null)]);
+        // Jede Angabe hat ihre eigene Zelle: fehlt eine, entfällt genau diese — es gibt keine
+        // Trennzeichen mehr, die ins Leere zeigen könnten.
+        var item = Assert.Single(FootballNewsViewBuilder.Build([Item(club: null, reportedOn: null)]));
 
-        var header = Assert.Single(deck).HeaderParts;
-        Assert.Equal(["BUNDESLIGA", "Transfer", "14.08."], header);
-        Assert.DoesNotContain(header, part => string.IsNullOrWhiteSpace(part));
+        Assert.Equal("BUNDESLIGA", item.Eyebrow);
+        Assert.Null(item.EyebrowRight);
+        Assert.Equal("Transfer", item.Category);
     }
 
     /// <summary>
@@ -92,7 +97,7 @@ public class FootballNewsViewBuilderTests
             Item(club: "PSG"),
         ]);
 
-        Assert.Equal(["HSV", "Bayern", "PSG"], deck.Select(item => item.HeaderParts[1]));
+        Assert.Equal(["HSV", "Bayern", "PSG"], deck.Select(item => item.EyebrowRight));
     }
 
     [Fact]
