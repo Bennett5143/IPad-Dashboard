@@ -98,17 +98,17 @@ this repository, so `docs/` is the complete public documentation.
 
 ## Security & supply chain
 
-Every build describes and checks itself — all advisory, nothing gates (see
-[SECURITY.md](SECURITY.md) for the deployment context):
+Every CI build and published image describes and checks itself — all advisory,
+nothing gates (see [SECURITY.md](SECURITY.md) for the deployment context):
 
 - **SBOM**: each CI run uploads a CycloneDX SBOM of the NuGet dependency graph
   as the `sbom` [workflow artifact](../../actions/workflows/ci.yml); every
   published image additionally carries SPDX SBOM + provenance attestations
   (retrieval: see [deployment docs](docs/deployment.md#sbom--security-scanning)).
-- **Vulnerability scanning**: [Grype image scans](../../security/code-scanning?query=tool%3AGrype+is%3Aopen)
-  and [OpenSSF Scorecard](../../security/code-scanning?query=tool%3AScorecard+is%3Aopen)
-  report into the Security tab alongside CodeQL; `dotnet restore` audits all
-  NuGet packages (including transitive) against known advisories.
+- **Vulnerability scanning**: Grype image scans and OpenSSF Scorecard report
+  into the [Security tab](../../security) alongside CodeQL (alert details are
+  maintainer-visible); `dotnet restore` audits all NuGet packages (including
+  transitive) against known advisories.
 
 ## License
 
