@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Bennett5143/IPad-Dashboard/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/Bennett5143/IPad-Dashboard/branch/main/graph/badge.svg)](https://codecov.io/gh/Bennett5143/IPad-Dashboard)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Bennett5143/IPad-Dashboard/badge)](https://scorecard.dev/viewer/?uri=github.com/Bennett5143/IPad-Dashboard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
 
 A self-hosted personal dashboard that pulls health, sports, market, weather and
@@ -94,6 +95,20 @@ own interval and push updates to the UI over SignalR without a page reload.
 
 Planning artifacts (specs, change proposals, internal notes) are kept outside
 this repository, so `docs/` is the complete public documentation.
+
+## Security & supply chain
+
+Every CI build and published image describes and checks itself — all advisory,
+nothing gates (see [SECURITY.md](SECURITY.md) for the deployment context):
+
+- **SBOM**: each CI run uploads a CycloneDX SBOM of the NuGet dependency graph
+  as the `sbom` [workflow artifact](../../actions/workflows/ci.yml); every
+  published image additionally carries SPDX SBOM + provenance attestations
+  (retrieval: see [deployment docs](docs/deployment.md#sbom--security-scanning)).
+- **Vulnerability scanning**: Grype image scans and OpenSSF Scorecard report
+  into the [Security tab](../../security) alongside CodeQL (alert details are
+  maintainer-visible); `dotnet restore` audits all NuGet packages (including
+  transitive) against known advisories.
 
 ## License
 
