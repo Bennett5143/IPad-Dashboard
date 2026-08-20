@@ -134,7 +134,7 @@ public sealed class HvvDepartureClient : IHvvProvider
         return new Departure(
             dto.Line.Name,
             dto.Line.Direction,
-            HvvModeMapper.Map(dto.Line.Type.SimpleType),
+            HvvModeMapper.Map(dto.Line.Type.SimpleType, dto.Line.Name),
             dto.Line.Type.ShortInfo ?? string.Empty,
             planned,
             delay);
