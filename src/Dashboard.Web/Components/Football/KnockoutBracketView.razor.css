@@ -1,7 +1,9 @@
+/* Fünf Runden müssen nebeneinander auf 1024 px passen: 5 × 9rem + 4 × --space-3 ≈ 768 px.
+   Kein overflow-x mehr — auf einem Kiosk ist ein seitlich scrollbarer Bereich eine Falle und
+   keine Funktion: nichts zeigt an, dass rechts noch etwas steht. */
 .bracket {
     display: flex;
-    gap: var(--space-4);
-    overflow-x: auto;
+    gap: var(--space-3);
     padding-bottom: var(--space-2);
 }
 
@@ -9,7 +11,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    min-width: 11rem;
+    min-width: 9rem;
 }
 
 .bracket-round-title {
