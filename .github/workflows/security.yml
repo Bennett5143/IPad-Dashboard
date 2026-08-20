@@ -30,16 +30,23 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    # After a Docker run, only scan successful main builds — dev images are
-    # throwaway and the scan target below is the main tag anyway.
+    # Every trigger is restricted to main: workflow_run only for successful
+    # main builds (dev images are throwaway and the scan target is the main
+    # tag anyway), manual dispatches only from the main ref — anything else
+    # would run with security-events: write from an arbitrary branch.
     if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main')
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Scan image with Grype
         id: scan
