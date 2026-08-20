@@ -15,9 +15,10 @@ on:
     workflows: [Docker]
     types: [completed]
 
+# Least privilege: read-only at the top level, security-events: write only on
+# the job that uploads SARIF.
 permissions:
   contents: read
-  security-events: write
 
 env:
   IMAGE: ghcr.io/bennett5143/ipad-dashboard
@@ -26,6 +27,9 @@ jobs:
   grype-scan:
     name: Grype image scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     # After a Docker run, only scan successful main builds — dev images are
     # throwaway and the scan target below is the main tag anyway.
     if: >-

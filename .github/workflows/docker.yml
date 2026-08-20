@@ -13,9 +13,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least privilege: read-only at the top level, packages: write only on the job.
 permissions:
   contents: read
-  packages: write
 
 env:
   # GHCR requires a lowercase name; the owner is "Bennett5143", so deriving it
@@ -26,6 +26,9 @@ jobs:
   build-push:
     name: Build & Push image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout
