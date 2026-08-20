@@ -23,8 +23,6 @@ public enum MetricId
     TrainingLoad,
     AerobicFitness,
     RecoveryDrivers,
-    SleepNight,
-    TimeOfDay,
     TimeOfDayMatrix,
     SleepBedtime,
     SleepDuration,

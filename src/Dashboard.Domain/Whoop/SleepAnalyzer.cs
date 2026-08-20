@@ -6,13 +6,6 @@ public sealed record BedtimeStats(TimeOnly AverageBedtime, TimeSpan StandardDevi
 /// <summary>Aggregat eines Schlaf-Buckets (Einschlaf-Fenster oder Dauer): Stichprobe + Ø-Wert.</summary>
 public sealed record SleepBucketStats(string Label, int SampleCount, double? Average);
 
-/// <summary>Schlaf-Performance der Nächte nach Abendtraining vs. aller übrigen Nächte.</summary>
-public sealed record EveningTrainingImpact(
-    int EveningNights,
-    double AvgSleepPerformanceAfterEvening,
-    int OtherNights,
-    double AvgSleepPerformanceOther);
-
 /// <summary>
 /// Schlafenszeiten-Analysen (FA-10.03) auf der persistierten Tageshistorie — reine, testbare
 /// Logik. Alle Aussagen sind **Heuristiken** (FA-10.02): Recovery wird von WHOOP aus genau dem
@@ -23,9 +16,6 @@ public static class SleepAnalyzer
 {
     /// <summary>Unterhalb dieser Stichprobe pro Bucket gibt es keine Aussage (FA-10.02).</summary>
     public const int MinSampleForVerdict = 5;
-
-    /// <summary>Ab dieser Berliner End-Stunde zählt ein Workout als Abendtraining.</summary>
-    public const int EveningHour = 19;
 
     private static readonly TimeZoneInfo BerlinTz =
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
@@ -89,33 +79,6 @@ public static class SleepAnalyzer
                 _ => 3
             },
             m => m.RecoveryScore!.Value);
-    }
-
-    /// <summary>
-    /// Schlaf-Performance der Nächte nach Abendtraining (Workout-Ende ≥ 19 Uhr Berlin am
-    /// Vortag) gegen alle übrigen Nächte; <c>null</c>, solange eine der Gruppen leer ist.
-    /// </summary>
-    public static EveningTrainingImpact? AnalyzeEveningTraining(
-        IEnumerable<WhoopDailyMetric> metrics, IEnumerable<WhoopWorkout> workouts)
-    {
-        var eveningDays = workouts
-            .Select(w => TimeZoneInfo.ConvertTime(w.EndUtc, BerlinTz))
-            .Where(local => local.Hour >= EveningHour)
-            .Select(local => DateOnly.FromDateTime(local.DateTime))
-            .ToHashSet();
-
-        var evening = new List<double>();
-        var other = new List<double>();
-        foreach (var metric in metrics.Where(m => m.SleepPerformance is not null))
-        {
-            // Die Nacht, die Tag X zugeordnet ist, folgt auf den Abend von Tag X−1.
-            var target = eveningDays.Contains(metric.Date.AddDays(-1)) ? evening : other;
-            target.Add(metric.SleepPerformance!.Value);
-        }
-
-        return evening.Count == 0 || other.Count == 0
-            ? null
-            : new EveningTrainingImpact(evening.Count, evening.Average(), other.Count, other.Average());
     }
 
     /// <summary>Bestes Bucket — nur mit ausreichender Stichprobe (höherer Ø gewinnt); sonst <c>null</c>.</summary>
