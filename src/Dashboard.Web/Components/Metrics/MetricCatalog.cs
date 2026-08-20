@@ -125,11 +125,6 @@ public static class MetricCatalog
                 XAxis: "Kalenderwochen",
                 YAxis: "Wochentag (Mo–So)"),
 
-            [MetricId.HabitStreaks] = new(
-                "Serien (Streaks)",
-                "Die aktuelle und die längste Serie ohne Unterbrechung.",
-                "Mit Habit-Filter: Wochen-Serie (Wochen mit mindestens einem Eintrag). Ohne Filter: Tages-Serie über alle Habits. Laufende Woche bzw. heutiger Tag haben Karenz.",
-                "Wochen-Serien passen besser zu Zielen wie 3×/Woche als Tages-Serien; die Karenz verhindert, dass die Serie zu jedem Wochen- oder Tagesbeginn abreißt."),
         };
 
     /// <summary>

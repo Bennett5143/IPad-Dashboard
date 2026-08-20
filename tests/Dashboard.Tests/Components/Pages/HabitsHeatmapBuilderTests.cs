@@ -10,14 +10,14 @@ public class HabitsHeatmapBuilderTests
         params (HabitKind Kind, DateOnly[] Dates)[] entries) =>
         entries.ToDictionary(e => e.Kind, e => (IReadOnlySet<DateOnly>)e.Dates.ToHashSet());
 
-    [Fact]
-    public void Bucket_MapsLevelsToZeroToFour()
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 4)]
+    [InlineData(3, 4)]   // drei Habits an einem Tag sehen aus wie einer: es gab Aktivität
+    [InlineData(5, 4)]
+    public void Bucket_KnowsOnlyActivityAndNone(int level, int expected)
     {
-        Assert.Equal(0, HabitsHeatmapBuilder.Bucket(0, 5));
-        Assert.Equal(4, HabitsHeatmapBuilder.Bucket(1, 1));   // binär: erledigt → voll
-        Assert.Equal(0, HabitsHeatmapBuilder.Bucket(0, 1));
-        Assert.Equal(1, HabitsHeatmapBuilder.Bucket(1, 5));
-        Assert.Equal(4, HabitsHeatmapBuilder.Bucket(5, 5));
+        Assert.Equal(expected, HabitsHeatmapBuilder.Bucket(level));
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class HabitsHeatmapBuilderTests
     }
 
     [Fact]
-    public void Build_AllKinds_IntensityIsCountOfActiveHabits()
+    public void Build_AllKinds_MarksTheDayAsActive()
     {
         var done = Done(
             (HabitKind.Strength, [Today]),
@@ -45,7 +45,7 @@ public class HabitsHeatmapBuilderTests
         var view = HabitsHeatmapBuilder.Build(done, kind: null, Today);
 
         var todayCell = view.Cells.Single(c => c.Weekday == 4 && c.Week == HabitsHeatmapBuilder.Weeks - 1);
-        Assert.Equal(HabitsHeatmapBuilder.Bucket(3, HabitCatalog.Active.Count), todayCell.Bucket);
+        Assert.Equal(4, todayCell.Bucket);
     }
 
     /// <summary>

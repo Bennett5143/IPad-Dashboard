@@ -11,9 +11,20 @@
 
 <PageTitle>Fußball-Nachrichten</PageTitle>
 
-<PageHeader Title="Nachrichten" Meta="@Meta">
+<PageHeader Title="Nachrichten">
     <span class="mono-label" id="@CounterId"></span>
 </PageHeader>
+
+@* Ohne diese Zeile führt von hier kein Weg zurück außer über das Rail-Icon — die Fußball-Seite
+   trägt sie, diese Unterseite trug sie nicht. Die beiden anderen Tabs sind Links auf /football
+   mit gesetztem Tab. *@
+<nav class="tab-row area-subnav" aria-label="Fußball">
+    <div class="tab-row-items">
+        <a class="tab" href="/football?tab=tables">Tabellen</a>
+        <a class="tab" href="/football?tab=cl">Champions League</a>
+        <a class="tab is-active" href="/football/news" aria-current="page">Nachrichten</a>
+    </div>
+</nav>
 
 <div class="detail-body">
     @if (_items is null)
@@ -38,10 +49,6 @@
 
     private IReadOnlyList<FootballNewsItem>? _items;
     private IReadOnlyList<NewsDeckItem> _deck = [];
-
-    private string? Meta => _items is { Count: > 0 }
-        ? $"STAND {_items.Max(item => item.LastSeenAt).ToLocalTime():dd.MM. HH:mm}"
-        : null;
 
     protected override async Task OnInitializedAsync()
     {

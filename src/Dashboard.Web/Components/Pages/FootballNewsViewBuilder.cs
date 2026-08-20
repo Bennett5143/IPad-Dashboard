@@ -12,35 +12,19 @@ public static class FootballNewsViewBuilder
     public static IReadOnlyList<NewsDeckItem> Build(IReadOnlyList<FootballNewsItem> items) =>
         items.Select(ToDeckItem).ToList();
 
-    // Kopfzeile: Liga · Verein · Kategorie · Datum. Fehlt ein Feld, entfällt nur dieses —
-    // sonst zeigte ein „·" ins Leere.
-    private static NewsDeckItem ToDeckItem(FootballNewsItem item)
-    {
-        var header = new List<string>();
-        if (!string.IsNullOrWhiteSpace(item.Competition))
-        {
-            header.Add(item.Competition.ToUpperInvariant());
-        }
-
-        if (!string.IsNullOrWhiteSpace(item.Club))
-        {
-            header.Add(item.Club);
-        }
-
-        header.Add(CategoryLabel(item.Category));
-
-        if (item.ReportedOn is { } reported)
-        {
-            header.Add(reported.ToString("dd.MM."));
-        }
-
-        return new NewsDeckItem(
-            header,
-            new NewsDeckBadge(ConfidenceLabel(item.Confidence), $"rs-badge-{BadgeClass(item.Confidence)}"),
-            item.Headline,
-            item.Summary,
-            string.IsNullOrWhiteSpace(item.SourceName) ? null : item.SourceName);
-    }
+    // Kopfleiste: Wettbewerb links, Verein rechts. Meta-Zeile: Kategorie, Datum, Bewertung.
+    // Fehlt ein Feld, entfällt nur seine Zelle — die Karte hat für jedes eine eigene.
+    private static NewsDeckItem ToDeckItem(FootballNewsItem item) => new(
+        Eyebrow: string.IsNullOrWhiteSpace(item.Competition)
+            ? "Fußball".ToUpperInvariant()
+            : item.Competition.ToUpperInvariant(),
+        EyebrowRight: string.IsNullOrWhiteSpace(item.Club) ? null : item.Club,
+        Category: CategoryLabel(item.Category),
+        Date: item.ReportedOn?.ToString("dd.MM.yyyy"),
+        Badge: new NewsDeckBadge(ConfidenceLabel(item.Confidence), $"rs-badge-{BadgeClass(item.Confidence)}"),
+        Headline: item.Headline,
+        Summary: item.Summary,
+        Source: string.IsNullOrWhiteSpace(item.SourceName) ? null : item.SourceName);
 
     /// <summary>Die Einstufung des Recherche-Tools, unverändert wiedergegeben.</summary>
     public static string ConfidenceLabel(NewsConfidence confidence) => confidence switch

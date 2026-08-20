@@ -32,5 +32,4 @@ public enum MetricId
 
     // /habits
     HabitHeatmap,
-    HabitStreaks,
 }
