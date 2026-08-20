@@ -131,37 +131,6 @@ public static class MetricCatalog
                 XAxis: "Monat",
                 YAxis: "Kilometer pro Monat"),
 
-            // ---- /runs/{id} ----
-            [MetricId.RunPaceProfile] = new(
-                "Pace-Profil",
-                "Der Pace-Verlauf über die Laufstrecke.",
-                "Aus den gespeicherten GPS-Streams; invertiert dargestellt (oben = schneller).",
-                "Macht Tempowechsel, Anstiege (langsamer) und den Endspurt sichtbar; der Bereich nennt schnellste und langsamste Pace.",
-                XAxis: "Distanz (Lauf-Verlauf)",
-                YAxis: "Pace in min/km (oben = schneller)"),
-
-            [MetricId.RunElevationProfile] = new(
-                "Höhen-Profil",
-                "Der Höhenverlauf über die Laufstrecke in Metern.",
-                "Aus den GPS-Höhendaten des Laufs.",
-                "Zeigt Anstiege und Gefälle entlang der Strecke; der Bereich nennt tiefsten und höchsten Punkt.",
-                XAxis: "Distanz (Lauf-Verlauf)",
-                YAxis: "Höhe in Metern"),
-
-            [MetricId.RunHeartRateProfile] = new(
-                "Herzfrequenz-Profil",
-                "Der Herzfrequenz-Verlauf über die Laufstrecke (Schläge pro Minute).",
-                "Aus den Herzfrequenz-Streams des Laufs.",
-                "Steigt mit Anstrengung und an Steigungen und driftet bei langen Läufen nach oben; der Bereich nennt Minimum und Maximum.",
-                XAxis: "Distanz (Lauf-Verlauf)",
-                YAxis: "Herzfrequenz in bpm"),
-
-            [MetricId.RunBestEfforts] = new(
-                "Bestzeiten in diesem Lauf",
-                "Die schnellsten zusammenhängenden Abschnitte dieses Laufs (z. B. beste 1 km, 5 km, 10 km).",
-                "Gleitendes Zeitfenster je Zieldistanz über die Zeit- und GPS-Streams.",
-                "Bezieht sich nur auf diesen Lauf – nicht auf die persönliche Allzeit-Bestzeit."),
-
             // ---- /habits ----
             [MetricId.HabitHeatmap] = new(
                 "Jahres-Heatmap",

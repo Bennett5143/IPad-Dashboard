@@ -66,12 +66,6 @@
     border-top: 1px solid var(--rule);
 }
 
-/* Die Lauf-Liste ist die letzte Region und bindet nach unten. */
-.runs-list-section {
-    flex: 1;
-    min-height: 0;
-}
-
 .review-stats,
 .review-records {
     display: flex;
@@ -215,6 +209,3 @@
     color: var(--ink);
 }
 
-.runs-table td.hr {
-    color: var(--ink);
-}
