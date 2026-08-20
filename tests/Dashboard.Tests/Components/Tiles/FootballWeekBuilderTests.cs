@@ -5,8 +5,11 @@ public class FootballWeekBuilderTests
     // Snapshot „abgerufen" am Freitag, 12.06.2026, 10:00 UTC → Berlin-Woche Mo 08. – So 14.06.
     private static readonly DateTimeOffset RetrievedUtc = new(2026, 6, 12, 10, 0, 0, TimeSpan.Zero);
 
-    private static Match Match(int day, int hourUtc, string opponent, bool home, int? own = null, int? opp = null) =>
-        new(new DateTimeOffset(2026, 6, day, hourUtc, 0, 0, TimeSpan.Zero), "BL1", opponent, home, own, opp);
+    private static Match Match(
+        int day, int hourUtc, string opponent, bool home, int? own = null, int? opp = null,
+        string? opponentCrest = null) =>
+        new(new DateTimeOffset(2026, 6, day, hourUtc, 0, 0, TimeSpan.Zero), "BL1", opponent, home, own, opp,
+            OpponentCrestUrl: opponentCrest);
 
     private static FootballSnapshot Snapshot(params FootballTeamSnapshot[] teams) =>
         new(teams, RetrievedUtc);
@@ -147,6 +150,67 @@ public class FootballWeekBuilderTests
         Assert.True(week[4].IsToday);
         Assert.False(week[6].IsPast);      // So, noch offen
         Assert.False(week[6].IsToday);
+    }
+
+    [Fact]
+    public void Build_OrdersTheCrestPairByPitchSide()
+    {
+        // Zuhause steht unser Wappen links, auswärts rechts — die Paarung liest sich wie auf
+        // der Anzeigetafel, nicht aus unserer Sicht.
+        var team = new FootballTeamSnapshot("HSV",
+            RecentResults: [Match(8, 13, "St. Pauli", home: true, own: 2, opp: 1, opponentCrest: "https://x/stp.png")],
+            Upcoming: [Match(12, 17, "Bayern", home: false, opponentCrest: "https://x/fcb.png")],
+            Standing: null,
+            Table: null,
+            CrestUrl: "https://x/hsv.png");
+
+        var week = FootballWeekBuilder.Build(Snapshot(team));
+
+        var atHome = Assert.Single(week[0].Entries);
+        Assert.Equal("https://x/hsv.png", atHome.HomeCrestUrl);
+        Assert.Equal("https://x/stp.png", atHome.AwayCrestUrl);
+        Assert.Equal("HSV", atHome.HomeName);
+        Assert.Equal("St. Pauli", atHome.AwayName);
+        Assert.True(atHome.HasCrestPair);
+
+        var away = Assert.Single(week[4].Entries);
+        Assert.Equal("https://x/fcb.png", away.HomeCrestUrl);
+        Assert.Equal("https://x/hsv.png", away.AwayCrestUrl);
+        Assert.Equal("Bayern", away.HomeName);
+        Assert.Equal("HSV", away.AwayName);
+        Assert.True(away.HasCrestPair);
+    }
+
+    [Fact]
+    public void Build_WithoutBothCrests_FallsBackToTheTextRow()
+    {
+        // Ein halbes Paar ist kein Paar: fehlt eines der beiden Wappen, steht wieder der Text da.
+        var noOpponentCrest = new FootballTeamSnapshot("HSV",
+            [], [Match(10, 12, "Bayern", home: true)], null, null, CrestUrl: "https://x/hsv.png");
+        var noOwnCrest = new FootballTeamSnapshot("Real Madrid",
+            [], [Match(10, 14, "Barcelona", home: true, opponentCrest: "https://x/fcb.png")], null);
+
+        var wednesday = FootballWeekBuilder.Build(Snapshot(noOpponentCrest, noOwnCrest))[2];
+
+        Assert.All(wednesday.Entries, entry => Assert.False(entry.HasCrestPair));
+        Assert.Equal("HSV – Bayern", wednesday.Entries[0].Title);
+        Assert.Equal("Real Madrid – Barcelona", wednesday.Entries[1].Title);
+    }
+
+    [Fact]
+    public void Build_KeepsTheChampionsLeagueAggregateAsText()
+    {
+        // Der Sammeleintrag fasst mehrere Begegnungen zusammen — ein Wappenpaar wäre gelogen.
+        var cl = new Match(new DateTimeOffset(2026, 6, 10, 19, 0, 0, TimeSpan.Zero),
+            "CL", "Inter", IsHome: true, null, null, Matchday: 3, Stage: "LEAGUE_STAGE",
+            OpponentCrestUrl: "https://x/inter.png");
+        var team = new FootballTeamSnapshot("Real Madrid",
+            [], [cl], null, null, CrestUrl: "https://x/rma.png");
+
+        var entry = Assert.Single(FootballWeekBuilder.Build(Snapshot(team))[2].Entries);
+
+        Assert.True(entry.IsAggregate);
+        Assert.False(entry.HasCrestPair);
     }
 
     [Fact]
