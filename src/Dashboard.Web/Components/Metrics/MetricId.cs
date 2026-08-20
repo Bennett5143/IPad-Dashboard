@@ -30,12 +30,6 @@ public enum MetricId
     // /runs
     RunYearReview,
 
-    // /runs/{id}
-    RunPaceProfile,
-    RunElevationProfile,
-    RunHeartRateProfile,
-    RunBestEfforts,
-
     // /habits
     HabitHeatmap,
     HabitStreaks,
