@@ -23,20 +23,12 @@ public enum MetricId
     TrainingLoad,
     AerobicFitness,
     RecoveryDrivers,
-    SleepNight,
-    TimeOfDay,
     TimeOfDayMatrix,
     SleepBedtime,
     SleepDuration,
 
     // /runs
     RunYearReview,
-
-    // /runs/{id}
-    RunPaceProfile,
-    RunElevationProfile,
-    RunHeartRateProfile,
-    RunBestEfforts,
 
     // /habits
     HabitHeatmap,

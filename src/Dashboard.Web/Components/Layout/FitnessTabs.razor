@@ -5,7 +5,9 @@
    mit dem Inhalt weggescrollt wäre. Das Tab-Vokabular (.tab-row/.tab) teilt sie sich mit der
    Wettbewerbs-Zeile auf /football; .area-subnav bringt nur den Innenabstand mit, den sie
    außerhalb des Bodys nicht mehr erbt.
-   Aktiv-Markierung wird selbst berechnet, weil /runs auch /runs/{id} abdecken muss. *@
+   Aktiv-Markierung wird selbst berechnet, weil ein Tab auch seine Unterpfade abdecken muss
+   (/whoop bleibt auf /whoop/connect aktiv) und Query-Parameter ignoriert gehören
+   (/heatmap?place=…). *@
 <nav class="tab-row area-subnav" aria-label="Fitness">
     <div class="tab-row-items">
         @foreach (var (href, label) in Area.Fitness)
