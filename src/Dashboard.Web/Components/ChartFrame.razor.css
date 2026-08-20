@@ -35,6 +35,18 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* Marken der X-Achse: erste links, letzte rechts, der Rest gleichmäßig dazwischen. */
+.chart-x-ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
 /* Start/Ende-Werte direkt unter der Kurve (z. B. min/max). */
 .chart-range {
     display: flex;
