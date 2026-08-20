@@ -227,9 +227,10 @@
 
     private void Open(long id) => Nav.NavigateTo($"/runs/{id}");
 
-    // Voller Seitenaufruf statt interaktiver Navigation: Leaflet rendert sonst nach In-App-Nav
-    // eine leere/schwarze Karte (Container beim Init noch nicht endgültig vermessen).
-    private void OpenPlace(int placeId) => Nav.NavigateTo($"/heatmap?place={placeId}", forceLoad: true);
+    // Bewusst OHNE forceLoad: ein voller Seitenaufruf verlässt auf dem Kiosk-iPad das
+    // Standalone-Fenster. Die leere Karte, gegen die er einmal half, fängt heatmap.js selbst ab
+    // (waitForSize vor dem Init, invalidateSize + fitBounds danach, ResizeObserver dahinter).
+    private void OpenPlace(int placeId) => Nav.NavigateTo($"/heatmap?place={placeId}");
 
     private string RangeCss(RunTimeRange range) => range == _range ? "is-active" : string.Empty;
 }
