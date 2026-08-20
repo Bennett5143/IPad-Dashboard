@@ -5,6 +5,8 @@ namespace Dashboard.Web.Components.Tiles;
 public readonly record struct ClockDisplay(
     string Iso,
     string Date,
+    string DateNumeric,
+    string WeekdayShort,
     string Time,
     string TimeHm,
     string Seconds,
@@ -22,6 +24,10 @@ public static class ClockFormatter
         return new ClockDisplay(
             Iso: local.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture),
             Date: local.ToString("ddd, dd.MM.yyyy", German),
+            DateNumeric: local.ToString("dd.MM.yyyy", German),
+            // Zweibuchstabige Wochentagsform (MO, DI, …) – die deutsche Kurzform ist bereits
+            // zwei Zeichen lang, sie wird nur noch versalisiert.
+            WeekdayShort: local.ToString("ddd", German).ToUpperInvariant(),
             Time: local.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
             TimeHm: local.ToString("HH:mm", CultureInfo.InvariantCulture),
             Seconds: local.ToString("ss", CultureInfo.InvariantCulture),
