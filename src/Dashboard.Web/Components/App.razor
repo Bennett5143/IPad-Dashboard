@@ -19,7 +19,13 @@
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     @* Kiosk: „Zum Home-Bildschirm" öffnet die Seite als Standalone-Web-App im
-       Vollbild (ohne Safari-Leisten); Status-Bar transparent über dem Papier-Grund. *@
+       Vollbild (ohne Safari-Leisten); Status-Bar transparent über dem Papier-Grund.
+
+       Das Manifest trägt den Scope. Ohne es kennt der Web-Clip nur die Start-URL,
+       und iOS öffnet jeden anderen Pfad im In-App-Browser — die Leiste mit „Fertig",
+       die auf den Unterseiten stand. Achtung beim Prüfen: iOS merkt sich den Scope
+       beim Anlegen des Icons, ein bestehendes Icon muss also neu angelegt werden. *@
+    <link rel="manifest" href="site.webmanifest" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
