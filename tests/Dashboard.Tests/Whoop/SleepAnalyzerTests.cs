@@ -5,9 +5,9 @@ namespace Dashboard.Tests.Whoop;
 public class SleepAnalyzerTests
 {
     private static WhoopDailyMetric Night(
-        int day, int? recovery = null, double? sleepHours = null, int? performance = null,
+        int day, int? recovery = null, double? sleepHours = null,
         DateTimeOffset? sleepStartUtc = null) =>
-        new(new DateOnly(2026, 6, day), recovery, null, null, sleepHours, performance, null,
+        new(new DateOnly(2026, 6, day), recovery, null, null, sleepHours, null, null,
             SleepStartUtc: sleepStartUtc);
 
     private static DateTimeOffset Utc(int day, int hour, int minute = 0) =>
@@ -71,36 +71,6 @@ public class SleepAnalyzerTests
         Assert.Equal(2, stats[2].SampleCount);          // 7–8 h
         Assert.Equal(80, stats[2].Average);             // (70 + 90) / 2
         Assert.Equal(1, stats[3].SampleCount);          // > 8 h
-    }
-
-    [Fact]
-    public void AnalyzeEveningTraining_ComparesNightsAfterLateWorkouts()
-    {
-        // Workout endet 19:30 Berlin am 10.06. (17:30 UTC) → Nacht zum 11.06. ist „nach Abendtraining".
-        var workouts = new[]
-        {
-            new WhoopWorkout("w1", "weightlifting", Utc(10, 16, 30), Utc(10, 17, 30), null, 0),
-            new WhoopWorkout("w2", "running", Utc(12, 5, 0), Utc(12, 5, 30), 5000, 0), // morgens → egal
-        };
-
-        var impact = SleepAnalyzer.AnalyzeEveningTraining(
-        [
-            Night(11, performance: 80),
-            Night(12, performance: 90),
-            Night(13, performance: 94),
-        ], workouts);
-
-        Assert.NotNull(impact);
-        Assert.Equal(1, impact!.EveningNights);
-        Assert.Equal(80, impact.AvgSleepPerformanceAfterEvening);
-        Assert.Equal(2, impact.OtherNights);
-        Assert.Equal(92, impact.AvgSleepPerformanceOther);
-    }
-
-    [Fact]
-    public void AnalyzeEveningTraining_NullWhenAGroupIsEmpty()
-    {
-        Assert.Null(SleepAnalyzer.AnalyzeEveningTraining([Night(11, performance: 80)], []));
     }
 
     [Fact]
