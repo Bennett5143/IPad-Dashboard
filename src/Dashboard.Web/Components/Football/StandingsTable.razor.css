@@ -76,12 +76,7 @@
     min-width: 0;
 }
 
-.team-crest {
-    width: 18px;
-    height: 18px;
-    object-fit: contain;
-    flex: none;
-}
+
 
 /* Namen bei knappem Platz kürzen statt die Tabelle sprengen zu lassen. */
 .team-name {

@@ -55,11 +55,10 @@
     font-weight: var(--font-weight-semibold);
 }
 
-.bt-crest {
+/* Im Baum ist es etwas enger als in der Tabelle – die Marke folgt. */
+.bracket-team ::deep .crest-mark {
     width: 16px;
     height: 16px;
-    object-fit: contain;
-    flex: none;
 }
 
 .bt-name {

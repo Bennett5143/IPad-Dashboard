@@ -40,12 +40,3 @@
     overflow-y: auto;
 }
 
-.tf-heading {
-    margin: 0;
-    font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    padding: 10px 0 8px;
-}

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 
 using Dashboard.Domain.Football;
 using Dashboard.Domain.Time;
+using Dashboard.Infrastructure.Crests;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -24,14 +25,17 @@ public sealed class FootballDataClient : IFootballProvider
     private readonly HttpClient _http;
     private readonly IClock _clock;
     private readonly FootballOptions _options;
+    private readonly IReadOnlyDictionary<string, string> _crestOverrides;
     private readonly ILogger<FootballDataClient> _logger;
 
     public FootballDataClient(
-        HttpClient http, IClock clock, IOptions<FootballOptions> options, ILogger<FootballDataClient> logger)
+        HttpClient http, IClock clock, IOptions<FootballOptions> options,
+        IOptions<CrestOptions> crestOptions, ILogger<FootballDataClient> logger)
     {
         _http = http;
         _clock = clock;
         _options = options.Value;
+        _crestOverrides = crestOptions.Value.Overrides;
         _logger = logger;
     }
 
@@ -226,7 +230,7 @@ public sealed class FootballDataClient : IFootballProvider
             : new ChampionsLeague(leaguePhase, bracket);
     }
 
-    private static TournamentView? BuildTournament(
+    private TournamentView? BuildTournament(
         TournamentConfig tournament,
         IReadOnlyDictionary<string, FdStandingsResponse> standingsByComp,
         IReadOnlyDictionary<string, IReadOnlyList<FdMatch>> matchesByComp,
@@ -242,7 +246,7 @@ public sealed class FootballDataClient : IFootballProvider
             : new TournamentView(tournament.Code, tournament.Name, groups, bracket);
     }
 
-    private static KnockoutBracket? BuildBracket(
+    private KnockoutBracket? BuildBracket(
         string code, IReadOnlyDictionary<string, IReadOnlyList<FdMatch>> matchesByComp)
     {
         if (!matchesByComp.TryGetValue(code, out var matches))
@@ -279,7 +283,7 @@ public sealed class FootballDataClient : IFootballProvider
             ?? throw new InvalidOperationException($"Leere Antwort von '{url}'.");
     }
 
-    private static Match MapMatch(FdMatch match, int teamId)
+    private Match MapMatch(FdMatch match, int teamId)
     {
         var isHome = match.HomeTeam.Id == teamId;
         var opponent = OpponentName(isHome ? match.AwayTeam : match.HomeTeam);
@@ -289,10 +293,10 @@ public sealed class FootballDataClient : IFootballProvider
         return new Match(
             match.UtcDate, match.Competition.Code ?? match.Competition.Name, opponent, isHome, ownGoals, opponentGoals,
             match.Matchday, match.Stage,
-            OpponentCrestUrl: NullIfBlank(isHome ? match.AwayTeam.Crest : match.HomeTeam.Crest));
+            OpponentCrestUrl: Crest(isHome ? match.AwayTeam : match.HomeTeam));
     }
 
-    private static Fixture ToFixture(FdMatch match)
+    private Fixture ToFixture(FdMatch match)
     {
         var status = match.Status switch
         {
@@ -312,8 +316,8 @@ public sealed class FootballDataClient : IFootballProvider
             homeGoals, awayGoals, homePenalties, awayPenalties, afterExtraTime, status);
     }
 
-    private static TeamRef ToTeamRef(FdTeam team) =>
-        new(team.Id ?? 0, OpponentName(team), team.Tla, NullIfBlank(team.Crest));
+    private TeamRef ToTeamRef(FdTeam team) =>
+        new(team.Id ?? 0, OpponentName(team), team.Tla, Crest(team));
 
     // On-Pitch-Tore (regulär + Verlängerung) von einem etwaigen Elfmeterschießen trennen, da
     // fullTime bei Schießen die Elfmeter MIT enthält.
@@ -342,13 +346,13 @@ public sealed class FootballDataClient : IFootballProvider
     private static string OpponentName(FdTeam team) =>
         !string.IsNullOrWhiteSpace(team.Name) ? team.Name : team.ShortName ?? string.Empty;
 
-    private static IReadOnlyList<LeagueRow> ExtractRows(FdStandingsResponse standings, IReadOnlyCollection<int> ownTeamIds)
+    private IReadOnlyList<LeagueRow> ExtractRows(FdStandingsResponse standings, IReadOnlyCollection<int> ownTeamIds)
     {
         var total = standings.Standings.FirstOrDefault(s => s.Type == "TOTAL");
         return total is null ? [] : total.Table.Select(e => ToRow(e, ownTeamIds)).ToList();
     }
 
-    private static IReadOnlyList<LeagueTable> ExtractGroupTables(
+    private IReadOnlyList<LeagueTable> ExtractGroupTables(
         FdStandingsResponse standings, IReadOnlyCollection<int> ownTeamIds) =>
         standings.Standings
             .Where(s => s.Type == "TOTAL")
@@ -358,7 +362,7 @@ public sealed class FootballDataClient : IFootballProvider
                 s.Table.Select(e => ToRow(e, ownTeamIds)).ToList()))
             .ToList();
 
-    private static LeagueRow ToRow(FdTableEntry entry, IReadOnlyCollection<int> ownTeamIds) => new(
+    private LeagueRow ToRow(FdTableEntry entry, IReadOnlyCollection<int> ownTeamIds) => new(
         entry.Position,
         OpponentName(entry.Team),
         entry.Team.Tla,
@@ -369,7 +373,28 @@ public sealed class FootballDataClient : IFootballProvider
         entry.GoalDifference,
         entry.Points,
         IsOwnTeam: entry.Team.Id is int id && ownTeamIds.Contains(id),
-        CrestUrl: NullIfBlank(entry.Team.Crest));
+        CrestUrl: Crest(entry.Team));
+
+    /// <summary>
+    /// Wappen-URL des Vereins: was der Anbieter führt, sonst ein Eintrag aus
+    /// <c>Crests:Overrides</c> (nach Team-Id oder Name). Ob die URL geladen werden darf,
+    /// entscheidet weiter allein die Host-Allowlist des Proxys.
+    /// </summary>
+    private string? Crest(FdTeam team)
+    {
+        if (NullIfBlank(team.Crest) is { } upstream)
+        {
+            return upstream;
+        }
+
+        if (team.Id is int id
+            && _crestOverrides.TryGetValue(id.ToString(CultureInfo.InvariantCulture), out var byId))
+        {
+            return NullIfBlank(byId);
+        }
+
+        return _crestOverrides.TryGetValue(OpponentName(team), out var byName) ? NullIfBlank(byName) : null;
+    }
 
     private static string? NullIfBlank(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value;

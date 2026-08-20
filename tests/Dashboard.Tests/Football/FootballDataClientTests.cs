@@ -1,3 +1,5 @@
+using Dashboard.Infrastructure.Crests;
+
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -49,6 +51,9 @@ public class FootballDataClientTests
         }
         """;
 
+    /// <summary>Ohne Overrides – der Regelfall; der Anbieter liefert die Wappen selbst.</summary>
+    private static IOptions<CrestOptions> NoCrestOverrides => Options.Create(new CrestOptions());
+
     private static FootballDataClient CreateClient(int recent = 2, int upcoming = 2)
     {
         var handler = new StubHttpMessageHandler(request =>
@@ -69,7 +74,8 @@ public class FootballDataClientTests
         });
 
         return new FootballDataClient(
-            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance);
+            http, new FakeClock { UtcNow = NowUtc }, options, NoCrestOverrides,
+            NullLogger<FootballDataClient>.Instance);
     }
 
     [Fact]
@@ -191,7 +197,8 @@ public class FootballDataClientTests
         });
 
         var snapshot = await new FootballDataClient(
-            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance)
+            http, new FakeClock { UtcNow = NowUtc }, options, NoCrestOverrides,
+            NullLogger<FootballDataClient>.Instance)
             .GetFootballAsync();
 
         Assert.Equal(3, snapshot.Teams.Count);
@@ -230,7 +237,8 @@ public class FootballDataClientTests
         });
 
         var snapshot = await new FootballDataClient(
-            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance)
+            http, new FakeClock { UtcNow = NowUtc }, options, NoCrestOverrides,
+            NullLogger<FootballDataClient>.Instance)
             .GetFootballAsync();
 
         Assert.NotNull(snapshot.LeagueTables);
@@ -261,7 +269,8 @@ public class FootballDataClientTests
         });
 
         var snapshot = await new FootballDataClient(
-            http, new FakeClock { UtcNow = NowUtc }, options, NullLogger<FootballDataClient>.Instance)
+            http, new FakeClock { UtcNow = NowUtc }, options, NoCrestOverrides,
+            NullLogger<FootballDataClient>.Instance)
             .GetFootballAsync();
 
         Assert.NotNull(snapshot.LeagueTables);
@@ -278,6 +287,42 @@ public class FootballDataClientTests
         // Getrackter Verein trägt sein Wappen auch in der Team-Sicht.
         var madridTeam = snapshot.Teams.Single(t => t.TeamName == "Real Madrid");
         Assert.Equal("https://crests.football-data.org/86.png", madridTeam.CrestUrl);
+    }
+
+    [Theory]
+    [InlineData("FC Barcelona")]   // per Vereinsname
+    [InlineData("81")]             // per football-data-Team-Id
+    public async Task GetFootballAsync_FillsAMissingCrestFromTheOverrideMap(string key)
+    {
+        // Der Anbieter führt für Barça kein crest-Feld. Die Override-Map springt ein — sie
+        // ersetzt nie ein vorhandenes Wappen, sondern füllt nur die Lücke.
+        var handler = new StubHttpMessageHandler(request =>
+            request.RequestUri!.AbsolutePath.Contains("standings", StringComparison.Ordinal)
+                ? StubHttpMessageHandler.Json(StandingsJson)
+                : StubHttpMessageHandler.Json(MatchesJson));
+        var http = new HttpClient(handler) { BaseAddress = new Uri("https://test.local/") };
+        var options = Options.Create(new FootballOptions
+        {
+            ApiKey = "test-key",
+            InterCallDelay = TimeSpan.Zero,
+            LeagueCodes = ["PD"],
+            ChampionsLeagueCode = "",
+            Teams = [new FootballTeamConfig { Name = "Real Madrid", TeamId = 86, CompetitionCode = "PD" }]
+        });
+        var crests = Options.Create(new CrestOptions
+        {
+            Overrides = new Dictionary<string, string> { [key] = "https://example.test/barca.png" }
+        });
+
+        var snapshot = await new FootballDataClient(
+            http, new FakeClock { UtcNow = NowUtc }, options, crests,
+            NullLogger<FootballDataClient>.Instance)
+            .GetFootballAsync();
+
+        var table = Assert.Single(snapshot.LeagueTables!);
+        Assert.Equal("https://example.test/barca.png", table.Rows.Single(r => r.Position == 2).CrestUrl);
+        // Real Madrid führt ein Wappen – der Override rührt es nicht an.
+        Assert.Equal("https://crests.football-data.org/86.png", table.Rows.Single(r => r.Position == 1).CrestUrl);
     }
 
     [Fact]
