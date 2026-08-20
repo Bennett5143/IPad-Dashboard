@@ -16,9 +16,11 @@
 
 <PageTitle>Status</PageTitle>
 
-<PageHeader Title="Status" Meta="@_meta" />
+<PageHeader Title="Status" />
 
-<div class="detail-body is-scroll">
+@* Eine Seite, kein Scrollen: die vier Faktenblöcke stehen in einer Reihe, der Log bindet nach
+   unten. Wer mehr sehen will als hier steht, sitzt ohnehin an der SSH-Sitzung. *@
+<div class="detail-body">
     @if (_loading)
     {
         <p class="status-msg">Sammle Status …</p>
@@ -69,9 +71,7 @@
                         <div><dt>Workouts</dt><dd>@_whoopWorkoutLabel</dd></div>
                     </dl>
                 </section>
-            </div>
 
-            <div class="status-cols">
                 <section class="status-region">
                     <span class="mono-label">SYSTEM</span>
                     @if (_system is null)
@@ -134,7 +134,6 @@
         TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
     private bool _loading = true;
-    private string _meta = "ALLE SYSTEME";
     private int _healthy;
     private int _total;
     private IReadOnlyList<StatusSliceRow> _slices = [];
@@ -149,8 +148,9 @@
     private string _whoopWorkoutLabel = "–";
     private Dashboard.Domain.Status.SystemMetrics? _system;
     private string _dbLabel = "–";
-    /// <summary>So viele Warnungen zeigt die Seite — mehr liest am Kiosk ohnehin niemand.</summary>
-    private const int VisibleWarnings = 5;
+    /// <summary>So viele Warnungen zeigt die Seite — mehr liest am Kiosk ohnehin niemand, und
+    /// die Seite soll auf einen Bildschirm passen.</summary>
+    private const int VisibleWarnings = 3;
 
     private IReadOnlyList<RecentLogEntry> _logs = [];
 
@@ -158,15 +158,14 @@
     {
         var now = Clock.UtcNow;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, BerlinTz).DateTime);
-        // Angezeigt werden die fünf jüngsten; der Ringpuffer hält weiter mehr, damit die Diagnose
-        // über die Anzeige hinaus nichts verliert.
+        // Angezeigt werden die jüngsten; der Ringpuffer hält weiter 50, damit die Diagnose über
+        // die Anzeige hinaus nichts verliert.
         _logs = RecentLogs.Recent.Take(VisibleWarnings).ToList();
 
         _slices = StatusViewBuilder.BuildSliceRows(
             Sources.Select(s => (s.SliceName, s.HasData, s.IsStale, s.LastUpdatedUtc)), now);
         _healthy = Sources.Count(s => s.HasData && !s.IsStale);
         _total = Sources.Count();
-        _meta = $"{_healthy}/{_total} QUELLEN";
 
         try
         {

@@ -31,16 +31,17 @@
 
 .status-hero-num {
     font-family: var(--font-family-mono);
-    font-size: 64px;
+    font-size: 44px;
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--ink);
 }
 
-/* Regionen statt Karten: nur Kanten trennen. */
+/* Regionen statt Karten: nur Kanten trennen. Vier nebeneinander statt 2×2 — dort steckte der
+   meiste Höhenverbrauch, und die Seite soll ohne Scrollen auf 768px passen. */
 .status-cols {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     border-top: 1px solid var(--rule);
     flex: none;
 }
@@ -78,7 +79,7 @@
     grid-template-columns: auto 1fr auto auto;
     align-items: center;
     gap: 14px;
-    padding: 10px 0;
+    padding: 6px 0;
     border-top: 1px solid var(--rule);
     font-size: 14px;
 }
