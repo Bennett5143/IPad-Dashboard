@@ -4,12 +4,11 @@
 @inject IRunRepository RunRepository
 @inject IRunPlaceStore RunPlaces
 @inject IStravaTokenStore TokenStore
-@inject IClock Clock
 @inject NavigationManager Nav
 
 <PageTitle>Läufe</PageTitle>
 
-<PageHeader Title="Läufe" Meta="@Meta" />
+<PageHeader Title="Läufe" />
 
 <FitnessTabs />
 
@@ -46,7 +45,6 @@
                     <div><dt>Läufe</dt><dd>@_review.RunCount</dd></div>
                     <div><dt>Höhenmeter</dt><dd>@_review.TotalElevation</dd></div>
                     <div><dt>Zeit</dt><dd>@_review.TotalTime</dd></div>
-                    <div><dt>Eddington</dt><dd>@_review.Eddington</dd></div>
                 </dl>
             </section>
 
@@ -121,57 +119,18 @@
                 </table>
             </section>
         }
-
-        <section class="runs-region runs-list-section">
-            <div class="tab-row-items" role="group" aria-label="Zeitraum">
-                <button class="tab @RangeCss(RunTimeRange.FourWeeks)" @onclick="() => SetRange(RunTimeRange.FourWeeks)">4 Wochen</button>
-                <button class="tab @RangeCss(RunTimeRange.TwelveMonths)" @onclick="() => SetRange(RunTimeRange.TwelveMonths)">12 Monate</button>
-                <button class="tab @RangeCss(RunTimeRange.All)" @onclick="() => SetRange(RunTimeRange.All)">Alle</button>
-            </div>
-
-            <table class="runs-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Datum</th>
-                        <th scope="col">Lauf</th>
-                        <th scope="col" class="num">Distanz</th>
-                        <th scope="col" class="num">Pace</th>
-                        <th scope="col" class="num">Ø HF</th>
-                        <th scope="col" class="num">Höhe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in _rows)
-                    {
-                        <tr @onclick="() => Open(row.Id)" class="runs-row">
-                            <td class="mono">@row.Date</td>
-                            <td class="run-name">@row.Name</td>
-                            <td class="num mono">@row.Distance</td>
-                            <td class="num mono pace">@row.Pace</td>
-                            <td class="num mono hr">@row.HeartRate</td>
-                            <td class="num mono">@row.Elevation</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </section>
     }
     </div>
 </div>
 
 @code {
     private bool _connected;
-    private RunTimeRange _range = RunTimeRange.TwelveMonths;
     private IReadOnlyList<Run> _allRuns = [];
-    private IReadOnlyList<RunListRow> _rows = [];
     private RunReviewView? _review;
     private IReadOnlyList<RunPlaceRow> _places = [];
 
     /// <summary>Der Ort, dessen Name gerade bearbeitet wird.</summary>
     private int? _renaming;
-
-    // Mono-Meta im PageHeader: das gewählte Rückblicksjahr, sonst das aktuelle Jahr.
-    private string Meta => (_review?.Year ?? Clock.UtcNow.Year).ToString();
 
     protected override async Task OnInitializedAsync()
     {
@@ -181,13 +140,11 @@
             return;
         }
 
-        // Einmal alle Läufe (Projektion ohne Geometrie) – Liste filtert in-memory, der
-        // Rückblick braucht ohnehin alle Jahre.
+        // Einmal alle Läufe (Projektion ohne Geometrie) – der Rückblick braucht ohnehin alle Jahre.
         _allRuns = await RunRepository.GetRunSummariesAsync(null);
         var years = RunReviewCalculator.AvailableYears(_allRuns);
         _review = years.Count > 0 ? RunReviewViewBuilder.Build(_allRuns, years[0]) : null;
         _places = RunViewBuilder.BuildRunPlaces(await RunPlaces.GetSummariesAsync());
-        ApplyRange();
     }
 
     private async Task RenameAsync(int placeId, string? name)
@@ -202,22 +159,6 @@
         _places = RunViewBuilder.BuildRunPlaces(await RunPlaces.GetSummariesAsync());
     }
 
-    private void ApplyRange()
-    {
-        var cutoff = _range.CutoffUtc(Clock.UtcNow);
-        var filtered = cutoff is { } since ? _allRuns.Where(r => r.StartUtc >= since).ToList() : _allRuns;
-        _rows = RunViewBuilder.BuildList(filtered);
-    }
-
-    private void SetRange(RunTimeRange range)
-    {
-        if (range != _range)
-        {
-            _range = range;
-            ApplyRange();
-        }
-    }
-
     private void SetYear(int year)
     {
         if (_review is not null && year != _review.Year)
@@ -226,12 +167,8 @@
         }
     }
 
-    private void Open(long id) => Nav.NavigateTo($"/runs/{id}");
-
     // Bewusst OHNE forceLoad: ein voller Seitenaufruf verlässt auf dem Kiosk-iPad das
     // Standalone-Fenster. Die leere Karte, gegen die er einmal half, fängt heatmap.js selbst ab
     // (waitForSize vor dem Init, invalidateSize + fitBounds danach, ResizeObserver dahinter).
     private void OpenPlace(int placeId) => Nav.NavigateTo($"/heatmap?place={placeId}");
-
-    private string RangeCss(RunTimeRange range) => range == _range ? "is-active" : string.Empty;
 }
