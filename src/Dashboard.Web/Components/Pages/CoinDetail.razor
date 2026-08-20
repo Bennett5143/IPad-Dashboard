@@ -41,11 +41,11 @@
         @if (Quote is { } quote)
         {
             <section class="coin-hero">
-                <span class="coin-hero-price">@CryptoFormatter.Price(quote.PriceEur)</span>
+                <span class="coin-hero-price">@CryptoFormatter.Price(quote.Price)</span>
                 <span class="coin-hero-change @(quote.Change24hPct >= 0 ? "up" : "down")">
                     @CryptoFormatter.Percent(quote.Change24hPct) · 24 h
                 </span>
-                <span class="mono-label">@quote.Symbol · @CryptoFormatter.MarketCap(quote.MarketCap)</span>
+                <span class="mono-label">@quote.Symbol</span>
             </section>
         }
 
@@ -57,7 +57,7 @@
             else if (_history is { HasPoints: true } history)
             {
                 <ChartFrame CssClass="coin-chart-frame"
-                            XLabel="@RangeLabel(_range)" YLabel="Kurs (€)"
+                            XLabel="@RangeLabel(_range)" YLabel="Kurs ($)"
                             RangeStart="@CryptoFormatter.Price(history.Minimum)"
                             RangeEnd="@CryptoFormatter.Price(history.Maximum)">
                     <Sparkline Values="@Values(history)" Fill="true" />
@@ -93,7 +93,7 @@
     private CoinQuote? Quote => CryptoState.Current?.Coins
         .FirstOrDefault(coin => string.Equals(coin.Id, CoinId, StringComparison.OrdinalIgnoreCase));
 
-    private string? Meta => Quote is null ? null : $"EUR · {Quote.Symbol} · COINGECKO";
+    private string? Meta => Quote is null ? null : $"USD · {Quote.Symbol} · COINGECKO";
 
     protected override void OnInitialized() => CryptoState.Changed += OnChanged;
 

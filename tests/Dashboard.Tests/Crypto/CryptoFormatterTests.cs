@@ -10,9 +10,22 @@ public class CryptoFormatterTests
     [Fact]
     public void Price_PicksPrecisionByMagnitude()
     {
-        Assert.Equal(51248m.ToString("C0", De), CryptoFormatter.Price(51248m));   // >= 1000 → keine Nachkommastellen
-        Assert.Equal(3.45m.ToString("C2", De), CryptoFormatter.Price(3.45m));     // >= 1 → 2 Stellen
-        Assert.Equal(0.1234m.ToString("C4", De), CryptoFormatter.Price(0.1234m)); // < 1 → 4 Stellen
+        Assert.Equal("$" + 51248m.ToString("N0", De), CryptoFormatter.Price(51248m));   // >= 1000 → keine Nachkommastellen
+        Assert.Equal("$" + 3.45m.ToString("N2", De), CryptoFormatter.Price(3.45m));     // >= 1 → 2 Stellen
+        Assert.Equal("$" + 0.1234m.ToString("N4", De), CryptoFormatter.Price(0.1234m)); // < 1 → 4 Stellen
+    }
+
+    /// <summary>
+    /// Das Dollarzeichen steht ausdrücklich davor: ein de-DE-Währungsformat setzte ein € hinter
+    /// die Zahl, ganz gleich, in welcher Währung der Anbieter geliefert hat. Die Gruppierung
+    /// bleibt deutsch — nur das Zeichen wechselt.
+    /// </summary>
+    [Fact]
+    public void Price_UsesADollarSignWithGermanGrouping()
+    {
+        Assert.Equal("$51.248", CryptoFormatter.Price(51248m));
+        Assert.Equal("$3,45", CryptoFormatter.Price(3.45m));
+        Assert.DoesNotContain("€", CryptoFormatter.Price(51248m), StringComparison.Ordinal);
     }
 
     [Theory]
@@ -22,15 +35,6 @@ public class CryptoFormatterTests
     public void Percent_AddsSignAndGermanDecimal(double pct, string expected)
     {
         Assert.Equal(expected, CryptoFormatter.Percent(pct));
-    }
-
-    [Fact]
-    public void MarketCap_FormatsCompactly()
-    {
-        Assert.Equal("1,03 Bio. €", CryptoFormatter.MarketCap(1_027_528_382_139m));
-        Assert.Equal("300 Mrd. €", CryptoFormatter.MarketCap(300_000_000_000m));
-        Assert.Equal("5,5 Mio. €", CryptoFormatter.MarketCap(5_500_000m));
-        Assert.Equal("–", CryptoFormatter.MarketCap(null));
     }
 
     [Theory]
