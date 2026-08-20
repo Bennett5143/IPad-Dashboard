@@ -83,21 +83,6 @@ public static class MetricCatalog
                 "Pearson-Korrelationskoeffizient r über mindestens zehn Wertepaare je Treiber.",
                 "Werte nahe +1 oder −1 zeigen einen starken, nahe 0 keinen Zusammenhang. Korrelation ist kein Kausalbeweis; Zeilen mit wenigen Datenpunkten (n) sind ausgegraut."),
 
-            [MetricId.SleepNight] = new(
-                "Letzte Nacht (Schlafphasen)",
-                "Die Zusammensetzung der jüngsten Nacht aus Leicht-, Tief- und REM-Schlaf (und Wachzeit, falls erfasst).",
-                "Anteilige Dauer je Schlafphase, von WHOOP geliefert; die Balkenbreite ist der Zeitanteil.",
-                "Tief- und REM-Schlaf sind die erholsamsten Phasen. Zeigt, wie sich die Nacht verteilt hat.",
-                XAxis: "Zeitanteil der Nacht (0–100 %)"),
-
-            [MetricId.TimeOfDay] = new(
-                "Tageszeit-Effektivität",
-                "Die Trainingseffektivität je Tageszeit-Fenster, getrennt nach Trainingsart, über die letzten 12 Monate.",
-                "Laufen: Herzschläge/km (weniger = besser). Kraft/Seilspringen: kJ/min (mehr = besser). Aus der WHOOP-Workout-Historie; eine Aussage erst ab fünf Trainings je Fenster (n).",
-                "Zeigt, zu welcher Tageszeit das Training am effektivsten ausfällt; das hervorgehobene Fenster ist das beste.",
-                XAxis: "Effektivität (Balkenlänge)",
-                YAxis: "Tageszeit-Fenster"),
-
             [MetricId.TimeOfDayMatrix] = new(
                 "Trainings-Häufigkeit",
                 "Die Anzahl Trainings je Tageszeit-Fenster (Zeilen) und Wochentag (Spalten) über alle Arten, letzte 12 Monate.",

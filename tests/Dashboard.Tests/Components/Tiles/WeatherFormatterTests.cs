@@ -42,15 +42,6 @@ public class WeatherFormatterTests
         Assert.Equal("15:00", WeatherFormatter.Hour(time));
     }
 
-    [Fact]
-    public void UpdatedAt_ConvertsUtcToBerlinTime()
-    {
-        // 12:00 UTC → 14:00 Berlin (CEST)
-        var utc = new DateTimeOffset(2026, 6, 10, 12, 0, 0, TimeSpan.Zero);
-
-        Assert.Equal("14:00", WeatherFormatter.UpdatedAt(utc));
-    }
-
     [Theory]
     [InlineData(0, "N")]
     [InlineData(45, "NO")]

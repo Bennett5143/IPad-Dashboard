@@ -6,7 +6,7 @@
 
 <PageTitle>Wetter</PageTitle>
 
-<PageHeader Title="Wetter" Meta="@_meta" />
+<PageHeader Title="Wetter" />
 
 <div class="detail-body">
     @if (_snapshot is null)
@@ -56,10 +56,12 @@
         <div class="wx-trend">
             @* Die Beschriftung gehört zur Kurve, und die zeichnet den ganzen Verlauf — nicht nur
                die Spalten der Leiste darunter. *@
-            <ChartFrame XLabel="@TrendWindow(_snapshot.Hourly)" YLabel="Temperatur"
-                        YMax="@Extreme(hourlyTemps, highest: true)"
-                        YMin="@Extreme(hourlyTemps, highest: false)">
-                <Sparkline Values="hourlyTemps" Fill="true" />
+            <ChartFrame YLabel="Temperatur"
+                        YMax="@Scale(hourlyTemps, Level.Max)"
+                        YMid="@Scale(hourlyTemps, Level.Mid)"
+                        YMin="@Scale(hourlyTemps, Level.Min)"
+                        XTicks="@TrendTicks(_snapshot.Hourly)">
+                <Sparkline Values="hourlyTemps" Fill="true" Smooth="true" />
             </ChartFrame>
         </div>
 
@@ -99,8 +101,10 @@
     /// <summary>Ab dieser Regenwahrscheinlichkeit wird die Stunde in Tinte hervorgehoben.</summary>
     private const double RainThreshold = 0.30;
 
+    /// <summary>Marken auf der Zeitachse des Verlaufs — vier lesen sich auf 1024 px noch sauber.</summary>
+    private const int TrendMarks = 4;
+
     private WeatherSnapshot? _snapshot;
-    private string _meta = "HAMBURG";
 
     protected override void OnInitialized()
     {
@@ -114,8 +118,12 @@
         StateHasChanged();
     });
 
-    /// <summary>Größter bzw. kleinster Wert der Kurve, als Skalenwert der Y-Achse.</summary>
-    private static string? Extreme(IReadOnlyList<double?> values, bool highest)
+    /// <summary>Welcher der drei Skalenwerte der Y-Achse gemeint ist.</summary>
+    private enum Level { Min, Mid, Max }
+
+    /// <summary>Ein Skalenwert der Y-Achse. Die Mitte liegt geometrisch mittig zwischen den beiden
+    /// Enden — die Achse ist linear, also ist das auch der Wert auf halber Höhe.</summary>
+    private static string? Scale(IReadOnlyList<double?> values, Level level)
     {
         var present = values.OfType<double>().ToList();
         if (present.Count == 0)
@@ -123,36 +131,47 @@
             return null;
         }
 
-        return WeatherFormatter.Temperature(highest ? present.Max() : present.Min());
+        var min = present.Min();
+        var max = present.Max();
+
+        return WeatherFormatter.Temperature(level switch
+        {
+            Level.Max => max,
+            Level.Min => min,
+            _ => (min + max) / 2,
+        });
     }
 
     /// <summary>
-    /// Welches Zeitfenster die Kurve zeigt. Das OWM-Raster liegt bei 3 h je Schritt, zwölf Schritte
-    /// reichen also über anderthalb Tage — deshalb steht der Wochentag dabei, sobald das Fenster
-    /// den Tag wechselt. „23 – 08 Uhr" allein läse sich wie neun Stunden.
+    /// Vier Marken gleichmäßig über das Fenster, erste links, letzte rechts. Die Zeit wird auf der
+    /// Position <em>interpoliert</em>, nicht aus dem nächstgelegenen Datenpunkt genommen: eine
+    /// Achsenmarke benennt eine Stelle der Achse, keinen Messpunkt, und die vier Stützstellen des
+    /// Rasters liegen nicht auf Dritteln der Breite.
+    /// <para>
+    /// Das OWM-Raster liegt bei 3 h je Schritt, zwölf Schritte reichen also über anderthalb Tage —
+    /// deshalb steht der Wochentag dabei, sobald das Fenster den Tag wechselt: „08" zweimal wäre
+    /// mehrdeutig.
+    /// </para>
     /// </summary>
-    private static string TrendWindow(IReadOnlyList<HourlyForecast> hours)
+    private static IReadOnlyList<string> TrendTicks(IReadOnlyList<HourlyForecast> hours)
     {
         if (hours.Count == 0)
         {
-            return "Zeit";
+            return [];
         }
 
         var from = hours[0].Time;
         var to = hours[^1].Time;
         var format = from.Date == to.Date ? "HH" : "ddd HH";
         var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+        var span = to - from;
 
-        return $"{from.ToString(format, de)} – {to.ToString(format, de)} Uhr";
+        return Enumerable.Range(0, TrendMarks)
+            .Select(i => from.Add(span * i / (TrendMarks - 1)).ToString(format, de))
+            .ToList();
     }
 
-    private void ReadState()
-    {
-        _snapshot = WeatherState.Current;
-        _meta = _snapshot is null
-            ? "HAMBURG"
-            : $"HAMBURG · STAND {WeatherFormatter.UpdatedAt(_snapshot.RetrievedAtUtc)}";
-    }
+    private void ReadState() => _snapshot = WeatherState.Current;
 
     public void Dispose() => WeatherState.Changed -= OnChanged;
 }

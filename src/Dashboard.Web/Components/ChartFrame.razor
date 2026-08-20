@@ -1,7 +1,8 @@
-@* Achsen-Rahmen um ein Diagramm (FA-10.09): Y-Beschriftung links (gedreht), X-Beschriftung
-   unten, optional Start/Ende-Werte direkt unter der Kurve. Rein darstellend – die eigentliche
-   Visualisierung (Sparkline/Scatter/SVG) kommt als ChildContent. Höhe/Farben des Diagramms
-   bleiben bei den seiteneigenen ::deep-Regeln; dieser Wrapper ändert sie nicht. *@
+@* Achsen-Rahmen um ein Diagramm (FA-10.09): Y-Beschriftung oben, Skalenwerte (max/mid/min) am
+   linken Rand, X-Marken und/oder X-Beschriftung unten, optional Start/Ende-Werte unter der Kurve.
+   Rein darstellend – die eigentliche Visualisierung (Sparkline/Scatter/SVG) kommt als
+   ChildContent. Höhe/Farben des Diagramms bleiben bei den seiteneigenen ::deep-Regeln;
+   dieser Wrapper ändert sie nicht. *@
 
 <div class="chart-frame @CssClass">
     @if (YLabel is not null)
@@ -14,6 +15,10 @@
             @* Skalenwerte am linken Rand: erst mit ihnen sagt die Kurve, wie hoch sie steigt. *@
             <div class="chart-y-ticks" aria-hidden="true">
                 <span>@YMax</span>
+                @if (YMid is not null)
+                {
+                    <span>@YMid</span>
+                }
                 <span>@YMin</span>
             </div>
         }
@@ -26,6 +31,16 @@
             </div>
         }
     </div>
+    @if (XTicks.Count > 0)
+    {
+        @* Marken statt Bildunterschrift: die Achse sagt damit, wo ihre Werte liegen. *@
+        <div class="chart-x-ticks" aria-hidden="true">
+            @foreach (var tick in XTicks)
+            {
+                <span>@tick</span>
+            }
+        </div>
+    }
     @if (XLabel is not null)
     {
         <span class="chart-x-label">@XLabel</span>
@@ -54,6 +69,14 @@
 
     /// <summary>Unterer Skalenwert der Y-Achse.</summary>
     [Parameter] public string? YMin { get; set; }
+
+    /// <summary>Mittlerer Skalenwert der Y-Achse, zwischen <see cref="YMin"/> und <see cref="YMax"/>.
+    /// Ohne ihn muss der Leser die Mitte schätzen.</summary>
+    [Parameter] public string? YMid { get; set; }
+
+    /// <summary>Marken der X-Achse, gleichmäßig über die Breite verteilt (erste links, letzte
+    /// rechts). Leer gelassen bleibt es bei <see cref="XLabel"/> allein.</summary>
+    [Parameter] public IReadOnlyList<string> XTicks { get; set; } = [];
 
     /// <summary>Zusätzliche CSS-Klassen für den Rahmen.</summary>
     [Parameter] public string? CssClass { get; set; }
