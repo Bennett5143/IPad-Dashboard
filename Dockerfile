@@ -5,7 +5,9 @@
 # In a plain single-arch `docker build` (Pi fallback, dev Mac) BuildKit sets both
 # to the host values, so nothing changes there.
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Base images are digest-pinned (supply-chain integrity; Dependabot bumps the
+# digests). The digest is the manifest-list digest, valid for amd64 and arm64.
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0@sha256:e1ffd2a92ae84c1291bc1b6887501f8af98e6331e7af6d4c8d37168c5e87a64c AS build
 ARG TARGETARCH
 WORKDIR /src
 
@@ -26,7 +28,7 @@ COPY src/ src/
 RUN dotnet publish src/Dashboard.Web/Dashboard.Web.csproj \
     --configuration Release --output /app/publish -a $TARGETARCH
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:a4556ed033fa96f984bb7a8d348851cb2d36b1281dd2420070045f664fbb5f94 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 

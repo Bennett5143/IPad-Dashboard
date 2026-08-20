@@ -15,9 +15,10 @@ on:
     workflows: [Docker]
     types: [completed]
 
+# Least privilege: read-only at the top level, security-events: write only on
+# the job that uploads SARIF.
 permissions:
   contents: read
-  security-events: write
 
 env:
   IMAGE: ghcr.io/bennett5143/ipad-dashboard
@@ -26,26 +27,36 @@ jobs:
   grype-scan:
     name: Grype image scan
     runs-on: ubuntu-latest
-    # After a Docker run, only scan successful main builds — dev images are
-    # throwaway and the scan target below is the main tag anyway.
+    permissions:
+      contents: read
+      security-events: write
+    # Every trigger is restricted to main: workflow_run only for successful
+    # main builds (dev images are throwaway and the scan target is the main
+    # tag anyway), manual dispatches only from the main ref — anything else
+    # would run with security-events: write from an arbitrary branch.
     if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main')
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Scan image with Grype
         id: scan
-        uses: anchore/scan-action@v7
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
         with:
           image: ${{ env.IMAGE }}:main
           fail-build: false
           output-format: sarif
 
       - name: Upload SARIF to code scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}

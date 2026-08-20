@@ -2,18 +2,26 @@ name: Dependabot auto-merge
 
 on: pull_request
 
+# Least privilege: read-only at the top level, write scopes only on the job
+# that needs them (gh pr merge --auto needs both).
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    # Gate on the PR author (not github.actor, which is just the event actor)
+    # and require a same-repo head so fork PRs can never reach the merge step.
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Dependabot metadata
         id: meta
-        uses: dependabot/fetch-metadata@v3
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3
 
       - name: Enable auto-merge for patch/minor
         if: |
