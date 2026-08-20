@@ -1,11 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <!-- The RIDs the Docker build cross-compiles for; keeps the RID-specific
-         restore graphs in packages.lock.json so locked-mode restores work. -->
-    <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Dashboard.Domain\Dashboard.Domain.csproj" />
     <ProjectReference Include="..\Dashboard.Infrastructure\Dashboard.Infrastructure.csproj" />

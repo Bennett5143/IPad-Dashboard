@@ -18,7 +18,11 @@ COPY global.json Directory.Build.props Directory.Packages.props ./
 COPY src/Dashboard.Domain/Dashboard.Domain.csproj src/Dashboard.Domain/
 COPY src/Dashboard.Infrastructure/Dashboard.Infrastructure.csproj src/Dashboard.Infrastructure/
 COPY src/Dashboard.Web/Dashboard.Web.csproj src/Dashboard.Web/
-RUN dotnet restore src/Dashboard.Web/Dashboard.Web.csproj -a $TARGETARCH
+# Deliberately NOT --locked-mode: this metadata-only restore lacks the .razor
+# files, so the Web SDK omits Microsoft.AspNetCore.App.Internal.Assets here and
+# the graph can never match the committed packages.lock.json (NU1004). This
+# stage only warms the NuGet layer cache; the CI restores are locked.
+RUN dotnet restore src/Dashboard.Web/Dashboard.Web.csproj -a $TARGETARCH -p:RestorePackagesWithLockFile=false
 
 COPY src/ src/
 # Kein --no-restore: Das Web-SDK fügt Microsoft.AspNetCore.App.Internal.Assets
