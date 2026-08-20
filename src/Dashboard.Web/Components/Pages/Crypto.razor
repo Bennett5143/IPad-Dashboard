@@ -4,6 +4,7 @@
 @using Dashboard.Domain.Crypto
 @inject CryptoState CryptoState
 @inject ICoinHistoryProvider History
+@inject ILogger<Crypto> Log
 @rendermode InteractiveServer
 
 <PageTitle>Krypto</PageTitle>
@@ -59,8 +60,8 @@
                     var up = c.Change24hPct >= 0;
                     var tag = c.Symbol.Length <= 3 ? c.Symbol : c.Symbol[..3];
 
-                    <div class="coin-row" role="button" tabindex="0"
-                         aria-haspopup="dialog" @onclick="() => OpenAsync(c)">
+                    <div class="coin-row" role="button" tabindex="0" aria-haspopup="dialog"
+                         @onclick="() => OpenAsync(c)" @onkeydown="e => OnRowKeyAsync(e, c)">
                         <span class="coin-id">
                             @if (ImageProxy.Src(c.ImageUrl) is { } logo)
                             {
@@ -100,8 +101,10 @@
 @if (_open is { } coin)
 {
     <div class="dialog-backdrop" @onclick="Close">
+        @* tabindex/@ref, damit der Fokus beim Öffnen hierher wandert und Escape ankommt — sonst
+           bliebe das Fenster nur mit der Maus schließbar. *@
         <div class="dialog coin-dialog" role="dialog" aria-modal="true" aria-label="@coin.Name"
-             @onclick:stopPropagation="true">
+             tabindex="-1" @ref="_dialog" @onkeydown="OnDialogKey" @onclick:stopPropagation="true">
             <header class="coin-dialog-head">
                 @if (ImageProxy.Src(coin.ImageUrl) is { } logo)
                 {
@@ -113,6 +116,7 @@
                 <span class="coin-dialog-chg @(coin.Change24hPct >= 0 ? "up" : "down")">
                     @CryptoFormatter.Percent(coin.Change24hPct)
                 </span>
+                <button class="coin-dialog-close" @onclick="Close" aria-label="Schließen">×</button>
             </header>
 
             <div class="coin-dialog-body">
@@ -175,6 +179,15 @@
     private CoinHistory? _history;
     private bool _loading;
 
+    /// <summary>
+    /// Zählt die Abrufe. Ein überholter Abruf — anderer Zeitraum, anderer Coin, Fenster zu —
+    /// darf das Ergebnis des aktuellen nicht überschreiben, wenn er später zurückkommt.
+    /// </summary>
+    private int _requestId;
+
+    private ElementReference _dialog;
+    private bool _focusDialog;
+
     protected override void OnInitialized()
     {
         CryptoState.Changed += OnChanged;
@@ -196,10 +209,46 @@
     {
         _open = coin;
         _range = CoinRange.Day;
+        _focusDialog = true;
         await LoadAsync();
     }
 
-    private void Close() => _open = null;
+    private async Task OnRowKeyAsync(KeyboardEventArgs args, CoinQuote coin)
+    {
+        // Die Zeile ist als role="button" ausgezeichnet, also muss sie sich auch wie einer
+        // bedienen lassen: Enter und Leertaste öffnen.
+        if (args.Key is "Enter" or " ")
+        {
+            await OpenAsync(coin);
+        }
+    }
+
+    private void OnDialogKey(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            Close();
+        }
+    }
+
+    // Der Zähler steigt auch beim Schließen: ein noch laufender Abruf hat danach niemanden mehr.
+    private void Close()
+    {
+        _requestId++;
+        _loading = false;
+        _open = null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focusDialog)
+        {
+            return;
+        }
+
+        _focusDialog = false;
+        await _dialog.FocusAsync();
+    }
 
     private async Task SelectAsync(CoinRange range)
     {
@@ -222,9 +271,31 @@
             return;
         }
 
+        var request = ++_requestId;
         _loading = true;
-        _history = await History.GetHistoryAsync(coin.Id, _range);
-        _loading = false;
+        _history = null;
+
+        try
+        {
+            var history = await History.GetHistoryAsync(coin.Id, _range);
+            if (request == _requestId)
+            {
+                _history = history;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Ein toter Abruf kostet das Diagramm, nicht die Seite — und schon gar nicht ein
+            // Fenster, das für immer „Wird geladen…" zeigt.
+            Log.LogWarning(ex, "Kursverlauf {Coin}/{Range} nicht abrufbar.", coin.Id, _range);
+        }
+        finally
+        {
+            if (request == _requestId)
+            {
+                _loading = false;
+            }
+        }
     }
 
     private static IReadOnlyList<double?> Values(CoinHistory history) =>

@@ -162,6 +162,25 @@
 .coin-dialog-chg.up { color: var(--bull); }
 .coin-dialog-chg.down { color: var(--bear); }
 
+.coin-dialog-close {
+    align-self: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--muted);
+}
+
+.coin-dialog-close:active {
+    background: var(--track);
+    color: var(--ink);
+}
+
 .coin-dialog-body {
     min-height: 0;
 }
