@@ -46,10 +46,6 @@
     line-height: 1;
 }
 
-.stat-value--gold {
-    color: var(--ink);
-}
-
 .stat-label {
     font-family: var(--font-family-mono);
     font-size: 10px;
@@ -97,20 +93,9 @@
 }
 
 /* Habit-Intensität (Daten): heller Papier-Ramp von --track nach --accent. */
+/* Zwei Zustände, zwei Farben — ohne Zwischenstufen braucht das Jahr auch keine Legende. */
 .heat-cell.lvl-0 { background: var(--track); }
-.heat-cell.lvl-1 { background: color-mix(in srgb, var(--accent) 22%, var(--track)); }
-.heat-cell.lvl-2 { background: color-mix(in srgb, var(--accent) 45%, var(--track)); }
-.heat-cell.lvl-3 { background: color-mix(in srgb, var(--accent) 70%, var(--track)); }
 .heat-cell.lvl-4 { background: var(--accent); }
-
-.heat-legend {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-family-mono);
-    font-size: 0.625rem;
-    color: var(--faint);
-}
 
 /* ---- Wochenbalken: binden nach unten, sie sind die letzte Region ---- */
 .weeks {
