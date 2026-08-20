@@ -11,7 +11,7 @@ and every published image carries an SBOM attestation.
 ## Reporting a vulnerability
 
 If you spot a security issue in this repository, please report it privately via
-[GitHub Security Advisories](../../security/advisories/new)
+[GitHub Security Advisories](https://github.com/Bennett5143/IPad-Dashboard/security/advisories/new)
 ("Report a vulnerability"). Please do not open a public issue for suspected
 vulnerabilities.
 
