@@ -7,16 +7,20 @@ public static class CryptoFormatter
 {
     private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
 
-    /// <summary>Preis in Euro; je kleiner der Kurs, desto mehr Nachkommastellen.</summary>
-    public static string Price(decimal priceEur)
+    /// <summary>
+    /// Kurs in Dollar; je kleiner der Kurs, desto mehr Nachkommastellen. Das Zeichen steht
+    /// ausdrücklich davor statt über ein Währungsformat: <c>de-DE</c> setzte sonst ein € hinter
+    /// die Zahl, ganz gleich, was der Anbieter geliefert hat. Die Zifferngruppierung bleibt deutsch.
+    /// </summary>
+    public static string Price(decimal price)
     {
-        var format = priceEur switch
+        var format = price switch
         {
-            >= 1000m => "C0",
-            >= 1m => "C2",
-            _ => "C4"
+            >= 1000m => "N0",
+            >= 1m => "N2",
+            _ => "N4"
         };
-        return priceEur.ToString(format, De);
+        return "$" + price.ToString(format, De);
     }
 
     /// <summary>24-h-Änderung mit Vorzeichen, eine Nachkommastelle.</summary>
@@ -36,16 +40,6 @@ public static class CryptoFormatter
         var sign = changePercent > 0 ? "+" : string.Empty;
         return sign + changePercent.ToString("0.0", De) + " %";
     }
-
-    /// <summary>Marktkapitalisierung kompakt (Bio./Mrd./Mio. €).</summary>
-    public static string MarketCap(decimal? cap) => cap switch
-    {
-        null => "–",
-        >= 1_000_000_000_000m => (cap.Value / 1_000_000_000_000m).ToString("0.##", De) + " Bio. €",
-        >= 1_000_000_000m => (cap.Value / 1_000_000_000m).ToString("0.##", De) + " Mrd. €",
-        >= 1_000_000m => (cap.Value / 1_000_000m).ToString("0.##", De) + " Mio. €",
-        _ => cap.Value.ToString("C0", De)
-    };
 
     public static string MoodLabel(MarketMood mood) => mood switch
     {

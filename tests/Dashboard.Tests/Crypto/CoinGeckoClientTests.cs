@@ -8,12 +8,12 @@ public class CoinGeckoClientTests
         """
         [
           { "id": "bitcoin", "symbol": "btc", "name": "Bitcoin",
+            "image": "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png",
             "current_price": 51248.0, "price_change_percentage_24h": -1.52,
-            "market_cap": 1027528382139,
             "sparkline_in_7d": { "price": [50000.0, 50500.0, 51248.0] } },
           { "id": "ethereum", "symbol": "eth", "name": "Ethereum",
             "current_price": null, "price_change_percentage_24h": 0.8,
-            "market_cap": 300000000000, "sparkline_in_7d": { "price": [] } }
+            "sparkline_in_7d": { "price": [] } }
         ]
         """;
 
@@ -29,7 +29,7 @@ public class CoinGeckoClientTests
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://test.local/") };
         var options = Options.Create(new CryptoOptions
         {
-            VsCurrency = "eur",
+            VsCurrency = "usd",
             CoinIds = ["bitcoin", "ethereum"]
         });
 
@@ -46,9 +46,9 @@ public class CoinGeckoClientTests
         Assert.Equal("bitcoin", btc.Id);
         Assert.Equal("BTC", btc.Symbol);
         Assert.Equal("Bitcoin", btc.Name);
-        Assert.Equal(51248m, btc.PriceEur);
+        Assert.Equal(51248m, btc.Price);
         Assert.Equal(-1.52, btc.Change24hPct, precision: 3);
-        Assert.Equal(1027528382139m, btc.MarketCap);
+        Assert.Equal("https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png", btc.ImageUrl);
         Assert.Equal(3, btc.Sparkline7d.Count);
         Assert.Equal(51248.0, btc.Sparkline7d[^1]);
     }
@@ -59,7 +59,7 @@ public class CoinGeckoClientTests
         await CreateClient(out var paths).GetMarketAsync();
 
         var path = Assert.Single(paths);
-        Assert.Contains("vs_currency=eur", path, StringComparison.Ordinal);
+        Assert.Contains("vs_currency=usd", path, StringComparison.Ordinal);
         Assert.Contains("ids=bitcoin%2Cethereum", path, StringComparison.Ordinal);
         Assert.Contains("sparkline=true", path, StringComparison.Ordinal);
     }

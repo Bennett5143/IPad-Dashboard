@@ -8,9 +8,12 @@ public sealed record CoinQuote(
     string Id,
     string Symbol,
     string Name,
-    decimal PriceEur,
+    // Kurs in der konfigurierten Währung (Crypto:VsCurrency). Bewusst ohne Währung im Namen:
+    // ein Feld, das eine Währung behauptet, die es nicht mehr führt, ist ein Fehler in Wartestellung.
+    decimal Price,
     double Change24hPct,
-    decimal? MarketCap,
+    // Logo des Coins beim Anbieter; geladen über den Bild-Proxy, nie direkt vom iPad.
+    string? ImageUrl,
     IReadOnlyList<double?> Sparkline7d)
 {
     /// <summary>24-h-Kursrichtung für Vorzeichen/Farbe.</summary>
