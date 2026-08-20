@@ -10,7 +10,21 @@ and every published image carries an SBOM attestation.
 
 ## Reporting a vulnerability
 
-If you spot a security issue in this repository, please report it via
+If you spot a security issue in this repository, please report it privately via
 [GitHub Security Advisories](../../security/advisories/new)
-("Report a vulnerability"). Reports are read and answered on a best-effort
-basis — this is a hobby project.
+("Report a vulnerability"). Please do not open a public issue for suspected
+vulnerabilities.
+
+## Disclosure process
+
+- **Acknowledgement:** you can expect a first response within **14 days**
+  (best-effort — this is a solo-maintained hobby project).
+- **Assessment:** confirmed issues are fixed on `dev`, verified, and promoted to
+  `main` like any other change; the advisory is updated along the way.
+- **Disclosure:** once a fix is released, the advisory is published through
+  GitHub Security Advisories, crediting the reporter (unless they prefer
+  otherwise). If an issue is declined (e.g. it presumes an internet-facing
+  deployment that this project explicitly does not have), the reasoning is
+  shared in the advisory thread.
+
+There is no bug-bounty program.
