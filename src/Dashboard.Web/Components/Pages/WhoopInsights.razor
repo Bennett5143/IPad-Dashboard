@@ -15,8 +15,9 @@
 
 <PageHeader Title="WHOOP" Meta="@($"LETZTE {WindowDays} TAGE")" />
 
+<FitnessTabs />
+
 <div class="detail-body is-scroll insights">
-    <FitnessTabs />
     @if (!_connected)
     {
         <p class="insights-msg">WHOOP nicht verbunden – <a href="/whoop/connect">jetzt verbinden</a>.</p>

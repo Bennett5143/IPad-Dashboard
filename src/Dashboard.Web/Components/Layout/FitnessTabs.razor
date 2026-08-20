@@ -1,10 +1,12 @@
 @inject NavigationManager Nav
 
-@* Sub-Navigation des Fitness-Bereichs. Sie sitzt im Seiten-Body statt in der Rail, damit
-   die Rail auf jeder Seite gleich hoch und still bleibt; das Tab-Vokabular (.tab-row/.tab)
-   teilt sie sich mit der Wettbewerbs-Zeile auf /football.
+@* Sub-Navigation des Fitness-Bereichs. Sie sitzt zwischen Seitenkopf und Body — nicht in der
+   Rail, damit die auf jeder Seite gleich hoch und still bleibt, und nicht im Body, weil sie dort
+   mit dem Inhalt weggescrollt wäre. Das Tab-Vokabular (.tab-row/.tab) teilt sie sich mit der
+   Wettbewerbs-Zeile auf /football; .area-subnav bringt nur den Innenabstand mit, den sie
+   außerhalb des Bodys nicht mehr erbt.
    Aktiv-Markierung wird selbst berechnet, weil /runs auch /runs/{id} abdecken muss. *@
-<nav class="tab-row" aria-label="Fitness">
+<nav class="tab-row area-subnav" aria-label="Fitness">
     <div class="tab-row-items">
         @foreach (var (href, label) in Area.Fitness)
         {
