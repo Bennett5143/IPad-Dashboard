@@ -29,8 +29,12 @@ COPY src/ src/
 # (liefert _framework/blazor.web.js) nur hinzu, wenn beim Restore .razor-Dateien
 # existieren — im Metadaten-only-Restore oben fehlen sie. Der zweite Restore ist
 # dank des gewärmten NuGet-Caches schnell; der Layer oben bleibt der Cache-Wärmer.
+# RestoreLockedMode: with the full sources present the graph matches the
+# committed lock files (incl. the RID sections), so this restore — the one
+# that feeds the shipped image — is enforced against them.
 RUN dotnet publish src/Dashboard.Web/Dashboard.Web.csproj \
-    --configuration Release --output /app/publish -a $TARGETARCH
+    --configuration Release --output /app/publish -a $TARGETARCH \
+    -p:RestoreLockedMode=true
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:a4556ed033fa96f984bb7a8d348851cb2d36b1281dd2420070045f664fbb5f94 AS runtime
 WORKDIR /app

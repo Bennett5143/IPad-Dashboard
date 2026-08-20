@@ -22,8 +22,8 @@ vulnerabilities.
 - **Assessment:** confirmed issues are fixed on `dev`, verified, and promoted to
   `main` like any other change; the advisory is updated along the way.
 - **Disclosure:** once a fix is released, the advisory is published through
-  GitHub Security Advisories, crediting the reporter (unless they prefer
-  otherwise). If an issue is declined (e.g. it presumes an internet-facing
+  GitHub Security Advisories; the reporter is credited only with their explicit
+  consent, asked for in the advisory thread before publication. If an issue is declined (e.g. it presumes an internet-facing
   deployment that this project explicitly does not have), the reasoning is
   shared in the advisory thread.
 

@@ -9,5 +9,8 @@
     <!-- Reproducible restores: maintain packages.lock.json per project. CI restores
          run with locked mode; plain local restores update the lock files. -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- The RIDs the Docker build cross-compiles for. Keeps the RID-specific graphs
+         in every lock file so the locked publish restore in the Dockerfile works. -->
+    <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 </Project>
