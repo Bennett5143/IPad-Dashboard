@@ -62,6 +62,11 @@ is set in the compose file); quotes are seeded on first run.
   `dashboard-tile-cache`, `dashboard-crest-cache`, `dashboard-logs`. Rebuilding
   or recreating containers keeps all of them.
 - **Health probes**: `GET /health/live` and `GET /health/ready` (checks the DB).
+- **Kiosk full screen**: the app ships a web app manifest (`display: "standalone"`
+  for the presentation mode, `scope: "/"` for the app's URL boundary). iOS reads
+  the manifest **when the home-screen icon is created** and keeps what it read, so
+  after a deploy that changed it the icon must be removed and added again — an
+  existing icon keeps its old behaviour no matter what the server sends.
 
 ## Updating
 

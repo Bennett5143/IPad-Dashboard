@@ -19,7 +19,18 @@
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     @* Kiosk: „Zum Home-Bildschirm" öffnet die Seite als Standalone-Web-App im
-       Vollbild (ohne Safari-Leisten); Status-Bar transparent über dem Papier-Grund. *@
+       Vollbild (ohne Safari-Leisten); Status-Bar transparent über dem Papier-Grund.
+
+       Bis hierher gab es nur die Apple-Meta-Tags und gar kein Manifest. Das Manifest
+       sagt zweierlei: `display: standalone` ist der Darstellungsmodus (Vollbild ohne
+       Browser-Leisten) — dieselbe Aussage wie apple-mobile-web-app-capable, nur im
+       Standard —, und `scope` zieht die Grenze, innerhalb derer eine Navigation als
+       „noch in der App" gilt. Der Scope steht explizit da, obwohl `start_url: "/"`
+       denselben Default ergäbe: die Grenze ist hier der Punkt, um den es geht, und
+       explizit ist sie nicht vom Default abhängig.
+       Achtung beim Prüfen: iOS liest das Manifest beim Anlegen des Icons und merkt
+       es sich, ein bestehendes Icon muss also neu angelegt werden. *@
+    <link rel="manifest" href="site.webmanifest" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
