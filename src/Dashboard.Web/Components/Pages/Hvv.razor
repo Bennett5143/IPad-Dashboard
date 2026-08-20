@@ -7,7 +7,7 @@
 
 <PageTitle>Abfahrten</PageTitle>
 
-<PageHeader Title="Abfahrten" Meta="@($"{_stations.Count} HALTESTELLEN")" />
+<PageHeader Title="Abfahrten" />
 
 <div class="detail-body">
     @if (_stations.Count == 0)
@@ -77,7 +77,7 @@
                     }
                     else
                     {
-                        <div class="hvv-deps @(deps.Count >= DeparturesPerColumn ? "is-full" : null)">
+                        <div class="hvv-deps">
                             @for (var i = 0; i < deps.Count; i++)
                             {
                                 var d = deps[i];
