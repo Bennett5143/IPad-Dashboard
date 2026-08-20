@@ -14,11 +14,11 @@ public class FootballDataClientTests
             { "utcDate": "2026-05-20T15:00:00Z", "status": "FINISHED",
               "competition": { "name": "La Liga", "code": "PD" },
               "homeTeam": { "id": 86, "name": "Real Madrid CF", "shortName": "Real Madrid", "tla": "RMA" },
-              "awayTeam": { "id": 81, "name": "FC Barcelona", "shortName": "Barça", "tla": "FCB" },
+              "awayTeam": { "id": 81, "name": "FC Barcelona", "shortName": "Barça", "tla": "FCB", "crest": "https://crests.football-data.org/81.png" },
               "score": { "fullTime": { "home": 2, "away": 1 } } },
             { "utcDate": "2026-05-24T15:00:00Z", "status": "FINISHED",
               "competition": { "name": "La Liga", "code": "PD" },
-              "homeTeam": { "id": 90, "name": "Real Betis", "shortName": "Betis", "tla": "BET" },
+              "homeTeam": { "id": 90, "name": "Real Betis", "shortName": "Betis", "tla": "BET", "crest": "https://crests.football-data.org/90.png" },
               "awayTeam": { "id": 86, "name": "Real Madrid CF", "shortName": "Real Madrid", "tla": "RMA" },
               "score": { "fullTime": { "home": 3, "away": 1 } } },
             { "utcDate": "2026-06-01T19:00:00Z", "status": "TIMED",
@@ -278,6 +278,21 @@ public class FootballDataClientTests
         // Getrackter Verein trägt sein Wappen auch in der Team-Sicht.
         var madridTeam = snapshot.Teams.Single(t => t.TeamName == "Real Madrid");
         Assert.Equal("https://crests.football-data.org/86.png", madridTeam.CrestUrl);
+    }
+
+    [Fact]
+    public async Task GetFootballAsync_TakesTheOpponentCrestFromTheOtherSide()
+    {
+        // Das Wappen kommt immer von der Gegenseite: zuhause aus awayTeam, auswärts aus homeTeam.
+        // Führt der Anbieter keines, bleibt es null — der Wochenkalender fällt dann auf Text zurück.
+        var snapshot = await CreateClient().GetFootballAsync();
+        var madrid = snapshot.Teams.Single(t => t.TeamName == "Real Madrid");
+
+        Assert.Equal("https://crests.football-data.org/81.png",
+            madrid.RecentResults.Single(m => m.Opponent == "FC Barcelona").OpponentCrestUrl);
+        Assert.Equal("https://crests.football-data.org/90.png",
+            madrid.RecentResults.Single(m => m.Opponent == "Real Betis").OpponentCrestUrl);
+        Assert.Null(madrid.Upcoming.Single(m => m.Opponent == "Valencia CF").OpponentCrestUrl);
     }
 
     [Fact]

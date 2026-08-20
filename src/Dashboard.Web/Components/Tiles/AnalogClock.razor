@@ -1,10 +1,11 @@
 @implements IAsyncDisposable
 @inject IClock Clock
 
-@* e-ink analog clock: hairline face, ink hands, digital HH:MM below (no date).
-   The hands are the ONLY moving element on the paper home. *@
+@* e-ink analog clock: hairline face, ink hands, large digital HH:MM below, a hairline, and a
+   weekday/date row. The hands are the ONLY moving element on the paper home — no flash on the
+   minute change, deliberately. *@
 <div class="analog-clock">
-    <svg class="analog-face" viewBox="0 0 100 100" role="img" aria-label="@_hm Uhr">
+    <svg class="analog-face" viewBox="0 0 100 100" role="img" aria-label="@_display.TimeHm Uhr">
         <circle class="face-rim" cx="50" cy="50" r="47" />
         @for (var i = 0; i < 12; i++)
         {
@@ -21,7 +22,11 @@
               transform="@($"rotate({_second.ToString(Inv)} 50 50)")" />
         <circle class="hand-cap" cx="50" cy="50" r="2.2" />
     </svg>
-    <time class="analog-digital" datetime="@_iso">@_hm</time>
+    <time class="analog-digital" datetime="@_display.Iso">@_display.TimeHm</time>
+    <div class="analog-date">
+        <span class="analog-weekday">@_display.WeekdayShort</span>
+        <span class="analog-datenum">@_display.DateNumeric</span>
+    </div>
 </div>
 
 @code {
@@ -31,7 +36,7 @@
         System.Globalization.CultureInfo.InvariantCulture;
 
     private double _hour, _minute, _second;
-    private string _hm = "", _iso = "";
+    private ClockDisplay _display;
 
     private PeriodicTimer? _timer;
     private Task? _tickerTask;
@@ -46,13 +51,12 @@
 
     private void Recompute()
     {
-        var now = TimeZoneInfo.ConvertTime(Clock.UtcNow, BerlinTz);
-        var t = now.TimeOfDay;
+        var utcNow = Clock.UtcNow;
+        var t = TimeZoneInfo.ConvertTime(utcNow, BerlinTz).TimeOfDay;
         _second = t.Seconds * 6;                          // 360/60
         _minute = t.Minutes * 6 + t.Seconds * 0.1;        // + drift within the minute
         _hour = (t.Hours % 12) * 30 + t.Minutes * 0.5;    // 360/12 + drift within the hour
-        _hm = now.ToString("HH:mm", Inv);
-        _iso = now.ToString("yyyy-MM-ddTHH:mm:sszzz", Inv);
+        _display = ClockFormatter.Format(utcNow, BerlinTz);
     }
 
     private async Task RunTickerAsync(CancellationToken ct)

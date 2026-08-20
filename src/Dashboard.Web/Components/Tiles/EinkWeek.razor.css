@@ -105,6 +105,21 @@
     overflow-wrap: anywhere;
 }
 
+/* Wappenpaar statt Textzeile: heim links, auswärts rechts. Fällt eines der beiden aus,
+   steht wieder .wk-title da — ein halbes Paar sagt weniger als zwei Namen. */
+.wk-crests {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1px;
+}
+
+.wk-crest {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
 /* Der CL-Sammeleintrag ist die Ausnahme des Tages – er darf sich abheben. */
 .wk-entry.is-aggregate .wk-title {
     font-weight: 600;
