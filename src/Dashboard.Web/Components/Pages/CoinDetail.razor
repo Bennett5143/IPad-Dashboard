@@ -93,7 +93,7 @@
     private CoinQuote? Quote => CryptoState.Current?.Coins
         .FirstOrDefault(coin => string.Equals(coin.Id, CoinId, StringComparison.OrdinalIgnoreCase));
 
-    private string? Meta => Quote is null ? null : $"EUR · {Quote.Symbol} · COINGECKO";
+    private string? Meta => Quote is null ? null : $"USD · {Quote.Symbol} · COINGECKO";
 
     protected override void OnInitialized() => CryptoState.Changed += OnChanged;
 
