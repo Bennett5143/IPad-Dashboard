@@ -38,14 +38,28 @@
             }
             else if (_tab == "cl" && _cl is not null)
             {
-                @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
+                @* Ligaphase UND Baum untereinander sprengten die Seitenhöhe, und die Tabelle war das,
+                   was unten abfiel. Zweite Ebene, eine Ansicht zur Zeit — mit denselben Pills wie
+                   die Liga-Auswahl, also ohne neues Vokabular. *@
+                @if (ClPhase is not null && _cl.Bracket is not null)
+                {
+                    <div class="table-filter-pills" role="tablist">
+                        <button class="table-pill @(ClShowsKnockout ? null : "is-active")"
+                                role="tab" aria-selected="@(!ClShowsKnockout)"
+                                @onclick='() => _clView = "phase"'>Ligaphase</button>
+                        <button class="table-pill @(ClShowsKnockout ? "is-active" : null)"
+                                role="tab" aria-selected="@ClShowsKnockout"
+                                @onclick='() => _clView = "knockout"'>K.o.-Runde</button>
+                    </div>
+                }
+
+                @if (!ClShowsKnockout && ClPhase is { } phase)
                 {
                     <TableFilter Tables="@(new[] { phase })" />
                 }
-                @if (_cl.Bracket is not null)
+                else if (_cl.Bracket is not null)
                 {
                     <section class="fb-bracket">
-                        <h2 class="mono-label">K.O.-RUNDE</h2>
                         <KnockoutBracketView Bracket="_cl.Bracket" />
                     </section>
                 }
@@ -74,6 +88,27 @@
     private ChampionsLeague? _cl;
     private IReadOnlyList<TournamentView>? _tournaments;
     private string _tab = "tables";
+
+    /// <summary>Mit welchem Tab die Seite öffnet — die Unterseite /football/news verlinkt hierher
+    /// zurück und sagt dabei, wohin.</summary>
+    [Parameter, SupplyParameterFromQuery(Name = "tab")] public string? TabParameter { get; set; }
+
+    /// <summary>Gewählte CL-Ansicht: <c>null</c> = Vorgabe, sonst „phase" oder „knockout".</summary>
+    private string? _clView;
+
+    /// <summary>Die Ligaphase, solange sie Zeilen hat — sonst nichts.</summary>
+    private LeagueTable? ClPhase => _cl?.LeaguePhase is { Rows.Count: > 0 } phase ? phase : null;
+
+    /// <summary>
+    /// Vorgabe ist die Ligaphase, solange sie Zeilen trägt; danach — in der K.o.-Phase der Saison —
+    /// der Baum. Eine getroffene Wahl schlägt die Vorgabe.
+    /// </summary>
+    private bool ClShowsKnockout => _clView switch
+    {
+        "knockout" => _cl?.Bracket is not null,
+        "phase" => false,
+        _ => ClPhase is null && _cl?.Bracket is not null,
+    };
 
     protected override void OnInitialized()
     {
@@ -115,9 +150,12 @@
         return tabs;
     }
 
-    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab.
+    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab. Ein ?tab= aus der
+    // Rückkehr von /football/news schlägt das, solange es einen Tab benennt, den es gibt.
     private string DefaultTab() =>
-        _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
+        TabParameter is { Length: > 0 } requested && Tabs().Any(t => t.Key == requested)
+            ? requested
+            : _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
 
     private void EnsureValidTab()
     {

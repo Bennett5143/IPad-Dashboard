@@ -507,6 +507,28 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     color: var(--faint);
 }
 
+/* The grade's dot follows the same logic as its rule — filled for the strongest,
+   hollow for the middle, hollow and dashed for the weakest. Never hue. */
+.rs-badge-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    vertical-align: baseline;
+}
+
+.rs-badge-confirmed .rs-badge-dot,
+.rs-badge-flagged .rs-badge-dot {
+    background: currentColor;
+}
+
+.rs-badge-rumour .rs-badge-dot,
+.rs-badge-unknown .rs-badge-dot {
+    border-style: dashed;
+}
+
 /* Not a grade but a warning: this text restates a figure the tooling fetches
    itself. Solid and inked so it reads as "look at this", not as "unsure". */
 .rs-badge-flagged {
