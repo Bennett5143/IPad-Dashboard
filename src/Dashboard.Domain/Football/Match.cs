@@ -18,7 +18,10 @@ public sealed record Match(
     int? OwnGoals,
     int? OpponentGoals,
     int? Matchday = null,
-    string? Stage = null)
+    string? Stage = null,
+    // Wappen des Gegners beim Anbieter; null, wenn er keines führt. Der Wochenkalender stellt
+    // damit die Paarung als Wappenpaar dar — geladen wird es über den /crests-Proxy.
+    string? OpponentCrestUrl = null)
 {
     public bool IsFinished => OwnGoals.HasValue && OpponentGoals.HasValue;
 

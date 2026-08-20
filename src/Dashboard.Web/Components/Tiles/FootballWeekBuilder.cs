@@ -16,13 +16,28 @@ public sealed record FootballWeekEntry(
     string CompetitionCode,
     string? Result,
     bool IsFinished,
-    string? AggregateLabel = null)
+    string? AggregateLabel = null,
+    string? HomeCrestUrl = null,
+    string? AwayCrestUrl = null)
 {
     /// <summary>Ein Champions-League-Spieltag, der mehrere Begegnungen zusammenfasst.</summary>
     public bool IsAggregate => AggregateLabel is not null;
 
     /// <summary>Was in der Tagesspalte steht.</summary>
     public string Title => AggregateLabel ?? $"{TeamName} – {Opponent}";
+
+    /// <summary>Heimverein zuerst — <see cref="Venue"/> hält genau diese Perspektive.</summary>
+    public string HomeName => Venue == "H" ? TeamName : Opponent;
+
+    public string AwayName => Venue == "H" ? Opponent : TeamName;
+
+    /// <summary>
+    /// Nur wenn beide Wappen aufgelöst sind, steht die Paarung als Wappenpaar; sonst fällt die
+    /// Zeile auf den Text zurück. Ein halbes Paar wäre schlechter lesbar als beide Namen.
+    /// </summary>
+    public bool HasCrestPair => !IsAggregate
+        && !string.IsNullOrWhiteSpace(HomeCrestUrl)
+        && !string.IsNullOrWhiteSpace(AwayCrestUrl);
 }
 
 /// <summary>Ein Tag der aktuellen Woche mit seinen Einträgen.</summary>
@@ -63,7 +78,8 @@ public static class FootballWeekBuilder
 
         var week = snapshot.Teams
             .SelectMany(team => team.RecentResults.Concat(team.Upcoming)
-                .Select(match => (Team: team.TeamName, Match: match, Date: BerlinDate(match.KickoffUtc))))
+                .Select(match => (Team: team.TeamName, Crest: team.CrestUrl, Match: match,
+                    Date: BerlinDate(match.KickoffUtc))))
             .Where(x => x.Date >= monday && x.Date <= sunday)
             .ToLookup(x => x.Date);
 
@@ -89,13 +105,14 @@ public static class FootballWeekBuilder
     public static bool HasMatches(IReadOnlyList<FootballWeekDay> week) => week.Any(d => d.Entries.Count > 0);
 
     private static IReadOnlyList<FootballWeekEntry> Entries(
-        IEnumerable<(string Team, Match Match, DateOnly Date)> ofDay, string championsLeagueCode)
+        IEnumerable<(string Team, string? Crest, Match Match, DateOnly Date)> ofDay,
+        string championsLeagueCode)
     {
         var all = ofDay.ToList();
 
         var entries = all
             .Where(x => !IsChampionsLeague(x.Match, championsLeagueCode))
-            .Select(x => ClubEntry(x.Team, x.Match))
+            .Select(x => ClubEntry(x.Team, x.Crest, x.Match))
             .ToList();
 
         var clMatches = all
@@ -115,7 +132,7 @@ public static class FootballWeekBuilder
         !string.IsNullOrWhiteSpace(championsLeagueCode)
         && string.Equals(match.CompetitionCode, championsLeagueCode, StringComparison.OrdinalIgnoreCase);
 
-    private static FootballWeekEntry ClubEntry(string team, Match match) => new(
+    private static FootballWeekEntry ClubEntry(string team, string? teamCrestUrl, Match match) => new(
         match.KickoffUtc,
         Time(match.KickoffUtc),
         team,
@@ -123,7 +140,11 @@ public static class FootballWeekBuilder
         match.IsHome ? "H" : "A",
         match.CompetitionCode,
         match.IsFinished ? $"{match.OwnGoals}:{match.OpponentGoals}" : null,
-        match.IsFinished);
+        match.IsFinished,
+        AggregateLabel: null,
+        // Das Paar steht in Platzreihenfolge, nicht in unserer: heim links, auswärts rechts.
+        HomeCrestUrl: match.IsHome ? teamCrestUrl : match.OpponentCrestUrl,
+        AwayCrestUrl: match.IsHome ? match.OpponentCrestUrl : teamCrestUrl);
 
     /// <summary>
     /// Ein Eintrag für alle CL-Spiele des Tages, benannt nach Spieltag bzw. K.o.-Runde. Die Uhrzeit
