@@ -17,6 +17,19 @@ public sealed class CrestOptions
     /// </summary>
     public IReadOnlyList<string> AllowedHosts { get; init; } = [];
 
+    /// <summary>
+    /// Ersatz-Wappen für Vereine, für die der Anbieter keines führt: Schlüssel ist der Vereinsname
+    /// oder die football-data-Team-Id, Wert die Upstream-URL. Gehört in die gitignored
+    /// <c>appsettings.Local.json</c> — privat, aber kein Geheimnis.
+    /// <para>
+    /// Kein Umgehen der Schranke: eine Override-URL durchläuft dieselbe <see cref="AllowedHosts"/>
+    /// -Prüfung wie jede andere. Sie erspart nur das Warten auf den Anbieter, wenn ein neu
+    /// aufgestiegener Verein sonst ohne Wappen dastünde.
+    /// </para>
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Overrides { get; init; } =
+        new Dictionary<string, string>();
+
     /// <summary>Cache-Verzeichnis (relativ zum ContentRoot oder absolut).</summary>
     public string CacheDirectory { get; init; } = "crest-cache";
 
