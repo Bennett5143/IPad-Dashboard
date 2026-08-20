@@ -103,31 +103,96 @@
     cursor: pointer;
 }
 
-.coin-row.is-expanded {
-    background-color: var(--track);
-}
-
 /* Der aufgeklappte Verlauf: volle Breite, groß genug, um eine Woche wirklich zu lesen. */
-.coin-detail {
+/* Der Verlauf als Popup über der Liste. .dialog aus app.css ist auf 480px ausgelegt — für ein
+   Diagramm zu schmal, deshalb hier breiter. */
+.coin-dialog {
+    width: min(92vw, 720px);
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px 0 16px;
-    border-top: 1px solid var(--rule);
+    gap: 14px;
+    padding: 18px;
 }
 
-.coin-detail ::deep .chart-frame {
-    height: 160px;
+.coin-dialog-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
 }
 
-.coin-detail-link {
-    align-self: flex-start;
+.coin-dialog-head .coin-logo {
+    align-self: center;
+    width: 28px;
+    height: 28px;
+}
+
+.coin-dialog-sym {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--accent);
-    padding: 6px 0;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+}
+
+.coin-dialog-name {
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Der Kurs ist die Zahl, wegen der das Fenster offen ist — er schiebt sich nach rechts. */
+.coin-dialog-price {
+    margin-left: auto;
+    font-family: var(--font-family-mono);
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.coin-dialog-chg {
+    font-family: var(--font-family-mono);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.coin-dialog-chg.up { color: var(--bull); }
+.coin-dialog-chg.down { color: var(--bear); }
+
+.coin-dialog-close {
+    align-self: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--muted);
+}
+
+.coin-dialog-close:active {
+    background: var(--track);
+    color: var(--ink);
+}
+
+.coin-dialog-body {
+    min-height: 0;
+}
+
+.coin-dialog-body ::deep .chart-frame {
+    height: clamp(180px, 34vh, 280px);
+}
+
+/* Die Zeitraum-Zeile schließt das Fenster nach unten ab — Haarlinie oben statt unten. */
+.coin-dialog-ranges {
+    border-bottom: 0;
+    border-top: 1px solid var(--rule);
 }
 
 .coin-head .r,
