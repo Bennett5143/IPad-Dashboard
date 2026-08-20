@@ -15,9 +15,12 @@
     -webkit-touch-callout: none;
     overscroll-behavior: none;
 
-    /* Safe-Area-Insets für PWA-Standalone-Mode (Phase 6).
-       Schadet jetzt nicht, ist aber später beim Vollbild relevant. */
-    padding-top:    env(safe-area-inset-top);
+    /* Safe-Area-Insets für den Standalone-Modus. Oben mit Untergrenze: die iOS-Statusleiste
+       (Uhr, WLAN, Akku) lässt sich in einer Web-App nicht abschalten, und auf einem Gerät ohne
+       Notch — dem iPad 6 — meldet iOS dafür trotzdem `0px`, weil „safe area" Notch und
+       Home-Indicator meint, nicht die Statusleiste. Ohne die 20px läge sie also auf dem Inhalt.
+       Wo iOS mehr meldet (Notch-Geräte), gewinnt env(). */
+    padding-top:    max(env(safe-area-inset-top), 20px);
     padding-right:  env(safe-area-inset-right);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left:   env(safe-area-inset-left);
