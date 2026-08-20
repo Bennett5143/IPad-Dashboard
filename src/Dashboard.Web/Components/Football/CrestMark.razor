@@ -1,0 +1,22 @@
+@* Wappen eines Vereins — oder, wenn keines auflösbar ist, seine Ersatzmarke: das Kürzel auf
+   --track. Keine Zeile bleibt ohne Zeichen, sonst rutscht der Name in das Loch, das die anderen
+   Zeilen mit dem Wappen füllen. Geladen wird über den /crests-Proxy (Offline-Kiosk). *@
+@if (FootballFormatter.CrestSrc(Url) is { } src)
+{
+    <img class="crest-mark" src="@src" alt="" width="18" height="18" loading="lazy" />
+}
+else
+{
+    <span class="crest-mark is-fallback" aria-hidden="true">@FootballFormatter.CrestFallback(ShortCode, Name)</span>
+}
+
+@code {
+    /// <summary>Upstream-URL des Wappens; <c>null</c> oder leer führt zur Ersatzmarke.</summary>
+    [Parameter] public string? Url { get; set; }
+
+    /// <summary>Kürzel des Vereins (TLA), falls der Anbieter eines führt.</summary>
+    [Parameter] public string? ShortCode { get; set; }
+
+    /// <summary>Vereinsname — Rückfall für die Marke, wenn auch das Kürzel fehlt.</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
+}

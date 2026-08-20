@@ -69,4 +69,19 @@ public static class FootballFormatter
     /// </summary>
     public static string? CrestSrc(string? crestUrl) =>
         string.IsNullOrWhiteSpace(crestUrl) ? null : $"/crests?u={Uri.EscapeDataString(crestUrl)}";
+
+    /// <summary>
+    /// Kürzel für die Ersatzmarke, wenn kein Wappen auflösbar ist: das Kürzel des Anbieters, sonst
+    /// die ersten beiden Buchstaben des Vereinsnamens. Nie eine leere Marke, solange ein Name da ist.
+    /// </summary>
+    public static string CrestFallback(string? shortCode, string? name)
+    {
+        if (!string.IsNullOrWhiteSpace(shortCode))
+        {
+            return shortCode.Trim().ToUpperInvariant();
+        }
+
+        var letters = (name ?? string.Empty).Where(char.IsLetter).Take(2).ToArray();
+        return new string(letters).ToUpperInvariant();
+    }
 }

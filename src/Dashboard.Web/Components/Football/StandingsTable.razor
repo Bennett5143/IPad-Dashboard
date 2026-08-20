@@ -20,10 +20,7 @@
                 <td class="num">@row.Position</td>
                 <td>
                     <span class="team-cell">
-                        @if (ShowCrests && FootballFormatter.CrestSrc(row.CrestUrl) is { } src)
-                        {
-                            <img class="team-crest" src="@src" alt="" width="18" height="18" loading="lazy" />
-                        }
+                        <CrestMark Url="@row.CrestUrl" ShortCode="@row.ShortCode" Name="@row.TeamName" />
                         <span class="team-name">@row.TeamName</span>
                     </span>
                 </td>
@@ -40,9 +37,6 @@
 
 @code {
     [Parameter, EditorRequired] public LeagueTable Table { get; set; } = default!;
-
-    /// <summary>Wappen vor dem Vereinsnamen zeigen (über den /crests-Proxy).</summary>
-    [Parameter] public bool ShowCrests { get; set; } = true;
 
     /// <summary>Die beiden letzten Plätze als Abstiegsplätze markieren. Nur für echte Ligatabellen —
     /// in einer Vierergruppe eines Turniers gibt es keinen Abstieg, deshalb entscheidet der Aufrufer.</summary>

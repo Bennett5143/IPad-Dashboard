@@ -1,0 +1,22 @@
+/* Wappen und Ersatzmarke belegen dieselbe Fläche, damit die Namen einer Tabelle auf einer
+   Kante stehen — unabhängig davon, ob der Anbieter ein Wappen führt. Die Größe kommt vom
+   Aufrufer über ::deep, wenn 18px nicht passt. */
+.crest-mark {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    object-fit: contain;
+}
+
+.crest-mark.is-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    background: var(--track);
+    color: var(--muted);
+    font-family: var(--font-family-mono);
+    font-size: 8px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
