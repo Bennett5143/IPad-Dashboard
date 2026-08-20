@@ -1,3 +1,5 @@
+using Dashboard.Infrastructure.Crests;
+
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -72,7 +74,8 @@ public class FootballCupAssemblyTests
 
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://test.local/") };
         return new FootballDataClient(
-            http, new FakeClock { UtcNow = NowUtc }, Options.Create(options), NullLogger<FootballDataClient>.Instance);
+            http, new FakeClock { UtcNow = NowUtc }, Options.Create(options),
+            Options.Create(new CrestOptions()), NullLogger<FootballDataClient>.Instance);
     }
 
     [Fact]

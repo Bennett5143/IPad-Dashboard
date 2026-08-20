@@ -20,17 +20,13 @@
         }
 
         <section class="tf-table">
-            <h2 class="tf-heading">@Heading(Current)</h2>
-            <StandingsTable Table="Current" ShowCrests="ShowCrests" MarkRelegation="MarkRelegation" />
+            <StandingsTable Table="Current" MarkRelegation="MarkRelegation" />
         </section>
     </div>
 }
 
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<LeagueTable> Tables { get; set; } = [];
-
-    /// <summary>Wappen in der gezeigten Tabelle ein-/ausblenden (durchgereicht an StandingsTable).</summary>
-    [Parameter] public bool ShowCrests { get; set; } = true;
 
     /// <summary>Abstiegsplätze markieren (durchgereicht an StandingsTable).</summary>
     [Parameter] public bool MarkRelegation { get; set; }
@@ -48,20 +44,21 @@
         }
     }
 
-    // Kompaktes Pill-Label: Liga-Kürzel (PL/PD/…) bzw. der letzte Token eines Gruppennamens (A/B/…).
+    // Pill-Label: der ausgeschriebene Wettbewerbsname, wo der Code einen hat („PD" → „La Liga").
+    // Turnier-Gruppen behalten ihre Kurzform (A/B/…) — dort IST der letzte Token der Name.
     private static string PillLabel(LeagueTable table)
     {
         if (!string.IsNullOrEmpty(table.Code) && table.Code.Length <= 4 && !table.Code.Contains(' '))
         {
-            return table.Code;
+            var written = FootballFormatter.Competition(table.Code);
+            if (written != table.Code)
+            {
+                return written;
+            }
         }
 
         var name = string.IsNullOrWhiteSpace(table.Name) ? table.Code : table.Name;
         var last = name.Split(' ', '_', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
         return string.IsNullOrEmpty(last) ? name : last;
     }
-
-    // Überschrift: der volle Wettbewerbs-/Gruppenname; für Liga-Codes das lesbare Label.
-    private static string Heading(LeagueTable table) =>
-        string.IsNullOrWhiteSpace(table.Name) ? FootballFormatter.Competition(table.Code) : table.Name;
 }

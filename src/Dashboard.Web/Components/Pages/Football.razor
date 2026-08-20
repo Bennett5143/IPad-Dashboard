@@ -6,7 +6,7 @@
 
 <PageTitle>Fußball</PageTitle>
 
-<PageHeader Title="Fußball" Meta="BUNDESLIGA" />
+<PageHeader Title="Fußball" />
 
 <div class="detail-body">
     <div class="tab-row" role="tablist">
@@ -21,10 +21,6 @@
         </div>
         @* The news subpage is fed by the research tooling, not by football-data. *@
         <a class="tab fb-toggle" href="/football/news">Nachrichten</a>
-        <button class="tab fb-toggle" @onclick="() => _showCrests = !_showCrests"
-                title="Vereinswappen / Flaggen ein- oder ausblenden">
-            Wappen @(_showCrests ? "an" : "aus")
-        </button>
     </div>
 
     <div class="fb-body">
@@ -33,7 +29,7 @@
             {
                 @if (_tables is { Count: > 0 })
                 {
-                    <TableFilter Tables="_tables" ShowCrests="_showCrests" MarkRelegation="true" />
+                    <TableFilter Tables="_tables" MarkRelegation="true" />
                 }
                 else
                 {
@@ -44,13 +40,13 @@
             {
                 @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
                 {
-                    <TableFilter Tables="@(new[] { phase })" ShowCrests="_showCrests" />
+                    <TableFilter Tables="@(new[] { phase })" />
                 }
                 @if (_cl.Bracket is not null)
                 {
                     <section class="fb-bracket">
                         <h2 class="mono-label">K.O.-RUNDE</h2>
-                        <KnockoutBracketView Bracket="_cl.Bracket" ShowCrests="_showCrests" />
+                        <KnockoutBracketView Bracket="_cl.Bracket" />
                     </section>
                 }
             }
@@ -58,13 +54,13 @@
             {
                 @if (tournament.Groups.Count > 0)
                 {
-                    <TableFilter Tables="tournament.Groups" ShowCrests="_showCrests" />
+                    <TableFilter Tables="tournament.Groups" />
                 }
                 @if (tournament.Bracket is not null)
                 {
                     <section class="fb-bracket">
                         <h2 class="mono-label">K.O.-RUNDE</h2>
-                        <KnockoutBracketView Bracket="tournament.Bracket" ShowCrests="_showCrests" />
+                        <KnockoutBracketView Bracket="tournament.Bracket" />
                     </section>
                 }
             }
@@ -78,7 +74,6 @@
     private ChampionsLeague? _cl;
     private IReadOnlyList<TournamentView>? _tournaments;
     private string _tab = "tables";
-    private bool _showCrests = true;
 
     protected override void OnInitialized()
     {
