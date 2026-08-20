@@ -12,9 +12,17 @@
 
 <PageTitle>Marktbericht</PageTitle>
 
-<PageHeader Title="Marktbericht" Meta="@Meta">
+<PageHeader Title="Marktbericht">
     <span class="mono-label" id="@CounterId"></span>
 </PageHeader>
+
+@* Ohne diese Zeile führt von hier kein Weg zurück außer über das Rail-Icon. *@
+<nav class="tab-row area-subnav" aria-label="Krypto">
+    <div class="tab-row-items">
+        <a class="tab" href="/crypto">Kurse</a>
+        <a class="tab is-active" href="/crypto/market" aria-current="page">Marktbericht</a>
+    </div>
+</nav>
 
 <div class="detail-body">
     @if (_report is null)
@@ -30,26 +38,7 @@
     }
     else
     {
-        @if (_report.Situation is { } situation)
-        {
-            <section class="rs-situation-block">
-                <h2 class="mono-label">DIE LAGE</h2>
-                @if (situation.FiguresFlagged)
-                {
-                    <p class="rs-disclaimer">
-                        Dieser Text gibt eine Zahl wieder, die das Tooling selbst abgerufen hat.
-                    </p>
-                }
-                <p class="rs-situation">@situation.Body</p>
-                <p class="rs-source">@CorpusMeta(situation)</p>
-            </section>
-        }
-
-        @if (_report.Events.Count > 0)
-        {
-            <h2 class="mono-label rs-deck-heading">BEMERKENSWERT</h2>
-            <NewsDeck Items="_deck" CounterElementId="@CounterId" />
-        }
+        <NewsDeck Items="_deck" CounterElementId="@CounterId" />
     }
 </div>
 
@@ -65,41 +54,9 @@
     /// </summary>
     private bool HasContent => _report is { } report && (report.Situation is not null || report.Events.Count > 0);
 
-    private string? Meta => _report?.LastUpdated is { } stamp
-        ? $"STAND {stamp.ToLocalTime():dd.MM. HH:mm}"
-        : null;
-
     protected override async Task OnInitializedAsync()
     {
         _report = await Research.GetMarketReportAsync();
         _deck = MarketReportViewBuilder.Build(_report);
-    }
-
-    /// <summary>
-    /// Which issues the paragraph was drawn from. It carries no single date —
-    /// it is written from a whole window — so the window is what makes its age
-    /// visible.
-    /// </summary>
-    private static string CorpusMeta(MarketSituation situation)
-    {
-        var parts = new List<string>();
-        if (situation.IssueCount > 0)
-        {
-            parts.Add($"{situation.IssueCount} Ausgaben");
-        }
-
-        if (situation.NewsletterCount > 0)
-        {
-            parts.Add($"{situation.NewsletterCount} Newsletter");
-        }
-
-        if (situation is { CorpusFrom: { } from, CorpusTo: { } to })
-        {
-            parts.Add(from == to
-                ? from.ToString("dd.MM.yyyy")
-                : $"{from:dd.MM.} – {to:dd.MM.yyyy}");
-        }
-
-        return parts.Count == 0 ? "" : "Aus " + string.Join(", ", parts);
     }
 }

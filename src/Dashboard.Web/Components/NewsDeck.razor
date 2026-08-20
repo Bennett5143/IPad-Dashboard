@@ -51,7 +51,12 @@ else
                     </div>
 
                     <div class="deck-body">
-                        <h3 class="deck-headline">@item.Headline</h3>
+                        @* Nicht jede Meldung hat eine Schlagzeile — die Marktlage ist ein Absatz.
+                           Eine leere Überschrift ließe nur eine Lücke stehen. *@
+                        @if (!string.IsNullOrWhiteSpace(item.Headline))
+                        {
+                            <h3 class="deck-headline">@item.Headline</h3>
+                        }
                         <p class="deck-summary">@item.Summary</p>
 
                         @if (!string.IsNullOrWhiteSpace(item.Source))
