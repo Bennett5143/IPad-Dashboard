@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Dashboard.Tests.Components.Tiles;
 
 public class SparklineGeometryTests
@@ -43,4 +45,74 @@ public class SparklineGeometryTests
         Assert.Equal(string.Empty, SparklineGeometry.ToAreaPolygonPoints([5d], 120, 32));
         Assert.Equal(string.Empty, SparklineGeometry.ToAreaPolygonPoints([null, 5d], 120, 32));
     }
+
+    // ---- Weiche Kurve (Catmull-Rom → kubische Béziers, geklemmt) --------------------------
+
+    [Fact]
+    public void Smooth_ReturnsEmpty_ForFewerThanTwoPresentValues()
+    {
+        Assert.Equal(string.Empty, SparklineGeometry.ToSmoothPath([5d], 120, 32));
+        Assert.Equal(string.Empty, SparklineGeometry.ToSmoothPath([null, null], 120, 32));
+        Assert.Equal(string.Empty, SparklineGeometry.ToSmoothPath([null, 5d], 120, 32));
+    }
+
+    [Fact]
+    public void Smooth_DrawsCurveSegments_NotStraightLines()
+    {
+        var path = SparklineGeometry.ToSmoothPath([0d, 10d, 4d, 8d], 120, 32);
+
+        Assert.StartsWith("M", path, StringComparison.Ordinal);
+        Assert.Equal(3, path.Count(c => c == 'C'));   // drei Segmente, je eine kubische Bézier
+        Assert.DoesNotContain('L', path);
+    }
+
+    [Fact]
+    public void Smooth_KeepsEndpointsOnTheData()
+    {
+        // Wie bei der Polyline: min unten (y=30), max oben (y=2) – die Glättung verschiebt die
+        // Datenpunkte selbst nicht, sie liegen weiter auf der Kurve.
+        var path = SparklineGeometry.ToSmoothPath([0d, 10d, 5d], 120, 32, pad: 2);
+
+        Assert.StartsWith("M2,30 ", path, StringComparison.Ordinal);
+        Assert.EndsWith(" 118,16", path, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(new[] { 0d, 2d, 10d, 2d, 0d })]      // Spitze in der Mitte
+    [InlineData(new[] { 10d, 8d, 0d, 8d, 10d })]     // Senke in der Mitte
+    [InlineData(new[] { 0d, 9d, 1d, 10d, 2d })]      // Zickzack
+    public void Smooth_NeverOvershootsTheData(double[] values)
+    {
+        // Eine überschwingende Kurve zeichnete ein Maximum, das die Reihe nie hatte. Jede kubische
+        // Bézier liegt in der konvexen Hülle ihrer vier Punkte — es genügt also zu prüfen, dass
+        // kein Kontrollpunkt aus dem Wertebereich läuft.
+        var path = SparklineGeometry.ToSmoothPath(values.Select(v => (double?)v).ToList(), 120, 32, pad: 2);
+
+        var ys = path.Split(new[] { ' ', 'M', 'C' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(pair => double.Parse(pair.Split(',')[1], CultureInfo.InvariantCulture));
+
+        Assert.All(ys, y => Assert.InRange(y, 2 - Tolerance, 30 + Tolerance));
+    }
+
+    [Fact]
+    public void Smooth_BreaksTheLineAtAGap()
+    {
+        // Eine Lücke wird nicht überbrückt: jede zusammenhängende Folge ist ein eigener Teilpfad.
+        var path = SparklineGeometry.ToSmoothPath([0d, 5d, null, 8d, 10d], 120, 32);
+
+        Assert.Equal(2, path.Count(c => c == 'M'));
+    }
+
+    [Fact]
+    public void Smooth_DropsARunTooShortToDraw()
+    {
+        // Ein einzelner Wert zwischen zwei Lücken ist keine Linie – er wird übergangen, nicht
+        // an die Nachbarn angeschlossen.
+        var path = SparklineGeometry.ToSmoothPath([0d, 5d, null, 8d, null, 2d, 4d], 120, 32);
+
+        Assert.Equal(2, path.Count(c => c == 'M'));
+    }
+
+    /// <summary>Die Pfadwerte sind auf zwei Nachkommastellen gerundet.</summary>
+    private const double Tolerance = 0.01;
 }
