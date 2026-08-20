@@ -35,14 +35,14 @@ public class MarketReportViewBuilderTests
         new([], Situation(), events);
 
     [Fact]
-    public void Build_HeaderCarriesCategoryAgreementAndDate()
+    public void Build_FillsTheBarAndTheMetaRow()
     {
-        var deck = MarketReportViewBuilder.Build(
-            Report(Event(issueDate: new DateOnly(2026, 8, 12))));
+        var item = Assert.Single(MarketReportViewBuilder.Build(
+            Report(Event(issueDate: new DateOnly(2026, 8, 12)))));
 
-        Assert.Equal(
-            ["Zinsentscheid", "2 von 4", "Ausgabe 12.08."],
-            Assert.Single(deck).HeaderParts);
+        Assert.Equal("Zinsentscheid", item.Eyebrow);        // Kopfleiste links
+        Assert.Equal("2 von 4", item.EyebrowRight);         // Kopfleiste rechts
+        Assert.Equal("Ausgabe 12.08.", item.Date);
     }
 
     [Fact]
@@ -51,15 +51,15 @@ public class MarketReportViewBuilderTests
         var deck = MarketReportViewBuilder.Build(
             Report(Event(eventDate: new DateOnly(2026, 8, 9))));
 
-        Assert.Contains("09.08.", Assert.Single(deck).HeaderParts);
+        Assert.Equal("09.08.", Assert.Single(deck).Date);
     }
 
     [Fact]
     public void Build_MarksACheckedFigure()
     {
-        var deck = MarketReportViewBuilder.Build(Report(Event(figuresFlagged: true)));
-
-        Assert.Contains("Zahl geprüft", Assert.Single(deck).HeaderParts);
+        Assert.Equal("Zahl geprüft",
+            Assert.Single(MarketReportViewBuilder.Build(Report(Event(figuresFlagged: true)))).Category);
+        Assert.Null(Assert.Single(MarketReportViewBuilder.Build(Report(Event()))).Category);
     }
 
     /// <summary>Mehr als eine Publikation zum selben Ereignis ist das Signal; eine ist keins.</summary>
@@ -81,7 +81,7 @@ public class MarketReportViewBuilderTests
 
         var item = Assert.Single(deck);
         Assert.Null(item.Badge);
-        Assert.DoesNotContain(item.HeaderParts, part => part.Contains("von", StringComparison.Ordinal));
+        Assert.Null(item.EyebrowRight);
     }
 
     /// <summary>

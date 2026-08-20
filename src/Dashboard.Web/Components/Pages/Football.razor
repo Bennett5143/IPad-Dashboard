@@ -89,6 +89,10 @@
     private IReadOnlyList<TournamentView>? _tournaments;
     private string _tab = "tables";
 
+    /// <summary>Mit welchem Tab die Seite öffnet — die Unterseite /football/news verlinkt hierher
+    /// zurück und sagt dabei, wohin.</summary>
+    [Parameter, SupplyParameterFromQuery(Name = "tab")] public string? TabParameter { get; set; }
+
     /// <summary>Gewählte CL-Ansicht: <c>null</c> = Vorgabe, sonst „phase" oder „knockout".</summary>
     private string? _clView;
 
@@ -146,9 +150,12 @@
         return tabs;
     }
 
-    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab.
+    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab. Ein ?tab= aus der
+    // Rückkehr von /football/news schlägt das, solange es einen Tab benennt, den es gibt.
     private string DefaultTab() =>
-        _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
+        TabParameter is { Length: > 0 } requested && Tabs().Any(t => t.Key == requested)
+            ? requested
+            : _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
 
     private void EnsureValidTab()
     {
