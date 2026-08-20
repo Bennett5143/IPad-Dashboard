@@ -9,6 +9,7 @@
 @inject IWhoopTokenStore Tokens
 @inject IRunRepository RunRepo
 @inject IClock Clock
+@inject ILogger<WhoopInsights> Log
 
 <PageTitle>WHOOP – Auswertungen</PageTitle>
 
@@ -346,7 +347,11 @@
 
         <section class="wi-section">
             <h2>Läufe nach Recovery</h2>
-            @if (_runs.Count == 0)
+            @if (_runsUnavailable)
+            {
+                <p class="insights-msg">WHOOP gerade nicht erreichbar – Trainings dieser Woche fehlen.</p>
+            }
+            else if (_runs.Count == 0)
             {
                 <p class="insights-msg">Keine Läufe im Zeitraum.</p>
             }
@@ -395,6 +400,7 @@
     private WhoopSnapshot? _whoop;
     private IReadOnlyList<WhoopMetricCard> _cards = [];
     private IReadOnlyList<WhoopRunRow> _runs = [];
+    private bool _runsUnavailable;
     private WhoopSleepNight? _night;
     private IReadOnlyList<TimeOfDayCard> _todCards = [];
     private TimeOfDayMatrix? _todMatrix;
@@ -428,6 +434,25 @@
 
     public void Dispose() => WhoopState.Changed -= OnWhoopChanged;
 
+    /// <summary>
+    /// Führt einen Live-Aufruf gegen die WHOOP-API aus und gibt bei einem Fehler <c>null</c>
+    /// zurück, statt ihn nach oben zu werfen. Das hält die Invariante ein, dass eine fremde
+    /// API den Renderpfad nicht mitreißt: der aufrufende Abschnitt meldet sich als nicht
+    /// verfügbar, die Seite bleibt stehen.
+    /// </summary>
+    private async Task<IReadOnlyList<T>?> TryLiveAsync<T>(Func<Task<IReadOnlyList<T>>> call)
+    {
+        try
+        {
+            return await call();
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning(ex, "WHOOP-Live-Aufruf fehlgeschlagen – letzte Daten bleiben erhalten.");
+            return null;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         WhoopState.Changed += OnWhoopChanged;
@@ -451,13 +476,17 @@
             var history = await Metrics.GetRangeAsync(today.AddDays(-WindowDays), today);
             if (history.Count == 0)
             {
-                history = await Whoop.GetHistoryAsync(from, now);
+                history = await TryLiveAsync(() => Whoop.GetHistoryAsync(from, now)) ?? history;
             }
 
-            var workouts = await Whoop.GetWorkoutsAsync(from, now);
             _cards = WhoopInsightsBuilder.BuildCards(history);
             _night = WhoopInsightsBuilder.BuildSleepNight(history);
-            _runs = WhoopInsightsBuilder.BuildRuns(workouts, history);
+
+            // Einziger Live-Aufruf im Renderpfad: schlägt er fehl, kostet das diesen einen
+            // Abschnitt – alle Auswertungen darunter lesen aus der Datenbank und bleiben stehen.
+            var workouts = await TryLiveAsync(() => Whoop.GetWorkoutsAsync(from, now));
+            _runsUnavailable = workouts is null;
+            _runs = workouts is null ? [] : WhoopInsightsBuilder.BuildRuns(workouts, history);
 
             // Tageszeit- und Schlafenszeiten-Auswertungen über die persistierte Historie
             // (FA-10.01/10.03) – bewusst kein Live-Fallback: ein Jahr je Reload wäre
