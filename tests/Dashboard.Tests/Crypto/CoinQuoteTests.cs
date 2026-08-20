@@ -8,7 +8,7 @@ public class CoinQuoteTests
     [InlineData(0.0, MarketMood.Neutral)]
     public void Direction_FollowsSignOfChange(double change, MarketMood expected)
     {
-        var coin = new CoinQuote("bitcoin", "BTC", "Bitcoin", 50000m, change, null, []);
+        var coin = new CoinQuote("bitcoin", "BTC", "Bitcoin", 50000m, change, ImageUrl: null, []);
 
         Assert.Equal(expected, coin.Direction);
     }
@@ -16,8 +16,8 @@ public class CoinQuoteTests
     [Fact]
     public void Summary_PrefersConfiguredId_FallsBackToFirst()
     {
-        var btc = new CoinQuote("bitcoin", "BTC", "Bitcoin", 50000m, 1, 2m, []);
-        var eth = new CoinQuote("ethereum", "ETH", "Ethereum", 3000m, 1, 1m, []);
+        var btc = new CoinQuote("bitcoin", "BTC", "Bitcoin", 50000m, 1, ImageUrl: null, []);
+        var eth = new CoinQuote("ethereum", "ETH", "Ethereum", 3000m, 1, ImageUrl: null, []);
 
         var bySummary = new CryptoSnapshot([eth, btc], null, "bitcoin", default);
         Assert.Same(btc, bySummary.Summary);

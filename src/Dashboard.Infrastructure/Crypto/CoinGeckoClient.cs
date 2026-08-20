@@ -127,7 +127,7 @@ public sealed class CoinGeckoClient : ICryptoMarketProvider, ICryptoHistoryProvi
         m.Name,
         m.CurrentPrice ?? 0m,
         m.PriceChangePercentage24h ?? 0d,
-        m.MarketCap,
+        string.IsNullOrWhiteSpace(m.Image) ? null : m.Image,
         m.Sparkline?.Price is { } prices
             ? prices.Select(static p => (double?)p).ToList()
             : []);

@@ -1,6 +1,6 @@
 namespace Dashboard.Infrastructure.Crests;
 
-/// <summary>Konfiguration des Wappen-/Flaggen-Proxys (<c>/crests</c>).</summary>
+/// <summary>Konfiguration des Bild-Proxys (<c>/crests</c>) — Wappen, Flaggen und Coin-Logos.</summary>
 public sealed class CrestOptions
 {
     public const string SectionName = "Crests";
