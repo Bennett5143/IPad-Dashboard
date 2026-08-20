@@ -1,13 +1,17 @@
+/* Face, digital time, hairline, weekday/date row — stacked, block-wide. */
 .analog-clock {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
 }
 
 .analog-face {
-    width: clamp(72px, 8vw, 96px);
-    height: clamp(72px, 8vw, 96px);
+    width: clamp(120px, 14vw, 168px);
+    height: clamp(120px, 14vw, 168px);
+    flex: none;
 }
 
 .face-rim {
@@ -27,7 +31,8 @@
     stroke-width: 1.8;
 }
 
-/* Hands are ink — motion carries the "alive" signal, not color. */
+/* Hands are ink — motion carries the "alive" signal, not color. The second hand
+   is the thinnest and quietest of the three. */
 .hand {
     stroke: var(--ink);
     stroke-linecap: round;
@@ -35,17 +40,38 @@
 
 .hand--hour   { stroke-width: 2.6; }
 .hand--minute { stroke-width: 1.8; }
-.hand--second { stroke-width: 0.9; }
+.hand--second { stroke-width: 0.9; stroke: var(--faint); }
 
 .hand-cap {
     fill: var(--ink);
 }
 
+/* The reference sets the time in a light 76px face; here it is the base family at
+   weight 400 with the same tight tracking. */
 .analog-digital {
-    font-family: var(--font-family-mono);
-    font-size: clamp(1.5rem, 2.6vw, 2rem);
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    font-family: var(--font-family-base);
+    font-size: clamp(3rem, 6vw, 4.75rem);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 1;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
+
+.analog-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
+
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.analog-weekday { color: var(--ink); }
+.analog-datenum { color: var(--muted); font-variant-numeric: tabular-nums; }

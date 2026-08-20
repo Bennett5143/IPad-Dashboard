@@ -29,6 +29,23 @@ public class ClockFormatterTests
         Assert.Equal("Di, 19.05.2026", result.Date);
     }
 
+    [Theory]
+    [InlineData("2026-05-18T12:00:00+00:00", "MO", "18.05.2026")]
+    [InlineData("2026-05-19T12:00:00+00:00", "DI", "19.05.2026")]
+    [InlineData("2026-05-24T12:00:00+00:00", "SO", "24.05.2026")]
+    public void Format_RendersTwoLetterWeekdayAndNumericDate(
+        string utcInput, string expectedWeekday, string expectedDate)
+    {
+        // Die Uhr auf der Startseite setzt den Wochentag zweibuchstabig links und das
+        // numerische Datum rechts – beide kommen aus dieser Stelle.
+        var utc = DateTimeOffset.Parse(utcInput);
+
+        var result = ClockFormatter.Format(utc, BerlinTz);
+
+        Assert.Equal(expectedWeekday, result.WeekdayShort);
+        Assert.Equal(expectedDate, result.DateNumeric);
+    }
+
     [Fact]
     public void Format_HandlesDayBoundaryCrossing()
     {
