@@ -10,11 +10,11 @@
 
 @* Ein Ort zur Zeit, in fester Ansicht. Die Karte lässt sich nicht verschieben und nicht zoomen:
    auf dem offline iPad liegen nur die Kacheln der Orts-Ausschnitte vor, eine bewegliche Karte
-   liefe zwangsläufig in graue Flächen. Der Slider wählt den Ort. *@
+   liefe zwangsläufig in graue Flächen. Der Stepper wählt den Ort. *@
 
 <PageTitle>Lauf-Heatmap</PageTitle>
 
-<PageHeader Title="Lauf-Heatmap" Meta="@MetaText" />
+<PageHeader Title="Lauf-Heatmap" />
 
 <FitnessTabs />
 
@@ -34,13 +34,14 @@
     else
     {
         <div class="heatmap-controls">
-            <div class="place-slider">
-                <input type="range" min="0" max="@(_places.Count - 1)" step="1" value="@_index"
-                       aria-label="Ort" @onchange="OnSliderAsync" />
-                <div class="place-slider-head">
-                    <span class="place-slider-name">@Current.Name</span>
-                    <span class="mono-label">@Current.RunCount ORTE-LÄUFE · @(_index + 1)/@_places.Count</span>
-                </div>
+            @* Zyklisch: hinter dem letzten Ort kommt der erste. Ein Positionszähler stünde dazu
+               im Widerspruch — er suggerierte ein Ende, das es nicht gibt. *@
+            <div class="place-stepper">
+                <button class="place-step" @onclick="() => StepAsync(-1)"
+                        aria-label="Vorheriger Ort">‹</button>
+                <span class="place-name">@Current.Name</span>
+                <button class="place-step" @onclick="() => StepAsync(1)"
+                        aria-label="Nächster Ort">›</button>
             </div>
 
             <div class="heatmap-stats">
@@ -63,7 +64,6 @@
         <div id="heatmap-map" class="heatmap-map"></div>
 
         <p class="heatmap-legend">@LegendText</p>
-        <p class="heatmap-hint">Tipp auf eine Route zeigt Lauf-Details.</p>
         <p class="sync-info">@SyncInfo</p>
     }
     </div>
@@ -143,14 +143,19 @@
         _stats = RunStatsCalculator.Calculate(_runs);
     }
 
-    private async Task OnSliderAsync(ChangeEventArgs args)
+    /// <summary>
+    /// Einen Ort weiter oder zurück, zyklisch: der Modulo holt die Liste an beiden Enden wieder
+    /// ein. Bei einem einzigen Ort passiert nichts — dann ist der Nachbar er selbst.
+    /// </summary>
+    private async Task StepAsync(int offset)
     {
-        if (!int.TryParse(args.Value?.ToString(), out var index) || index == _index)
+        var next = ((_index + offset) % _places.Count + _places.Count) % _places.Count;
+        if (next == _index)
         {
             return;
         }
 
-        _index = Math.Clamp(index, 0, _places.Count - 1);
+        _index = next;
         await LoadRunsAsync();
         await RenderMapAsync();
     }
@@ -192,10 +197,6 @@
     }
 
     private string LayerCss(string layer) => layer == _layer ? "is-active" : string.Empty;
-
-    private string MetaText => _places.Count == 0
-        ? "KEINE ORTE"
-        : Current.Name.ToUpperInvariant();
 
     private string LegendText => _layer switch
     {
