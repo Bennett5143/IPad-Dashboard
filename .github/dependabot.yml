@@ -41,3 +41,15 @@ updates:
       actions-all:
         patterns:
           - "*"
+
+  # Bumps the digest-pinned base images in the Dockerfile. This is what drives
+  # base-image freshness (and shrinks the Grype findings) — each update lands
+  # as a reviewable PR through dev.
+  - package-ecosystem: "docker"
+    directory: "/"
+    target-branch: "dev"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(deps)"
