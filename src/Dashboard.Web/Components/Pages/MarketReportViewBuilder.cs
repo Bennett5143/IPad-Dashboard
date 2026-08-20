@@ -12,34 +12,18 @@ public static class MarketReportViewBuilder
     public static IReadOnlyList<NewsDeckItem> Build(MarketReport report) =>
         report.Events.Select(marketEvent => ToDeckItem(marketEvent, report)).ToList();
 
-    // Kopfzeile: Kategorie · Übereinstimmung · Datum. Die Übereinstimmung ist das Maß, das das
-    // Tooling selbst berechnet — wie viele Publikationen die Meldung getragen haben.
-    private static NewsDeckItem ToDeckItem(MarketEvent marketEvent, MarketReport report)
-    {
-        var header = new List<string> { CategoryLabel(marketEvent.Category) };
-
-        if (Agreement(marketEvent, report) is { } agreement)
-        {
-            header.Add(agreement);
-        }
-
-        if (DateLabel(marketEvent) is { } date)
-        {
-            header.Add(date);
-        }
-
-        if (marketEvent.FiguresFlagged)
-        {
-            header.Add("Zahl geprüft");
-        }
-
-        return new NewsDeckItem(
-            header,
-            Badge(marketEvent),
-            marketEvent.Headline,
-            marketEvent.Summary,
-            Provenance(marketEvent));
-    }
+    // Kopfleiste: Kategorie links, Übereinstimmung rechts. Die Übereinstimmung ist das Maß, das
+    // das Tooling selbst berechnet — wie viele Publikationen die Meldung getragen haben.
+    // Die erste Meta-Zelle trägt den Zahlen-Hinweis, wenn es einen gibt; sonst bleibt sie leer.
+    private static NewsDeckItem ToDeckItem(MarketEvent marketEvent, MarketReport report) => new(
+        Eyebrow: CategoryLabel(marketEvent.Category),
+        EyebrowRight: Agreement(marketEvent, report),
+        Category: marketEvent.FiguresFlagged ? "Zahl geprüft" : null,
+        Date: DateLabel(marketEvent),
+        Badge: Badge(marketEvent),
+        Headline: marketEvent.Headline,
+        Summary: marketEvent.Summary,
+        Source: Provenance(marketEvent));
 
     /// <summary>Wie viele der ausgewerteten Newsletter die Meldung getragen haben.</summary>
     public static string? Agreement(MarketEvent marketEvent, MarketReport report)

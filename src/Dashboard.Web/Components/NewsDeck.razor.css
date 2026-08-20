@@ -30,32 +30,86 @@
     scroll-snap-stop: always;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 4px 2px;
-    overflow-y: auto;
+    min-height: 0;
+    border: 1px solid var(--rule);
+    overflow: hidden;
 }
 
-/* Kopfzeile: Kontext in Mono, Teile durch einen Mittelpunkt getrennt. */
-.deck-head {
+/* Invertierte Kopfleiste — die einzige Stelle der Seite, an der Tinte der Grund ist.
+   Links der größere Zusammenhang, rechts der konkrete Bezug. */
+.deck-bar {
     display: flex;
-    flex-wrap: wrap;
     align-items: baseline;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    background: var(--ink);
+    color: var(--bg);
     font-family: var(--font-family-mono);
     font-size: 10px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
+}
+
+.deck-bar-right {
+    text-align: right;
+}
+
+/* Meta-Zeile: Zellen durch Haarlinien getrennt, die Bewertung am rechten Rand. */
+.deck-meta {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--muted);
 }
 
-.deck-head-part + .deck-head-part::before {
-    content: "·";
-    margin-right: 8px;
-    color: var(--faint);
+.deck-meta:empty {
+    display: none;
 }
 
-.deck-panel ::deep .rs-badge {
-    align-self: flex-start;
+.deck-meta-cell {
+    display: flex;
+    align-items: center;
+    padding: 7px 14px;
+    border-right: 1px solid var(--rule);
+}
+
+.deck-meta-cell:last-child {
+    border-right: 0;
+}
+
+.deck-meta-grade {
+    margin-left: auto;
+    border-left: 1px solid var(--rule);
+}
+
+.deck-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 14px 14px;
+    overflow-y: auto;
+}
+
+.deck-headline {
+    margin: 0;
+    font-size: clamp(20px, 2.6vw, 32px);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--ink);
+}
+
+.deck-summary {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
 }
 
 .deck-source {
