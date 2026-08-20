@@ -6,5 +6,8 @@
     <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
     <!-- NuGetAudit: include transitive packages in advisory warnings (NU1901-NU1904). -->
     <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Reproducible restores: maintain packages.lock.json per project. CI restores
+         run with locked mode; plain local restores update the lock files. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 </Project>
