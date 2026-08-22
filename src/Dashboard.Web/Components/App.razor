@@ -29,8 +29,11 @@
        „noch in der App" gilt. Der Scope steht explizit da, obwohl `start_url: "/"`
        denselben Default ergäbe: die Grenze ist hier der Punkt, um den es geht, und
        explizit ist sie nicht vom Default abhängig.
-       Achtung beim Prüfen: iOS liest das Manifest beim Anlegen des Icons und merkt
-       es sich, ein bestehendes Icon muss also neu angelegt werden. *@
+       Achtung beim Prüfen: iOS liest das Manifest beim Anlegen des Icons und kann
+       sich das merken — verlässlich ist das aber nicht. Am 22.08.2026 griff eine
+       Scope-Änderung auf dem bestehenden Icon. Also erst am Gerät nachsehen und
+       das Icon nur dann neu anlegen, wenn Unterseiten den Standalone-Modus noch
+       verlassen. *@
     @* Die Dev-Instanz auf dem Pi läuft neben der produktiven — beide landen als Icon auf
        demselben Home-Bildschirm. Sie trägt deshalb ein eigenes Wappen (eine Kachel in Akzent)
        und einen eigenen Namen; sonst sind die beiden Icons nicht auseinanderzuhalten. *@
