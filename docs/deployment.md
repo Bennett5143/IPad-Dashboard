@@ -67,6 +67,9 @@ is set in the compose file); quotes are seeded on first run.
   the manifest when the home-screen icon is created, and an existing icon may keep
   what it read then. However, it does not always do so: a `scope` change deployed
   on 2026-08-22 took effect on the icon already on the iPad, without touching it.
+  Safari 15.4 fetches the manifest during page load rather than only on "Add to
+  Home Screen", which is the likely reason — this was not verified against a
+  specific iPadOS version, so treat it as an observation, not a guarantee.
   So check the icon first, and only if subpages still leave standalone mode,
   remove it and add it again — that re-reads the manifest for certain.
 
