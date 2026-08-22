@@ -65,10 +65,10 @@ is set in the compose file); quotes are seeded on first run.
 - **Kiosk full screen**: the app ships a web app manifest (`display: "standalone"`
   for the presentation mode, `scope: "/"` for the app's URL boundary). iOS reads
   the manifest when the home-screen icon is created, and an existing icon may keep
-  what it read then. It does not always: a `scope` change deployed on 2026-08-22
-  took effect on the icon already on the iPad, without touching it. So check the
-  icon first, and only if subpages still leave standalone mode, remove it and add
-  it again — that re-reads the manifest for certain.
+  what it read then. However, it does not always do so: a `scope` change deployed
+  on 2026-08-22 took effect on the icon already on the iPad, without touching it.
+  So check the icon first, and only if subpages still leave standalone mode,
+  remove it and add it again — that re-reads the manifest for certain.
 
 ## Updating
 
