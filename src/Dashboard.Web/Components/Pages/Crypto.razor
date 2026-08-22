@@ -63,6 +63,7 @@
                     var tag = c.Symbol.Length <= 3 ? c.Symbol : c.Symbol[..3];
 
                     <div class="coin-row" role="button" tabindex="0" aria-haspopup="dialog"
+                         @ref="_rows[c.Id]"
                          @onclick="() => OpenAsync(c)" @onkeydown="e => OnRowKeyAsync(e, c)">
                         <span class="coin-id">
                             @if (ImageProxy.Src(c.ImageUrl) is { } logo)
@@ -102,11 +103,11 @@
    gekonnt — und die aufgeklappte Zeile war das, was die Liste über den Bildschirm schob. *@
 @if (_open is { } coin)
 {
-    <div class="dialog-backdrop" @onclick="Close">
+    <div class="dialog-backdrop" @onclick="CloseAsync">
         @* tabindex/@ref, damit der Fokus beim Öffnen hierher wandert und Escape ankommt — sonst
            bliebe das Fenster nur mit der Maus schließbar. *@
         <div class="dialog coin-dialog" role="dialog" aria-modal="true" aria-label="@coin.Name"
-             tabindex="-1" @ref="_dialog" @onkeydown="OnDialogKey" @onclick:stopPropagation="true">
+             tabindex="-1" @ref="_dialog" @onkeydown="OnDialogKeyAsync" @onclick:stopPropagation="true">
             <header class="coin-dialog-head">
                 @if (ImageProxy.Src(coin.ImageUrl) is { } logo)
                 {
@@ -118,7 +119,7 @@
                 <span class="coin-dialog-chg @(coin.Change24hPct >= 0 ? "up" : "down")">
                     @CryptoFormatter.Percent(coin.Change24hPct)
                 </span>
-                <button class="coin-dialog-close" @onclick="Close" aria-label="Schließen">×</button>
+                <button class="coin-dialog-close" @onclick="CloseAsync" aria-label="Schließen">×</button>
             </header>
 
             <div class="coin-dialog-body">
@@ -190,6 +191,9 @@
     private ElementReference _dialog;
     private bool _focusDialog;
 
+    /// <summary>Die Zeilen je Coin-Id — damit der Fokus nach dem Schließen dorthin zurückfindet.</summary>
+    private readonly Dictionary<string, ElementReference> _rows = [];
+
     protected override void OnInitialized()
     {
         CryptoState.Changed += OnChanged;
@@ -225,20 +229,35 @@
         }
     }
 
-    private void OnDialogKey(KeyboardEventArgs args)
+    private async Task OnDialogKeyAsync(KeyboardEventArgs args)
     {
         if (args.Key == "Escape")
         {
-            Close();
+            await CloseAsync();
         }
     }
 
-    // Der Zähler steigt auch beim Schließen: ein noch laufender Abruf hat danach niemanden mehr.
-    private void Close()
+    /// <summary>
+    /// Der Zähler steigt auch beim Schließen: ein noch laufender Abruf hat danach niemanden mehr.
+    /// Der Fokus geht auf die Zeile zurück, aus der das Fenster kam — sonst steht er nach dem
+    /// Schließen am Listenanfang und die Stelle ist verloren.
+    /// </summary>
+    private async Task CloseAsync()
     {
+        if (_open is not { } coin)
+        {
+            return;
+        }
+
         _requestId++;
         _loading = false;
         _open = null;
+        _focusDialog = false;
+
+        if (_rows.TryGetValue(coin.Id, out var row))
+        {
+            await row.FocusAsync();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

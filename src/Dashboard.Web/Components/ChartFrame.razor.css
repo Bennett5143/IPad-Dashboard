@@ -13,9 +13,11 @@
     color: var(--muted);
 }
 
-/* Breite der Rinne, in der die Y-Skalenwerte stehen. Ein Diagramm ohne sie zahlt sie nicht. */
+/* Breite der Rinne, in der die Y-Skalenwerte stehen. Ein Diagramm ohne sie zahlt sie nicht.
+   Bemessen am längsten Wert, der real vorkommt: „$77.055" sind bei 10px Mono ~46px, dazu 8px
+   Abstand zur Kurve. Umbrechen darf die Beschriftung nie — zweizeilig verschöbe sie die Skala. */
 .chart-frame {
-    --chart-gutter: 3.5rem;
+    --chart-gutter: 4rem;
 }
 
 .chart-area {
@@ -45,6 +47,10 @@
     letter-spacing: 0.08em;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+}
+
+.chart-y-ticks span {
+    white-space: nowrap;
 }
 
 /* Marken der X-Achse: erste links, letzte rechts, der Rest gleichmäßig dazwischen — über
