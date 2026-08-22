@@ -47,10 +47,13 @@
     min-width: 0;
 }
 
+/* padding-top setzt die aktuelle Lage von der Oberkante ab, statt sie dort beginnen zu lassen.
+   Die übrige Höhe bleibt zwischen ihr und der Stundenleiste, die unten gebunden ist. */
 .eink-tr {
     grid-column: 2;
     grid-row: 1;
     min-width: 0;
+    padding-top: 24px;
     padding-left: 24px;
     border-left: 1px solid var(--rule);
 }

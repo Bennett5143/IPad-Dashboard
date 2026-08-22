@@ -14,11 +14,15 @@
 }
 
 /* Current conditions ---------------------------------------------------- */
+/* Mittig in der Spalte, als Gegenstück zur Uhr links — die beiden oberen Spalten lesen sich nur
+   als Paar, wenn sie gleich platziert sind. Dafür schrumpft das Raster auf seinen Inhalt
+   (auto auto statt auto 1fr) und wird als Ganzes zentriert. */
 .wx-current {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto auto;
     grid-template-rows: auto auto;
     align-items: center;
+    justify-content: center;
     column-gap: 14px;
     row-gap: 6px;
 }
