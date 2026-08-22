@@ -8,21 +8,24 @@
 
 <PageHeader Title="Fußball" />
 
-<div class="detail-body">
-    <div class="tab-row" role="tablist">
-        <div class="tab-row-items">
-            @foreach (var (key, label) in Tabs())
-            {
-                <button class="tab @(_tab == key ? "is-active" : null)"
-                        role="tab" aria-selected="@(_tab == key)" @onclick="() => _tab = key">
-                    @label
-                </button>
-            }
-        </div>
+@* Zwischen Kopf und Body, mit allen Einträgen in einer linksbündigen Gruppe — dieselbe Zeile wie
+   auf /football/news. Vorher war „Nachrichten" ein direktes Kind der space-between-Zeile und wurde
+   damit an den rechten Rand gedrückt; derselbe Tab sprang beim Seitenwechsel quer über den Kopf. *@
+<nav class="tab-row area-subnav" role="tablist" aria-label="Fußball">
+    <div class="tab-row-items">
+        @foreach (var (key, label) in Tabs())
+        {
+            <button class="tab @(_tab == key ? "is-active" : null)"
+                    role="tab" aria-selected="@(_tab == key)" @onclick="() => _tab = key">
+                @label
+            </button>
+        }
         @* The news subpage is fed by the research tooling, not by football-data. *@
         <a class="tab fb-toggle" href="/football/news">Nachrichten</a>
     </div>
+</nav>
 
+<div class="detail-body">
     <div class="fb-body">
         <div class="fb-main">
             @if (_tab == "tables")

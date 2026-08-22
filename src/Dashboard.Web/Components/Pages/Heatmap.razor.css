@@ -77,8 +77,11 @@
     min-width: 0;
 }
 
+/* Die drei Zahlen sind gleichrangig — sie werden zusammen gelesen. Eine davon größer zu setzen
+   ließ die Zeile nur schief aussehen: die kürzeren Blöcke standen dann oben statt mittig. */
 .heatmap-stats {
     display: flex;
+    align-items: center;
     gap: var(--space-6);
 }
 
@@ -88,17 +91,12 @@
     gap: 2px;
 }
 
-/* Die eine Hero-Zahl der Seite ist die Distanz; die anderen ordnen sich unter. */
 .stat-value {
     font-family: var(--font-family-mono);
     font-size: 28px;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     line-height: 1;
-}
-
-.heatmap-stats .stat:nth-child(2) .stat-value {
-    font-size: 40px;
 }
 
 .stat-label {

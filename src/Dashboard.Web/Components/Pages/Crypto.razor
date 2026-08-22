@@ -11,13 +11,15 @@
 
 <PageHeader Title="Krypto" />
 
-<div class="tab-row" role="navigation">
+@* .area-subnav trägt denselben Innenabstand wie auf /crypto/market — ohne die Klasse stand die
+   Zeile hier bündig am Rand und sprang beim Seitenwechsel um 28px. *@
+<nav class="tab-row area-subnav" aria-label="Krypto">
     <div class="tab-row-items">
-        <span class="tab is-active">Kurse</span>
+        <a class="tab is-active" href="/crypto" aria-current="page">Kurse</a>
         @* Written by the research tooling into the `research` schema. *@
         <a class="tab" href="/crypto/market">Marktbericht</a>
     </div>
-</div>
+</nav>
 
 @* is-scroll: die vollständige Watchlist plus eine aufgeklappte Zeile geht bewusst über 768 px. *@
 <div class="detail-body is-scroll">
