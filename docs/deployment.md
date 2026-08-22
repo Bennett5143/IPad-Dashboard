@@ -64,9 +64,11 @@ is set in the compose file); quotes are seeded on first run.
 - **Health probes**: `GET /health/live` and `GET /health/ready` (checks the DB).
 - **Kiosk full screen**: the app ships a web app manifest (`display: "standalone"`
   for the presentation mode, `scope: "/"` for the app's URL boundary). iOS reads
-  the manifest **when the home-screen icon is created** and keeps what it read, so
-  after a deploy that changed it the icon must be removed and added again — an
-  existing icon keeps its old behaviour no matter what the server sends.
+  the manifest when the home-screen icon is created, and an existing icon may keep
+  what it read then. It does not always: a `scope` change deployed on 2026-08-22
+  took effect on the icon already on the iPad, without touching it. So check the
+  icon first, and only if subpages still leave standalone mode, remove it and add
+  it again — that re-reads the manifest for certain.
 
 ## Updating
 
