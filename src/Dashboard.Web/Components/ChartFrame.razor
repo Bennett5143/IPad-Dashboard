@@ -9,10 +9,11 @@
     {
         <span class="chart-y-label">@YLabel</span>
     }
-    <div class="chart-area">
-        @if (YMax is not null || YMin is not null)
+    <div class="chart-area @(HasYTicks ? "has-y-ticks" : null)">
+        @if (HasYTicks)
         {
-            @* Skalenwerte am linken Rand: erst mit ihnen sagt die Kurve, wie hoch sie steigt. *@
+            @* Skalenwerte in einer eigenen Rinne links: erst mit ihnen sagt die Kurve, wie hoch sie
+               steigt — und nur außerhalb der Zeichenfläche verdecken sie deren linken Rand nicht. *@
             <div class="chart-y-ticks" aria-hidden="true">
                 <span>@YMax</span>
                 @if (YMid is not null)
@@ -33,8 +34,10 @@
     </div>
     @if (XTicks.Count > 0)
     {
-        @* Marken statt Bildunterschrift: die Achse sagt damit, wo ihre Werte liegen. *@
-        <div class="chart-x-ticks" aria-hidden="true">
+        @* Marken statt Bildunterschrift: die Achse sagt damit, wo ihre Werte liegen. Dieselbe Rinne
+           wie oben, damit die erste Marke unter dem ersten Datenpunkt steht und nicht unter den
+           Y-Beschriftungen. *@
+        <div class="chart-x-ticks @(HasYTicks ? "has-y-ticks" : null)" aria-hidden="true">
             @foreach (var tick in XTicks)
             {
                 <span>@tick</span>
@@ -80,4 +83,8 @@
 
     /// <summary>Zusätzliche CSS-Klassen für den Rahmen.</summary>
     [Parameter] public string? CssClass { get; set; }
+
+    /// <summary>Trägt die Y-Achse Skalenwerte? Nur dann kostet sie eine Rinne — ein Diagramm ohne
+    /// sie behält die volle Breite.</summary>
+    private bool HasYTicks => YMax is not null || YMid is not null || YMin is not null;
 }

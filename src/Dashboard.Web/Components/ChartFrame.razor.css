@@ -13,20 +13,32 @@
     color: var(--muted);
 }
 
+/* Breite der Rinne, in der die Y-Skalenwerte stehen. Ein Diagramm ohne sie zahlt sie nicht. */
+.chart-frame {
+    --chart-gutter: 3.5rem;
+}
+
 .chart-area {
     min-width: 0;
     position: relative;
 }
 
-/* Skalenwerte liegen über der Kurve am linken Rand: sie kosten so keine Breite, und die
-   Kurve behält die volle Fläche. */
+/* Die Skalenwerte lagen einmal ÜBER der Kurve, damit sie „keine Breite kosten". Sie kosteten
+   etwas Schlimmeres: die Kurve begann unter ihnen, ihr erster Punkt war nicht lesbar. Jetzt
+   haben sie eine eigene Rinne, und die Zeichenfläche beginnt dahinter. */
+.chart-area.has-y-ticks {
+    padding-left: var(--chart-gutter);
+}
+
 .chart-y-ticks {
     position: absolute;
     inset: 0 auto 0 0;
+    width: var(--chart-gutter);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1px 0;
+    align-items: flex-end;
+    padding: 1px 8px 1px 0;
     pointer-events: none;
     font-family: var(--font-family-mono);
     font-size: 10px;
@@ -35,7 +47,8 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Marken der X-Achse: erste links, letzte rechts, der Rest gleichmäßig dazwischen. */
+/* Marken der X-Achse: erste links, letzte rechts, der Rest gleichmäßig dazwischen — über
+   derselben Breite wie die Kurve, sonst zeigt die erste Marke auf die Y-Beschriftungen. */
 .chart-x-ticks {
     display: flex;
     justify-content: space-between;
@@ -45,6 +58,10 @@
     letter-spacing: 0.08em;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+}
+
+.chart-x-ticks.has-y-ticks {
+    padding-left: var(--chart-gutter);
 }
 
 /* Start/Ende-Werte direkt unter der Kurve (z. B. min/max). */
