@@ -78,14 +78,14 @@
 }
 
 /* Hourly cards ---------------------------------------------------------- */
-/* They take the height the high/low fact and the sunset row gave back: the strip
-   stretches instead of sitting on a fixed padding. */
+/* Die Karten behalten ihre eigene Höhe. Sie einmal über die frei gewordene Höhe zu strecken war
+   der Fehler: vier kurze Zeilen mittig in einer hohen Box sind leerer als dieselbe Karte in ihrer
+   natürlichen Höhe. Der Überschuss bleibt Überschuss — margin-top:auto hält den Streifen unten. */
 .wx-hours {
     display: flex;
     gap: 8px;
     margin-top: auto;
-    flex: 1;
-    min-height: 0;
+    flex: none;
 }
 
 .wx-hour {
@@ -94,8 +94,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 4px;
     padding: 8px 4px;
     border: 1px solid var(--rule);
     border-radius: 6px;
