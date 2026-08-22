@@ -18,8 +18,8 @@
 
 <PageHeader Title="Status" />
 
-@* Eine Seite, kein Scrollen: die vier Faktenblöcke stehen in einer Reihe, der Log bindet nach
-   unten. Wer mehr sehen will als hier steht, sitzt ohnehin an der SSH-Sitzung. *@
+@* Eine Seite, kein Scrollen: die vier Faktenblöcke stehen in einer Reihe, die Warnungen liegen
+   hinter einem Popup. Wer mehr sehen will als hier steht, sitzt ohnehin an der SSH-Sitzung. *@
 <div class="detail-body">
     @if (_loading)
     {
@@ -106,28 +106,52 @@
             </div>
 
             <section class="status-region status-region-log">
-                <span class="mono-label">LETZTE WARNUNGEN &amp; FEHLER</span>
                 @if (_logs.Count == 0)
                 {
+                    <span class="mono-label">LETZTE WARNUNGEN &amp; FEHLER</span>
                     <p class="status-msg">Keine Warnungen seit dem Start.</p>
                 }
                 else
                 {
-                    <ul class="status-log">
-                        @foreach (var entry in _logs)
-                        {
-                            <li>
-                                <span class="log-level @LevelCss(entry.Level)">@entry.Level</span>
-                                <span class="log-time">@RelativeTime(entry.TimestampUtc)</span>
-                                <span class="log-message">@entry.Message</span>
-                            </li>
-                        }
-                    </ul>
+                    <button class="status-log-open" @ref="_logOpener" @onclick="OpenLogs"
+                            aria-haspopup="dialog">
+                        <span class="mono-label">LETZTE WARNUNGEN &amp; FEHLER</span>
+                        <span class="status-log-count">@_logs.Count</span>
+                        <span class="status-log-hint">ansehen ›</span>
+                    </button>
                 }
             </section>
         </div>
     }
 </div>
+
+@* Der Log liegt über der Seite statt in ihr: aufgeklappt braucht er mehr Höhe, als eine
+   scrollfreie Seite hat, und zugeklappt kostet er keine. Dieselbe Hülle wie das Kurs-Popup. *@
+@if (_logsOpen)
+{
+    <div class="dialog-backdrop" @onclick="CloseLogsAsync">
+        <div class="dialog status-dialog" role="dialog" aria-modal="true"
+             aria-label="Letzte Warnungen und Fehler" tabindex="-1" @ref="_logDialog"
+             @onkeydown="OnDialogKeyAsync" @onclick:stopPropagation="true">
+            <header class="status-dialog-head">
+                <span class="mono-label">LETZTE WARNUNGEN &amp; FEHLER</span>
+                <button class="status-dialog-close" @onclick="CloseLogsAsync"
+                        aria-label="Schließen">×</button>
+            </header>
+
+            <ul class="status-log">
+                @foreach (var entry in _logs)
+                {
+                    <li>
+                        <span class="log-level @LevelCss(entry.Level)">@entry.Level</span>
+                        <span class="log-time">@RelativeTime(entry.TimestampUtc)</span>
+                        <span class="log-message">@entry.Message</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
 
 @code {
     private static readonly TimeZoneInfo BerlinTz =
@@ -148,18 +172,61 @@
     private string _whoopWorkoutLabel = "–";
     private Dashboard.Domain.Status.SystemMetrics? _system;
     private string _dbLabel = "–";
-    /// <summary>So viele Warnungen zeigt die Seite — mehr liest am Kiosk ohnehin niemand, und
-    /// die Seite soll auf einen Bildschirm passen.</summary>
-    private const int VisibleWarnings = 3;
+    /// <summary>
+    /// So viele Warnungen hält das Popup bereit. Drei waren ein Höhen-Kompromiss der Seite — im
+    /// Popup gibt es die Höhe, also wird wieder eine für die Diagnose brauchbare Zahl gezeigt.
+    /// Der Ringpuffer hält unverändert 50.
+    /// </summary>
+    private const int VisibleWarnings = 12;
 
     private IReadOnlyList<RecentLogEntry> _logs = [];
+    private bool _logsOpen;
+    private bool _logFocused;
+    private ElementReference _logDialog;
+    private ElementReference _logOpener;
+
+    private void OpenLogs() => _logsOpen = true;
+
+    /// <summary>
+    /// Schließt das Popup und gibt den Fokus dorthin zurück, wo er herkam — sonst landet er nach
+    /// dem Schließen am Seitenanfang und der Weg zurück zur Liste ist verloren.
+    /// </summary>
+    private async Task CloseLogsAsync()
+    {
+        if (!_logsOpen)
+        {
+            return;
+        }
+
+        _logsOpen = false;
+        _logFocused = false;
+        await _logOpener.FocusAsync();
+    }
+
+    private async Task OnDialogKeyAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            await CloseLogsAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Fokus ins Popup, damit Escape dort ankommt und es nicht nur mit der Maus schließbar ist.
+        if (_logsOpen && !_logFocused)
+        {
+            _logFocused = true;
+            await _logDialog.FocusAsync();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         var now = Clock.UtcNow;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, BerlinTz).DateTime);
         // Angezeigt werden die jüngsten; der Ringpuffer hält weiter 50, damit die Diagnose über
-        // die Anzeige hinaus nichts verliert.
+        // das Popup hinaus nichts verliert.
         _logs = RecentLogs.Recent.Take(VisibleWarnings).ToList();
 
         _slices = StatusViewBuilder.BuildSliceRows(

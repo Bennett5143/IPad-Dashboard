@@ -46,11 +46,13 @@
     fill: var(--ink);
 }
 
-/* The reference sets the time in a light 76px face; here it is the base family at
-   weight 400 with the same tight tracking. */
+/* The reference sets the time in a light 76px face; here it is the base family at weight 400 with
+   the same tight tracking — but a step smaller than the reference. At 6vw the column filled its
+   row on the device and pushed the rings onto the week's hairline; it is still the largest type on
+   the page, just not by as much. */
 .analog-digital {
     font-family: var(--font-family-base);
-    font-size: clamp(3rem, 6vw, 4.75rem);
+    font-size: clamp(2.25rem, 4.2vw, 3.25rem);
     font-weight: 400;
     letter-spacing: -0.04em;
     line-height: 1;

@@ -8,9 +8,15 @@
 
 <PageHeader Title="Fußball" />
 
-<div class="detail-body">
-    <div class="tab-row" role="tablist">
-        <div class="tab-row-items">
+@* Zwischen Kopf und Body, mit allen Einträgen in einer linksbündigen Gruppe — dieselbe Zeile wie
+   auf /football/news. Vorher war „Nachrichten" ein direktes Kind der space-between-Zeile und wurde
+   damit an den rechten Rand gedrückt; derselbe Tab sprang beim Seitenwechsel quer über den Kopf. *@
+<nav class="tab-row area-subnav" aria-label="Fußball">
+    <div class="tab-row-items">
+        @* Die Wettbewerbs-Umschalter sind ein Tablist, der Nachrichten-Link ist es nicht — er führt
+           auf eine andere Seite. Deshalb umfasst role="tablist" nur die Buttons, während die Zeile
+           optisch eine bleibt; das <nav> behält seine Landmarke. *@
+        <div class="tab-group" role="tablist" aria-label="Wettbewerb">
             @foreach (var (key, label) in Tabs())
             {
                 <button class="tab @(_tab == key ? "is-active" : null)"
@@ -22,7 +28,9 @@
         @* The news subpage is fed by the research tooling, not by football-data. *@
         <a class="tab fb-toggle" href="/football/news">Nachrichten</a>
     </div>
+</nav>
 
+<div class="detail-body">
     <div class="fb-body">
         <div class="fb-main">
             @if (_tab == "tables")

@@ -91,6 +91,16 @@
     min-width: 0;
 }
 
+/* Eine Paarung sind zwei kurze Dinge — Zeit und Wappenpaar stehen nebeneinander. Gestapelt
+   kostete jede Partie eine Zeile in einer ~130px schmalen Spalte, die bei 34vh gedeckelt ist.
+   Der Text-Eintrag (CL-Sammel, fehlendes Wappen) bleibt gestapelt: ein Satz neben der Uhrzeit
+   wäre hier nicht mehr lesbar. */
+.wk-entry.is-pair {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+}
+
 .wk-time {
     font-family: var(--font-family-mono);
     font-size: 0.6rem;
@@ -111,7 +121,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 1px;
 }
 
 .wk-crest {

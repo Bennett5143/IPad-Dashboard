@@ -274,6 +274,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     gap: 4px;
 }
 
+/* Eine Untergruppe innerhalb der Zeile — etwa der Tablist der Wettbewerbs-Umschalter neben
+   einem Link, der auf eine andere Seite führt. Optisch bleibt es eine Zeile. */
+.tab-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 /* Bereichs-Subnav zwischen Seitenkopf und Body: sie steht außerhalb des Bodys, damit sie
    beim Scrollen stehen bleibt, und bringt dessen Innenabstand selbst mit — sonst stünden
    die Tabs nicht auf der Linie des Titels darüber. */

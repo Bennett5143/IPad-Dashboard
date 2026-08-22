@@ -4,8 +4,8 @@
 @inject CryptoState CryptoState
 
 @* Wochenkalender (Home, volle Breite): sieben Tagesspalten Mo–So, je Tag oben ein Badge mit der
-   Kursentwicklung und darunter die Spiele der verfolgten Vereine — Anstoßzeit (bzw. Ergebnis) mit
-   dem Wappenpaar darunter, in Platzreihenfolge. Ein Champions-League-Spieltag steht als ein
+   Kursentwicklung und darunter die Spiele der verfolgten Vereine — Anstoßzeit (bzw. Ergebnis) und
+   daneben das Wappenpaar, in Platzreihenfolge. Ein Champions-League-Spieltag steht als ein
    Texteintrag da, nicht als sechs Zeilen. Reine Anzeige — die Woche baut FootballWeekBuilder,
    die Tagesreihe kommt aus dem Krypto-Snapshot. *@
 <div class="eink-week">
@@ -30,7 +30,7 @@
             <ul class="wk-list">
                 @foreach (var entry in day.Entries)
                 {
-                    <li class="wk-entry @(entry.IsAggregate ? "is-aggregate" : null)">
+                    <li class="wk-entry @(entry.IsAggregate ? "is-aggregate" : null) @(entry.HasCrestPair ? "is-pair" : null)">
                         <span class="wk-time">@(entry.IsFinished && entry.Result is { } result ? result : entry.Time)</span>
                         @if (entry.HasCrestPair)
                         {
