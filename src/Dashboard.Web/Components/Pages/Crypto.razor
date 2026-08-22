@@ -148,7 +148,8 @@
                     @foreach (var (range, label) in Ranges)
                     {
                         <button class="tab @(_range == range ? "is-active" : null)"
-                                aria-pressed="@(_range == range)" @onclick="() => SelectAsync(range)">
+                                aria-pressed="@(_range == range ? "true" : "false")"
+                                @onclick="() => SelectAsync(range)">
                             @label
                         </button>
                     }

@@ -14,6 +14,12 @@ public static class RunViewBuilder
 {
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
 
+    // Ausdrücklich Berlin statt ToLocalTime(): das hinge sonst an der Zeitzone des Prozesses.
+    // Compose setzt zwar TZ=Europe/Berlin, aber ein Lauf auf dem Host oder ein überschriebenes TZ
+    // datierte den letzten Lauf still auf den falschen Tag.
+    private static readonly TimeZoneInfo BerlinTz =
+        TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
+
     /// <summary>Orts-Zeilen: Gesamtdistanz statt Ø-Distanz — an einem Ort zählt, wie viel dort
     /// zusammenkam, nicht wie lang eine einzelne Runde war.</summary>
     public static IReadOnlyList<RunPlaceRow> BuildRunPlaces(IReadOnlyList<RunPlaceSummary> places) =>
@@ -23,7 +29,9 @@ public static class RunViewBuilder
             $"{place.RunCount}×",
             $"{place.TotalDistanceKm.ToString("0.0", German)} km",
             place.AveragePaceMinPerKm is { } pace ? FormatPaceValue(pace) : "–",
-            place.LastRunUtc is { } last ? last.ToLocalTime().ToString("dd.MM.yyyy", German) : "–")).ToList();
+            place.LastRunUtc is { } last
+                ? TimeZoneInfo.ConvertTime(last, BerlinTz).ToString("dd.MM.yyyy", German)
+                : "–")).ToList();
 
     private static string FormatPaceValue(double minPerKm)
     {

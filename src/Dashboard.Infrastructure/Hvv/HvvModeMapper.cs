@@ -11,6 +11,7 @@ public static partial class HvvModeMapper
     [GeneratedRegex(@"^S\d", RegexOptions.IgnoreCase)]
     private static partial Regex SBahnLine();
 
+    /// <param name="simpleType">Der Verkehrsmittel-Typ, wie geofox ihn meldet.</param>
     /// <param name="lineName">
     /// Der Linienname, z. B. „S3". geofox meldet die S3/S5 ab Harburg Rathaus als <c>RAIL</c> —
     /// technisch vertretbar, auf einer Hamburger Abfahrtstafel falsch. Der Linienname ist die

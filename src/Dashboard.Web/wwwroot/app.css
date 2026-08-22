@@ -449,14 +449,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     width: 7px;
     height: 7px;
     margin-right: 6px;
-    border: 1px solid currentColor;
+    border: 1px solid currentcolor;
     border-radius: 50%;
     vertical-align: baseline;
 }
 
 .rs-badge-confirmed .rs-badge-dot,
 .rs-badge-flagged .rs-badge-dot {
-    background: currentColor;
+    background: currentcolor;
 }
 
 .rs-badge-rumour .rs-badge-dot,
