@@ -8,15 +8,20 @@ using Microsoft.Extensions.Options;
 
 namespace Dashboard.Infrastructure.Crests;
 
-/// <summary>Ein aus dem Cache/Upstream geliefertes Wappen samt MIME-Typ.</summary>
+/// <summary>Ein aus dem Cache/Upstream geliefertes Bild samt MIME-Typ.</summary>
 public sealed record CrestImage(byte[] Bytes, string ContentType);
 
 /// <summary>
-/// Wappen-/Flaggen-Proxy mit Platten-Cache – dasselbe Muster wie der Karten-Kachel-Proxy: Das
-/// offline gehaltene Kiosk-iPad kann kein <c>&lt;img src="https://…"&gt;</c> ins Internet laden, also
-/// holt der LAN-Server das Bild einmalig, legt es ab und liefert es fortan lokal aus. Die
+/// Bild-Proxy mit Platten-Cache – dasselbe Muster wie der Karten-Kachel-Proxy: Das offline
+/// gehaltene Kiosk-iPad kann kein <c>&lt;img src="https://…"&gt;</c> ins Internet laden, also holt
+/// der LAN-Server das Bild einmalig, legt es ab und liefert es fortan lokal aus. Die
 /// Upstream-Host-Allowlist (<see cref="CrestOptions.AllowedHosts"/>) verhindert, dass der Endpoint
 /// zum offenen Proxy wird.
+/// <para>
+/// Der Name stammt vom ersten Zweck; er trägt inzwischen <b>jedes</b> externe Bild — Vereinswappen,
+/// Nationalflaggen und Coin-Logos. Umbenannt wird er nicht: Pfad, Options-Abschnitt und
+/// Cache-Verzeichnis stecken im Compose-Setup des Pi.
+/// </para>
 /// </summary>
 public sealed class CrestProvider
 {
@@ -52,7 +57,7 @@ public sealed class CrestProvider
         && _allowedHosts.Contains(uri.Host);
 
     /// <summary>
-    /// Wappen aus dem Cache oder vom Upstream; <c>null</c> bei nicht erlaubter URL oder
+    /// Bild aus dem Cache oder vom Upstream; <c>null</c> bei nicht erlaubter URL oder
     /// Upstream-Fehler (dann rendert der Browser nur dieses eine Bild nicht – die Seite bleibt heil).
     /// </summary>
     public async Task<CrestImage?> GetCrestAsync(string url, CancellationToken ct)
@@ -93,7 +98,7 @@ public sealed class CrestProvider
                     // 404 o. ä. ändert sich nicht – nur bei Drosselung (429)/Serverfehler (5xx) neu versuchen.
                     if (response.StatusCode != HttpStatusCode.TooManyRequests && (int)response.StatusCode < 500)
                     {
-                        _logger.LogDebug("Wappen {Url}: Upstream antwortete {Status}", ForLog(url), (int)response.StatusCode);
+                        _logger.LogDebug("Bild {Url}: Upstream antwortete {Status}", ForLog(url), (int)response.StatusCode);
                         return null;
                     }
                 }
@@ -101,7 +106,7 @@ public sealed class CrestProvider
                 {
                     if (ct.IsCancellationRequested || attempt == MaxAttempts)
                     {
-                        _logger.LogDebug(ex, "Wappen {Url}: Abruf fehlgeschlagen", ForLog(url));
+                        _logger.LogDebug(ex, "Bild {Url}: Abruf fehlgeschlagen", ForLog(url));
                         return null;
                     }
                 }

@@ -96,5 +96,14 @@
     // Falls CoinGecko den schlüssellosen Zugriff drosselt (keine Kurse / HTTP 429):
     // kostenlosen "Demo"-Key auf coingecko.com holen und hier eintragen.
     "MarketApiKey": ""
+  },
+
+  // Ersatz-Wappen für Vereine, für die football-data keines führt (optional). Schlüssel ist der
+  // Vereinsname oder die football-data-Team-Id, Wert die Upstream-URL. Der Host muss in
+  // Crests:AllowedHosts stehen — der Override umgeht die Schranke nicht, er füllt nur eine Lücke.
+  "Crests": {
+    "Overrides": {
+      // "1234": "https://upload.wikimedia.org/wikipedia/en/…"
+    }
   }
 }

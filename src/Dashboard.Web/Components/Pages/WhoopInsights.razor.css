@@ -209,83 +209,7 @@
     stroke: var(--good);
 }
 
-/* ===== Letzte Nacht ===== */
-
-.sleep-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-sm);
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.sleep-bar {
-    display: flex;
-    gap: 2px;
-    height: 22px;
-}
-
-.sleep-seg {
-    height: 100%;
-}
-
-/* Schlafphasen sind kategoriale Daten: wach = Grundrauschen, REM/Tief tragen Zonenfarbe. */
-.sleep-seg.sleep-awake,
-.sleep-swatch.sleep-awake {
-    background: var(--faint);
-}
-
-.sleep-seg.sleep-rem,
-.sleep-swatch.sleep-rem {
-    background: var(--rec-mid);
-}
-
-.sleep-seg.sleep-light,
-.sleep-swatch.sleep-light {
-    background: var(--track);
-}
-
-.sleep-seg.sleep-deep,
-.sleep-swatch.sleep-deep {
-    background: var(--rec-high);
-}
-
-.sleep-legend {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-2);
-    font-size: var(--font-size-sm);
-}
-
-.sleep-legend li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-width: 0;
-}
-
-.sleep-swatch {
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 3px;
-    flex: none;
-}
-
-.sleep-stage {
-    color: var(--ink);
-}
-
-.sleep-detail {
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-}
-
-/* ===== Tageszeit / Schlafenszeiten / Recovery-Treiber ===== */
+/* ===== Trainings-Häufigkeit / Schlafenszeiten / Recovery-Treiber ===== */
 
 .tod-grid {
     display: grid;
@@ -391,9 +315,11 @@
     gap: var(--space-1);
 }
 
+/* Die letzte Spalte trägt „kein Zusammenhang · n=214" — in 10rem brach das um und die
+   Zeile wurde zweizeilig. Die Balkenspalte gibt die Breite ab. */
 .drv-rows li {
     display: grid;
-    grid-template-columns: 9.5rem 1fr 3.5rem 10rem;
+    grid-template-columns: 9.5rem 1fr 3.5rem 13rem;
     align-items: center;
     gap: var(--space-2);
     font-size: var(--font-size-sm);
@@ -407,6 +333,7 @@
     font-family: var(--font-family-mono);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 /* ===== Aerobe Fitness ===== */
@@ -494,57 +421,6 @@
 .tod-matrix td.cell-3 {
     background: var(--ink);
     color: var(--bg);
-}
-
-/* ===== Läufe nach Recovery ===== */
-
-.run-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.run {
-    display: grid;
-    grid-template-columns: auto 4rem 5rem 1fr;
-    align-items: center;
-    gap: var(--space-3);
-    padding: 6px 0;
-    border-top: 1px solid var(--rule);
-    font-size: var(--font-size-sm);
-}
-
-.run-dot {
-    width: 0.8rem;
-    height: 0.8rem;
-    border-radius: 50%;
-    background-color: var(--muted);
-}
-
-.run-dot.recovery-high {
-    background-color: var(--rec-high);
-}
-
-.run-dot.recovery-medium {
-    background-color: var(--rec-mid);
-}
-
-.run-dot.recovery-low {
-    background-color: var(--rec-low);
-}
-
-.run-date {
-    font-family: var(--font-family-mono);
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.run-detail {
-    font-family: var(--font-family-mono);
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
 }
 
 /* Klickbare Hülle (Explainable) an die Blockbreite koppeln, damit der Klickbereich

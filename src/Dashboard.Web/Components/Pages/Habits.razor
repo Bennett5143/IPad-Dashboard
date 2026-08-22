@@ -6,10 +6,11 @@
 
 <PageTitle>Habit-Verlauf</PageTitle>
 
-<PageHeader Title="Habits" Meta="LETZTE 30 WOCHEN" />
+<PageHeader Title="Habits" />
+
+<FitnessTabs />
 
 <div class="detail-body">
-    <FitnessTabs />
     <div class="habits-page">
         <div class="tab-row habit-tabs" role="group" aria-label="Habit">
             <div class="tab-row-items">
@@ -28,28 +29,10 @@
             <div class="habit-hero">
                 <div class="stat"><span class="stat-value">@_view.YearTotal</span><span class="stat-label">@(_year) gesamt</span></div>
                 <div class="stat"><span class="stat-value">@_view.CurrentWeek</span><span class="stat-label">diese Woche</span></div>
-                @if (_kind is not null)
-                {
-                    <Explainable Id="MetricId.HabitStreaks"><ChildContent>
-                    <div class="stat">
-                        <span class="stat-value stat-value--gold">@_weeklyStreak.Current</span>
-                        <span class="stat-label">Wochen-Serie · Rekord @_weeklyStreak.Longest</span>
-                    </div>
-                    </ChildContent></Explainable>
-                }
-                else
-                {
-                    <Explainable Id="MetricId.HabitStreaks"><ChildContent>
-                    <div class="stat">
-                        <span class="stat-value stat-value--gold">@_dailyStreak.Current</span>
-                        <span class="stat-label">Tage-Serie · Rekord @_dailyStreak.Longest</span>
-                    </div>
-                    </ChildContent></Explainable>
-                }
             </div>
 
             <section class="habit-region habit-heat">
-                <span class="mono-label">VERLAUF · 30 WOCHEN</span>
+                <span class="mono-label">VERLAUF · 12 MONATE</span>
                 <Explainable Id="MetricId.HabitHeatmap"><ChildContent>
                 <div class="heat-scroll">
                     <div class="heat-months">
@@ -66,16 +49,6 @@
                                   title="@cell.Title"></span>
                         }
                     </div>
-                </div>
-
-                <div class="heat-legend">
-                    <span>weniger</span>
-                    <span class="heat-cell lvl-0"></span>
-                    <span class="heat-cell lvl-1"></span>
-                    <span class="heat-cell lvl-2"></span>
-                    <span class="heat-cell lvl-3"></span>
-                    <span class="heat-cell lvl-4"></span>
-                    <span>mehr</span>
                 </div>
                 </ChildContent></Explainable>
             </section>
@@ -110,8 +83,6 @@
     private IReadOnlyDictionary<HabitKind, IReadOnlySet<DateOnly>> _done =
         new Dictionary<HabitKind, IReadOnlySet<DateOnly>>();
     private HabitHeatmapView? _view;
-    private StreakResult _dailyStreak = new(0, 0);
-    private StreakResult _weeklyStreak = new(0, 0);
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,9 +90,6 @@
         _year = today.Year;
         var from = today.AddDays(-HabitsHeatmapBuilder.Weeks * 7);
         _done = await HabitRepo.GetEntryDatesAsync(from, today);
-        // Tages-Serie über alle Habits zusammen – unabhängig vom gewählten Tab.
-        _dailyStreak = HabitStreakCalculator.DailyStreak(
-            _done.SelectMany(kv => kv.Value).Distinct(), today);
         Rebuild(today);
     }
 
@@ -132,12 +100,5 @@
         Rebuild(today);
     }
 
-    private void Rebuild(DateOnly today)
-    {
-        _view = HabitsHeatmapBuilder.Build(_done, _kind, today);
-        _weeklyStreak = _kind is { } kind
-            ? HabitStreakCalculator.WeeklyStreak(
-                _done.TryGetValue(kind, out var set) ? set : new HashSet<DateOnly>(), today)
-            : new StreakResult(0, 0);
-    }
+    private void Rebuild(DateOnly today) => _view = HabitsHeatmapBuilder.Build(_done, _kind, today);
 }

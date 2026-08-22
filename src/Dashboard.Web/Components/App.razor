@@ -1,4 +1,5 @@
 @inject Dashboard.Domain.Time.IClock Clock
+@inject IConfiguration Configuration
 <!DOCTYPE html>
 <html lang="de" data-theme="@_theme">
 
@@ -19,12 +20,26 @@
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     @* Kiosk: „Zum Home-Bildschirm" öffnet die Seite als Standalone-Web-App im
-       Vollbild (ohne Safari-Leisten); Status-Bar transparent über dem Papier-Grund. *@
+       Vollbild (ohne Safari-Leisten); Status-Bar transparent über dem Papier-Grund.
+
+       Bis hierher gab es nur die Apple-Meta-Tags und gar kein Manifest. Das Manifest
+       sagt zweierlei: `display: standalone` ist der Darstellungsmodus (Vollbild ohne
+       Browser-Leisten) — dieselbe Aussage wie apple-mobile-web-app-capable, nur im
+       Standard —, und `scope` zieht die Grenze, innerhalb derer eine Navigation als
+       „noch in der App" gilt. Der Scope steht explizit da, obwohl `start_url: "/"`
+       denselben Default ergäbe: die Grenze ist hier der Punkt, um den es geht, und
+       explizit ist sie nicht vom Default abhängig.
+       Achtung beim Prüfen: iOS liest das Manifest beim Anlegen des Icons und merkt
+       es sich, ein bestehendes Icon muss also neu angelegt werden. *@
+    @* Die Dev-Instanz auf dem Pi läuft neben der produktiven — beide landen als Icon auf
+       demselben Home-Bildschirm. Sie trägt deshalb ein eigenes Wappen (eine Kachel in Akzent)
+       und einen eigenen Namen; sonst sind die beiden Icons nicht auseinanderzuhalten. *@
+    <link rel="manifest" href="@(_dev ? "site-dev.webmanifest" : "site.webmanifest")" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Dashboard" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="@(_dev ? "Dashboard dev" : "Dashboard")" />
+    <link rel="apple-touch-icon" href="@(_dev ? "apple-touch-icon-dev.png" : "apple-touch-icon.png")" />
     <HeadOutlet />
 </head>
 
@@ -61,9 +76,17 @@
     private string _theme = ThemeResolver.Day;
     private bool _night;
 
+    /// <summary>
+    /// Läuft diese Instanz als Dev-Stack neben der produktiven? Gesetzt in
+    /// <c>docker-compose.dev.yml</c> (<c>Kiosk__Instance=dev</c>); steuert ausschließlich
+    /// Home-Bildschirm-Icon und App-Name, damit die beiden Icons unterscheidbar sind.
+    /// </summary>
+    private bool _dev;
+
     protected override void OnInitialized()
     {
         _theme = ThemeResolver.Resolve(Clock.UtcNow, BerlinTz);
         _night = _theme == ThemeResolver.Night;
+        _dev = string.Equals(Configuration["Kiosk:Instance"], "dev", StringComparison.OrdinalIgnoreCase);
     }
 }

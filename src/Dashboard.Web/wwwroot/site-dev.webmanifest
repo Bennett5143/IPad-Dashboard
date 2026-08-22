@@ -1,0 +1,13 @@
+{
+  "name": "Dashboard dev",
+  "short_name": "Dash dev",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f2eb",
+  "theme_color": "#f5f2eb",
+  "icons": [
+    { "src": "/apple-touch-icon-dev.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/favicon.png", "sizes": "32x32", "type": "image/png" }
+  ]
+}

@@ -7,9 +7,9 @@ internal sealed record CoinGeckoMarket(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("symbol")] string Symbol,
     [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("image")] string? Image,
     [property: JsonPropertyName("current_price")] decimal? CurrentPrice,
     [property: JsonPropertyName("price_change_percentage_24h")] double? PriceChangePercentage24h,
-    [property: JsonPropertyName("market_cap")] decimal? MarketCap,
     [property: JsonPropertyName("sparkline_in_7d")] CoinGeckoSparkline? Sparkline);
 
 internal sealed record CoinGeckoSparkline(

@@ -2,9 +2,9 @@
 @inject WeatherState WeatherState
 @inject IClock Clock
 
-@* e-ink weather block (home top-right): current conditions + labeled sunset,
-   then upcoming hourly cards (time → icon → temp → rain%). Paper look; the only
-   colored things are data (rain >= 30% goes ink-emphasised). *@
+@* e-ink weather block (home top-right): current conditions, then upcoming hourly cards
+   (time → icon → temp → rain%). Paper look; the only colored things are data
+   (rain >= 30% goes ink-emphasised). High/low and sunset live on /weather. *@
 <a class="eink-weather" href="/weather">
     @if (_snapshot is null)
     {
@@ -20,25 +20,8 @@
             </div>
             <dl class="wx-facts">
                 <div><dt>Gefühlt</dt><dd>@WeatherFormatter.Temperature(_snapshot.Current.FeelsLike)</dd></div>
-                <div><dt>H / T</dt><dd>H @WeatherFormatter.Temperature(_snapshot.Today.MaxTemperature) / T @WeatherFormatter.Temperature(_snapshot.Today.MinTemperature)</dd></div>
                 <div><dt>Wind</dt><dd>@WeatherFormatter.Wind(_snapshot.Current.WindSpeedMs)</dd></div>
             </dl>
-        </div>
-
-        <div class="wx-sunset">
-            <svg class="wx-sunset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M17 18a5 5 0 0 0-10 0" />
-                <line x1="12" y1="9" x2="12" y2="3" />
-                <polyline points="8.5 6.5 12 9 15.5 6.5" />
-                <line x1="1" y1="18" x2="4" y2="18" />
-                <line x1="20" y1="18" x2="23" y2="18" />
-                <line x1="4.2" y1="11.2" x2="5.6" y2="12.6" />
-                <line x1="19.8" y1="11.2" x2="18.4" y2="12.6" />
-                <line x1="2" y1="22" x2="22" y2="22" />
-            </svg>
-            <span class="wx-sunset-label">Sonnenuntergang</span>
-            <span class="wx-sunset-time">@WeatherFormatter.Sun(_snapshot.Current.SunsetUtc)</span>
         </div>
 
         <div class="wx-hours">

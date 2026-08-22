@@ -6,11 +6,17 @@
 
 <PageTitle>Fußball</PageTitle>
 
-<PageHeader Title="Fußball" Meta="BUNDESLIGA" />
+<PageHeader Title="Fußball" />
 
-<div class="detail-body">
-    <div class="tab-row" role="tablist">
-        <div class="tab-row-items">
+@* Zwischen Kopf und Body, mit allen Einträgen in einer linksbündigen Gruppe — dieselbe Zeile wie
+   auf /football/news. Vorher war „Nachrichten" ein direktes Kind der space-between-Zeile und wurde
+   damit an den rechten Rand gedrückt; derselbe Tab sprang beim Seitenwechsel quer über den Kopf. *@
+<nav class="tab-row area-subnav" aria-label="Fußball">
+    <div class="tab-row-items">
+        @* Die Wettbewerbs-Umschalter sind ein Tablist, der Nachrichten-Link ist es nicht — er führt
+           auf eine andere Seite. Deshalb umfasst role="tablist" nur die Buttons, während die Zeile
+           optisch eine bleibt; das <nav> behält seine Landmarke. *@
+        <div class="tab-group" role="tablist" aria-label="Wettbewerb">
             @foreach (var (key, label) in Tabs())
             {
                 <button class="tab @(_tab == key ? "is-active" : null)"
@@ -21,19 +27,17 @@
         </div>
         @* The news subpage is fed by the research tooling, not by football-data. *@
         <a class="tab fb-toggle" href="/football/news">Nachrichten</a>
-        <button class="tab fb-toggle" @onclick="() => _showCrests = !_showCrests"
-                title="Vereinswappen / Flaggen ein- oder ausblenden">
-            Wappen @(_showCrests ? "an" : "aus")
-        </button>
     </div>
+</nav>
 
+<div class="detail-body">
     <div class="fb-body">
         <div class="fb-main">
             @if (_tab == "tables")
             {
                 @if (_tables is { Count: > 0 })
                 {
-                    <TableFilter Tables="_tables" ShowCrests="_showCrests" MarkRelegation="true" />
+                    <TableFilter Tables="_tables" MarkRelegation="true" />
                 }
                 else
                 {
@@ -42,15 +46,29 @@
             }
             else if (_tab == "cl" && _cl is not null)
             {
-                @if (_cl.LeaguePhase is { Rows.Count: > 0 } phase)
+                @* Ligaphase UND Baum untereinander sprengten die Seitenhöhe, und die Tabelle war das,
+                   was unten abfiel. Zweite Ebene, eine Ansicht zur Zeit — mit denselben Pills wie
+                   die Liga-Auswahl, also ohne neues Vokabular. *@
+                @if (ClPhase is not null && _cl.Bracket is not null)
                 {
-                    <TableFilter Tables="@(new[] { phase })" ShowCrests="_showCrests" />
+                    <div class="table-filter-pills" role="tablist">
+                        <button class="table-pill @(ClShowsKnockout ? null : "is-active")"
+                                role="tab" aria-selected="@(!ClShowsKnockout)"
+                                @onclick='() => _clView = "phase"'>Ligaphase</button>
+                        <button class="table-pill @(ClShowsKnockout ? "is-active" : null)"
+                                role="tab" aria-selected="@ClShowsKnockout"
+                                @onclick='() => _clView = "knockout"'>K.o.-Runde</button>
+                    </div>
                 }
-                @if (_cl.Bracket is not null)
+
+                @if (!ClShowsKnockout && ClPhase is { } phase)
+                {
+                    <TableFilter Tables="@(new[] { phase })" />
+                }
+                else if (_cl.Bracket is not null)
                 {
                     <section class="fb-bracket">
-                        <h2 class="mono-label">K.O.-RUNDE</h2>
-                        <KnockoutBracketView Bracket="_cl.Bracket" ShowCrests="_showCrests" />
+                        <KnockoutBracketView Bracket="_cl.Bracket" />
                     </section>
                 }
             }
@@ -58,13 +76,13 @@
             {
                 @if (tournament.Groups.Count > 0)
                 {
-                    <TableFilter Tables="tournament.Groups" ShowCrests="_showCrests" />
+                    <TableFilter Tables="tournament.Groups" />
                 }
                 @if (tournament.Bracket is not null)
                 {
                     <section class="fb-bracket">
                         <h2 class="mono-label">K.O.-RUNDE</h2>
-                        <KnockoutBracketView Bracket="tournament.Bracket" ShowCrests="_showCrests" />
+                        <KnockoutBracketView Bracket="tournament.Bracket" />
                     </section>
                 }
             }
@@ -78,7 +96,27 @@
     private ChampionsLeague? _cl;
     private IReadOnlyList<TournamentView>? _tournaments;
     private string _tab = "tables";
-    private bool _showCrests = true;
+
+    /// <summary>Mit welchem Tab die Seite öffnet — die Unterseite /football/news verlinkt hierher
+    /// zurück und sagt dabei, wohin.</summary>
+    [Parameter, SupplyParameterFromQuery(Name = "tab")] public string? TabParameter { get; set; }
+
+    /// <summary>Gewählte CL-Ansicht: <c>null</c> = Vorgabe, sonst „phase" oder „knockout".</summary>
+    private string? _clView;
+
+    /// <summary>Die Ligaphase, solange sie Zeilen hat — sonst nichts.</summary>
+    private LeagueTable? ClPhase => _cl?.LeaguePhase is { Rows.Count: > 0 } phase ? phase : null;
+
+    /// <summary>
+    /// Vorgabe ist die Ligaphase, solange sie Zeilen trägt; danach — in der K.o.-Phase der Saison —
+    /// der Baum. Eine getroffene Wahl schlägt die Vorgabe.
+    /// </summary>
+    private bool ClShowsKnockout => _clView switch
+    {
+        "knockout" => _cl?.Bracket is not null,
+        "phase" => false,
+        _ => ClPhase is null && _cl?.Bracket is not null,
+    };
 
     protected override void OnInitialized()
     {
@@ -120,9 +158,12 @@
         return tabs;
     }
 
-    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab.
+    // Während ein Turnier läuft, ist es die Schlagzeile → als Standard-Tab. Ein ?tab= aus der
+    // Rückkehr von /football/news schlägt das, solange es einen Tab benennt, den es gibt.
     private string DefaultTab() =>
-        _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
+        TabParameter is { Length: > 0 } requested && Tabs().Any(t => t.Key == requested)
+            ? requested
+            : _tournaments is { Count: > 0 } ? $"t:{_tournaments[0].Code}" : "tables";
 
     private void EnsureValidTab()
     {

@@ -70,4 +70,16 @@ public class FootballFormatterTests
         Assert.Equal("H", FootballFormatter.Venue(Finished(1, 0, home: true)));
         Assert.Equal("A", FootballFormatter.Venue(Finished(1, 0, home: false)));
     }
+
+    [Theory]
+    [InlineData("RMA", "Real Madrid CF", "RMA")]
+    [InlineData(null, "Le Mans FC", "LE")]
+    [InlineData("", "1. FC Köln", "FC")]
+    [InlineData(null, "", "")]
+    public void CrestFallback_FallsBackFromShortCodeToTheName(string? shortCode, string name, string expected)
+    {
+        // Die Ersatzmarke steht da, wo kein Wappen auflösbar ist – sie darf nie leer bleiben,
+        // solange ein Name existiert, sonst rutscht die Zeile aus der Flucht.
+        Assert.Equal(expected, FootballFormatter.CrestFallback(shortCode, name));
+    }
 }

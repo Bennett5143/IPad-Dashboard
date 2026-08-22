@@ -23,26 +23,48 @@ else
             @foreach (var item in Items)
             {
                 <article class="deck-panel">
-                    <div class="deck-head">
-                        @foreach (var part in item.HeaderParts)
+                    <header class="deck-bar">
+                        <span>@item.Eyebrow</span>
+                        @if (!string.IsNullOrWhiteSpace(item.EyebrowRight))
                         {
-                            <span class="deck-head-part">@part</span>
+                            <span class="deck-bar-right">@item.EyebrowRight</span>
+                        }
+                    </header>
+
+                    <div class="deck-meta">
+                        @if (!string.IsNullOrWhiteSpace(item.Category))
+                        {
+                            <span class="deck-meta-cell">@item.Category</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Date))
+                        {
+                            <span class="deck-meta-cell">@item.Date</span>
+                        }
+                        @if (item.Badge is { } badge)
+                        {
+                            <span class="deck-meta-cell deck-meta-grade">
+                                <span class="rs-badge @badge.CssClass">
+                                    <span class="rs-badge-dot" aria-hidden="true"></span>@badge.Label
+                                </span>
+                            </span>
                         }
                     </div>
 
-                    @if (item.Badge is { } badge)
-                    {
-                        <span class="rs-badge @badge.CssClass">@badge.Label</span>
-                    }
+                    <div class="deck-body">
+                        @* Nicht jede Meldung hat eine Schlagzeile — die Marktlage ist ein Absatz.
+                           Eine leere Überschrift ließe nur eine Lücke stehen. *@
+                        @if (!string.IsNullOrWhiteSpace(item.Headline))
+                        {
+                            <h3 class="deck-headline">@item.Headline</h3>
+                        }
+                        <p class="deck-summary">@item.Summary</p>
 
-                    <h3 class="rs-headline">@item.Headline</h3>
-                    <p class="rs-summary">@item.Summary</p>
-
-                    @if (!string.IsNullOrWhiteSpace(item.Source))
-                    {
-                        @* Bewusst kein Link: im Anzeigekontext gibt es kein Internet. *@
-                        <span class="deck-source">@item.Source</span>
-                    }
+                        @if (!string.IsNullOrWhiteSpace(item.Source))
+                        {
+                            @* Bewusst kein Link: im Anzeigekontext gibt es kein Internet. *@
+                            <span class="deck-source">@item.Source</span>
+                        }
+                    </div>
                 </article>
             }
         </div>

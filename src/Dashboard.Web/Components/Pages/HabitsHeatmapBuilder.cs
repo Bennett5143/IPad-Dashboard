@@ -48,7 +48,6 @@ public static class HabitsHeatmapBuilder
     {
         var thisMonday = HabitWeek.ContainingDate(today).Start;
         var start = thisMonday.AddDays(-(Weeks - 1) * 7);
-        var maxLevel = kind is null ? KindCount : 1;
 
         int Level(DateOnly d) => kind is { } k
             ? (doneByKind.TryGetValue(k, out var set) && set.Contains(d) ? 1 : 0)
@@ -83,7 +82,7 @@ public static class HabitsHeatmapBuilder
                 }
 
                 var level = Level(date);
-                cells.Add(new HabitHeatCell(w, wd, Bucket(level, maxLevel), CellTitle(date, level, kind)));
+                cells.Add(new HabitHeatCell(w, wd, Bucket(level), CellTitle(date, level, kind)));
             }
         }
 
@@ -105,20 +104,13 @@ public static class HabitsHeatmapBuilder
             bars);
     }
 
-    /// <summary>Intensität auf 0..4 abbilden (0 = nichts, 4 = voll).</summary>
-    public static int Bucket(int level, int maxLevel)
-    {
-        if (level <= 0)
-        {
-            return 0;
-        }
-        if (maxLevel <= 1)
-        {
-            return 4;
-        }
-
-        return Math.Clamp(1 + (int)Math.Round((level - 1) / (double)(maxLevel - 1) * 3), 1, 4);
-    }
+    /// <summary>
+    /// Zwei Zustände: <c>0</c> keine Aktivität, <c>4</c> Aktivität. Die Abstufung entfällt
+    /// bewusst hier und nicht im Stylesheet — dass ein Tag mit drei Habits aussieht wie einer
+    /// mit einem, ist eine Entscheidung über die Daten, nicht über ihre Farbe; im Stylesheet
+    /// hätte der Builder weiter eine Intensität gerechnet, die niemand liest.
+    /// </summary>
+    public static int Bucket(int level) => level > 0 ? 4 : 0;
 
     private static string CellTitle(DateOnly date, int level, HabitKind? kind)
     {

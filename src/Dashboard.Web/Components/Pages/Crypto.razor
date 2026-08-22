@@ -1,21 +1,25 @@
 @page "/crypto"
 @layout DetailLayout
 @implements IDisposable
+@using Dashboard.Domain.Crypto
 @inject CryptoState CryptoState
-@inject NavigationManager Nav
+@inject ICoinHistoryProvider History
+@inject ILogger<Crypto> Log
 @rendermode InteractiveServer
 
 <PageTitle>Krypto</PageTitle>
 
-<PageHeader Title="Krypto" Meta="@Meta" />
+<PageHeader Title="Krypto" />
 
-<div class="tab-row" role="navigation">
+@* .area-subnav trägt denselben Innenabstand wie auf /crypto/market — ohne die Klasse stand die
+   Zeile hier bündig am Rand und sprang beim Seitenwechsel um 28px. *@
+<nav class="tab-row area-subnav" aria-label="Krypto">
     <div class="tab-row-items">
-        <span class="tab is-active">Kurse</span>
+        <a class="tab is-active" href="/crypto" aria-current="page">Kurse</a>
         @* Written by the research tooling into the `research` schema. *@
         <a class="tab" href="/crypto/market">Marktbericht</a>
     </div>
-</div>
+</nav>
 
 @* is-scroll: die vollständige Watchlist plus eine aufgeklappte Zeile geht bewusst über 768 px. *@
 <div class="detail-body is-scroll">
@@ -52,24 +56,30 @@
                     <span class="r">PREIS</span>
                     <span class="r">24 H</span>
                     <span class="r">7 TAGE</span>
-                    <span class="r">MARKTKAP.</span>
                 </div>
                 @foreach (var c in _snapshot.Coins)
                 {
                     var up = c.Change24hPct >= 0;
                     var tag = c.Symbol.Length <= 3 ? c.Symbol : c.Symbol[..3];
-                    var expanded = _expanded == c.Id;
 
-                    <div class="coin-row @(expanded ? "is-expanded" : null)" role="button" tabindex="0"
-                         aria-expanded="@expanded" @onclick="() => Toggle(c.Id)">
+                    <div class="coin-row" role="button" tabindex="0" aria-haspopup="dialog"
+                         @ref="_rows[c.Id]"
+                         @onclick="() => OpenAsync(c)" @onkeydown="e => OnRowKeyAsync(e, c)">
                         <span class="coin-id">
-                            <span class="chip coin-chip">@tag</span>
+                            @if (ImageProxy.Src(c.ImageUrl) is { } logo)
+                            {
+                                <img class="coin-logo" src="@logo" alt="" width="24" height="24" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="chip coin-chip">@tag</span>
+                            }
                             <span class="coin-names">
                                 <span class="coin-sym">@c.Symbol</span>
                                 <span class="coin-name">@c.Name</span>
                             </span>
                         </span>
-                        <span class="r coin-price">@CryptoFormatter.Price(c.PriceEur)</span>
+                        <span class="r coin-price">@CryptoFormatter.Price(c.Price)</span>
                         <span class="r">
                             <span class="coin-chg @(up ? "up" : "down")">@CryptoFormatter.Percent(c.Change24hPct)</span>
                         </span>
@@ -77,24 +87,7 @@
                             <Sparkline Values="c.Sparkline7d"
                                        CssClass="@($"coin-spark {(up ? "coin-spark--up" : "coin-spark--down")}")" />
                         </span>
-                        <span class="r coin-cap">@CryptoFormatter.MarketCap(c.MarketCap)</span>
                     </div>
-
-                    @if (expanded)
-                    {
-                        <div class="coin-detail">
-                            <ChartFrame CssClass="coin-detail-chart"
-                                        XLabel="Sieben Tage" YLabel="Kurs (€)"
-                                        RangeStart="@Low(c)" RangeEnd="@High(c)">
-                                <Sparkline Values="c.Sparkline7d" Fill="true"
-                                           CssClass="@(up ? "coin-spark--up" : "coin-spark--down")" />
-                            </ChartFrame>
-                            <button class="coin-detail-link" @onclick:stopPropagation="true"
-                                    @onclick="() => OpenDetail(c.Id)">
-                                Details · Stunde bis Jahr ›
-                            </button>
-                        </div>
-                    }
                 }
             </section>
         }
@@ -102,25 +95,105 @@
         {
             <p class="crypto-empty">Keine Coins konfiguriert.</p>
         }
-
-        <span class="mono-label coin-foot">
-            Stand @LocalTime(_snapshot.RetrievedAtUtc)@(_isStale ? " · veraltet" : string.Empty) · CoinGecko · alternative.me
-        </span>
     }
 </div>
+
+@* Eine Geste, eine Fläche: der Verlauf liegt über der Liste statt in einer aufklappenden Zeile
+   und einer eigenen Seite. Zwei Wege in dasselbe Diagramm hätten sonst unterschiedlich viel
+   gekonnt — und die aufgeklappte Zeile war das, was die Liste über den Bildschirm schob. *@
+@if (_open is { } coin)
+{
+    <div class="dialog-backdrop" @onclick="CloseAsync">
+        @* tabindex/@ref, damit der Fokus beim Öffnen hierher wandert und Escape ankommt — sonst
+           bliebe das Fenster nur mit der Maus schließbar. *@
+        <div class="dialog coin-dialog" role="dialog" aria-modal="true" aria-label="@coin.Name"
+             tabindex="-1" @ref="_dialog" @onkeydown="OnDialogKeyAsync" @onclick:stopPropagation="true">
+            <header class="coin-dialog-head">
+                @if (ImageProxy.Src(coin.ImageUrl) is { } logo)
+                {
+                    <img class="coin-logo" src="@logo" alt="" width="28" height="28" />
+                }
+                <span class="coin-dialog-sym">@coin.Symbol</span>
+                <span class="coin-dialog-name">@coin.Name</span>
+                <span class="coin-dialog-price">@CryptoFormatter.Price(coin.Price)</span>
+                <span class="coin-dialog-chg @(coin.Change24hPct >= 0 ? "up" : "down")">
+                    @CryptoFormatter.Percent(coin.Change24hPct)
+                </span>
+                <button class="coin-dialog-close" @onclick="CloseAsync" aria-label="Schließen">×</button>
+            </header>
+
+            <div class="coin-dialog-body">
+                @if (_loading)
+                {
+                    <p class="crypto-empty">Wird geladen…</p>
+                }
+                else if (_history is { HasPoints: true } history)
+                {
+                    <ChartFrame CssClass="coin-dialog-chart"
+                                YMax="@CryptoFormatter.Price(history.Maximum)"
+                                YMid="@CryptoFormatter.Price((history.Minimum + history.Maximum) / 2)"
+                                YMin="@CryptoFormatter.Price(history.Minimum)"
+                                XTicks="@TimeTicks(history)">
+                        <Sparkline Values="@Values(history)" Fill="true" Smooth="true" />
+                    </ChartFrame>
+                }
+                else
+                {
+                    <p class="crypto-empty">Chart gerade nicht verfügbar.</p>
+                }
+            </div>
+
+            <div class="tab-row coin-dialog-ranges" role="group" aria-label="Zeitraum">
+                <div class="tab-row-items">
+                    @foreach (var (range, label) in Ranges)
+                    {
+                        <button class="tab @(_range == range ? "is-active" : null)"
+                                aria-pressed="@(_range == range ? "true" : "false")"
+                                @onclick="() => SelectAsync(range)">
+                            @label
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private static readonly TimeZoneInfo BerlinTz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Berlin");
 
+    private static readonly (CoinRange Range, string Label)[] Ranges =
+    [
+        (CoinRange.Hour, "Stunde"),
+        (CoinRange.Day, "Tag"),
+        (CoinRange.Week, "Woche"),
+        (CoinRange.Month, "Monat"),
+        (CoinRange.Year, "Jahr"),
+    ];
+
+    /// <summary>Vier Marken lesen sich auf der Modal-Breite noch sauber.</summary>
+    private const int ChartTicks = 4;
+
     private CryptoSnapshot? _snapshot;
-    private bool _isStale;
 
-    /// <summary>Die eine offene Zeile; <c>null</c> = alle zu.</summary>
-    private string? _expanded;
+    /// <summary>Der Coin im Popup; <c>null</c> = zu.</summary>
+    private CoinQuote? _open;
 
-    private string Meta => _snapshot is null
-        ? "EUR · COINGECKO"
-        : $"EUR · STAND {LocalTime(_snapshot.RetrievedAtUtc)} · COINGECKO";
+    private CoinRange _range = CoinRange.Day;
+    private CoinHistory? _history;
+    private bool _loading;
+
+    /// <summary>
+    /// Zählt die Abrufe. Ein überholter Abruf — anderer Zeitraum, anderer Coin, Fenster zu —
+    /// darf das Ergebnis des aktuellen nicht überschreiben, wenn er später zurückkommt.
+    /// </summary>
+    private int _requestId;
+
+    private ElementReference _dialog;
+    private bool _focusDialog;
+
+    /// <summary>Die Zeilen je Coin-Id — damit der Fokus nach dem Schließen dorthin zurückfindet.</summary>
+    private readonly Dictionary<string, ElementReference> _rows = [];
 
     protected override void OnInitialized()
     {
@@ -137,33 +210,136 @@
     private void ReadState()
     {
         _snapshot = CryptoState.Current;
-        _isStale = CryptoState.IsStale;
     }
 
-    /// <summary>Höchstens eine Zeile ist offen — zwei Charts nebeneinander hätten keinen Platz.</summary>
-    private void Toggle(string coinId) => _expanded = _expanded == coinId ? null : coinId;
-
-    private void OpenDetail(string coinId) => Nav.NavigateTo($"/crypto/{coinId}");
-
-    private static string? Low(CoinQuote coin) => Extreme(coin, lowest: true);
-
-    private static string? High(CoinQuote coin) => Extreme(coin, lowest: false);
-
-    // Die Achsen-Eckwerte kommen aus der 7-Tage-Reihe, die die Watchlist ohnehin mitbringt —
-    // ein zusätzlicher Abruf nur fürs Minimum wäre verschwendet.
-    private static string? Extreme(CoinQuote coin, bool lowest)
+    private async Task OpenAsync(CoinQuote coin)
     {
-        var values = coin.Sparkline7d.OfType<double>().ToList();
-        if (values.Count == 0)
+        _open = coin;
+        _range = CoinRange.Day;
+        _focusDialog = true;
+        await LoadAsync();
+    }
+
+    private async Task OnRowKeyAsync(KeyboardEventArgs args, CoinQuote coin)
+    {
+        // Die Zeile ist als role="button" ausgezeichnet, also muss sie sich auch wie einer
+        // bedienen lassen: Enter und Leertaste öffnen.
+        if (args.Key is "Enter" or " ")
         {
-            return null;
+            await OpenAsync(coin);
+        }
+    }
+
+    private async Task OnDialogKeyAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            await CloseAsync();
+        }
+    }
+
+    /// <summary>
+    /// Der Zähler steigt auch beim Schließen: ein noch laufender Abruf hat danach niemanden mehr.
+    /// Der Fokus geht auf die Zeile zurück, aus der das Fenster kam — sonst steht er nach dem
+    /// Schließen am Listenanfang und die Stelle ist verloren.
+    /// </summary>
+    private async Task CloseAsync()
+    {
+        if (_open is not { } coin)
+        {
+            return;
         }
 
-        return CryptoFormatter.Price((decimal)(lowest ? values.Min() : values.Max()));
+        _requestId++;
+        _loading = false;
+        _open = null;
+        _focusDialog = false;
+
+        if (_rows.TryGetValue(coin.Id, out var row))
+        {
+            await row.FocusAsync();
+        }
     }
 
-    private static string LocalTime(DateTimeOffset utc) =>
-        TimeZoneInfo.ConvertTime(utc, BerlinTz).ToString("HH:mm");
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focusDialog)
+        {
+            return;
+        }
+
+        _focusDialog = false;
+        await _dialog.FocusAsync();
+    }
+
+    private async Task SelectAsync(CoinRange range)
+    {
+        if (range == _range)
+        {
+            return;
+        }
+
+        _range = range;
+        await LoadAsync();
+    }
+
+    // Geholt wird erst, wenn jemand hinsieht — elf Coins mal fünf Zeiträume im Hintergrund würden
+    // die kostenlose Quelle dauerhaft belasten. Der Cache je Zeitraum sitzt im Provider, ein
+    // zweites Öffnen desselben Fensters löst also keinen zweiten Abruf aus.
+    private async Task LoadAsync()
+    {
+        if (_open is not { } coin)
+        {
+            return;
+        }
+
+        var request = ++_requestId;
+        _loading = true;
+        _history = null;
+
+        try
+        {
+            var history = await History.GetHistoryAsync(coin.Id, _range);
+            if (request == _requestId)
+            {
+                _history = history;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Ein toter Abruf kostet das Diagramm, nicht die Seite — und schon gar nicht ein
+            // Fenster, das für immer „Wird geladen…" zeigt.
+            Log.LogWarning(ex, "Kursverlauf {Coin}/{Range} nicht abrufbar.", coin.Id, _range);
+        }
+        finally
+        {
+            if (request == _requestId)
+            {
+                _loading = false;
+            }
+        }
+    }
+
+    private static IReadOnlyList<double?> Values(CoinHistory history) =>
+        history.Points.Select(point => (double?)point.Price).ToList();
+
+    /// <summary>
+    /// Zeitmarken über das Fenster, auf der Position interpoliert statt aus dem nächsten Messpunkt
+    /// genommen: eine Achsenmarke benennt eine Stelle der Achse. Uhrzeiten für Stunde und Tag,
+    /// Datum darüber — „14:30" sagt über ein Jahr nichts.
+    /// </summary>
+    private static IReadOnlyList<string> TimeTicks(CoinHistory history)
+    {
+        var format = history.Range is CoinRange.Hour or CoinRange.Day ? "HH:mm" : "dd.MM.";
+        var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+        var from = history.From;
+        var span = history.To - from;
+
+        return Enumerable.Range(0, ChartTicks)
+            .Select(i => TimeZoneInfo.ConvertTime(from.Add(span * i / (ChartTicks - 1)), BerlinTz)
+                .ToString(format, de))
+            .ToList();
+    }
 
     public void Dispose() => CryptoState.Changed -= OnChanged;
 }

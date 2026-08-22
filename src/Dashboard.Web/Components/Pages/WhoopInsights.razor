@@ -9,13 +9,15 @@
 @inject IWhoopTokenStore Tokens
 @inject IRunRepository RunRepo
 @inject IClock Clock
+@inject ILogger<WhoopInsights> Log
 
 <PageTitle>WHOOP – Auswertungen</PageTitle>
 
-<PageHeader Title="WHOOP" Meta="@($"LETZTE {WindowDays} TAGE")" />
+<PageHeader Title="WHOOP" />
+
+<FitnessTabs />
 
 <div class="detail-body is-scroll insights">
-    <FitnessTabs />
     @if (!_connected)
     {
         <p class="insights-msg">WHOOP nicht verbunden – <a href="/whoop/connect">jetzt verbinden</a>.</p>
@@ -160,115 +162,45 @@
             </section>
         }
 
-        @if (_night is not null)
-        {
-            <section class="wi-section">
-                <h2>Letzte Nacht <span class="wi-window">@_night.DateLabel</span></h2>
-                <Explainable Id="MetricId.SleepNight"><ChildContent>
-                <article class="wi-block">
-                    <div class="sleep-meta">
-                        @if (_night.TimeRange is not null)
-                        {
-                            <span>@_night.TimeRange</span>
-                        }
-                        <span>@_night.AsleepLabel</span>
-                        @if (_night.RespiratoryLabel is not null)
-                        {
-                            <span>@_night.RespiratoryLabel</span>
-                        }
-                    </div>
-                    <div class="sleep-bar">
-                        @foreach (var seg in _night.Segments)
-                        {
-                            <div class="sleep-seg @seg.CssClass"
-                                 style="width: @(seg.WidthPercent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"
-                                 title="@seg.Label: @seg.Detail"></div>
-                        }
-                    </div>
-                    <ul class="sleep-legend">
-                        @foreach (var seg in _night.Segments)
-                        {
-                            <li>
-                                <span class="sleep-swatch @seg.CssClass" aria-hidden="true"></span>
-                                <span class="sleep-stage">@seg.Label</span>
-                                <span class="sleep-detail">@seg.Detail</span>
-                            </li>
-                        }
-                    </ul>
-                </article>
-                </ChildContent></Explainable>
-            </section>
-        }
-
         <section class="wi-section">
-            <h2>Tageszeit-Effektivität <span class="wi-window">letzte 12 Monate</span></h2>
-            @if (_todCards.Count == 0)
+            <h2>Trainings-Häufigkeit <span class="wi-window">letzte 12 Monate</span></h2>
+            @if (_todMatrix is null)
             {
+                @* Leer heißt hier zweierlei: die Historie wird noch aufgebaut, oder es gab in zwölf
+                   Monaten wirklich kein Training. Der Satz behauptet keins von beidem. *@
                 <p class="insights-msg">
-                    Workout-Historie wird noch aufgebaut – Fortschritt auf <a href="/status">/status</a>.
+                    Keine Trainings in den letzten 12 Monaten – Stand des Abgleichs auf <a href="/status">/status</a>.
                 </p>
             }
             else
             {
-                <div class="tod-grid">
-                    @foreach (var card in _todCards)
-                    {
-                        <Explainable Id="MetricId.TimeOfDay"><ChildContent>
-                        <article class="wi-block">
-                            <div class="tod-head">
-                                <span class="tod-title">@card.Title</span>
-                                <span class="tod-hint">@card.MeasureHint</span>
-                            </div>
-                            <ul class="tod-rows">
-                                @foreach (var row in card.Rows)
-                                {
-                                    <li class="@(row.IsBest ? "is-best" : null) @(row.LowSample ? "is-thin" : null)">
-                                        <span class="tod-bucket">@row.BucketLabel</span>
-                                        <span class="tod-bar">
-                                            <span class="tod-bar-fill"
-                                                  style="width: @(row.BarPercent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span>
-                                        </span>
-                                        <span class="tod-value">@row.ValueLabel</span>
-                                        <span class="tod-n">n=@row.Count</span>
-                                    </li>
-                                }
-                            </ul>
-                            <p class="tod-verdict">@card.Verdict</p>
-                        </article>
-                        </ChildContent></Explainable>
-                    }
-                </div>
-
-                @if (_todMatrix is not null)
-                {
-                    <Explainable Id="MetricId.TimeOfDayMatrix"><ChildContent>
-                    <table class="tod-matrix">
-                        <thead>
+                <Explainable Id="MetricId.TimeOfDayMatrix"><ChildContent>
+                <table class="tod-matrix">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            @foreach (var day in _todMatrix.DayLabels)
+                            {
+                                <th scope="col">@day</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in _todMatrix.Rows)
+                        {
                             <tr>
-                                <th scope="col"></th>
-                                @foreach (var day in _todMatrix.DayLabels)
+                                <th scope="row">@row.BucketLabel</th>
+                                @foreach (var cell in row.Cells)
                                 {
-                                    <th scope="col">@day</th>
+                                    <td class="@cell.Css" title="@cell.Count Training(s)">
+                                        @(cell.Count > 0 ? cell.Count : null)
+                                    </td>
                                 }
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var row in _todMatrix.Rows)
-                            {
-                                <tr>
-                                    <th scope="row">@row.BucketLabel</th>
-                                    @foreach (var cell in row.Cells)
-                                    {
-                                        <td class="@cell.Css" title="@cell.Count Training(s)">
-                                            @(cell.Count > 0 ? cell.Count : null)
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                    </ChildContent></Explainable>
-                }
+                        }
+                    </tbody>
+                </table>
+                </ChildContent></Explainable>
             }
         </section>
 
@@ -337,32 +269,6 @@
                     </ChildContent></Explainable>
                 </div>
 
-                @if (_sleepInsights.EveningLabel is not null)
-                {
-                    <p class="tod-fact">@_sleepInsights.EveningLabel</p>
-                }
-            }
-        </section>
-
-        <section class="wi-section">
-            <h2>Läufe nach Recovery</h2>
-            @if (_runs.Count == 0)
-            {
-                <p class="insights-msg">Keine Läufe im Zeitraum.</p>
-            }
-            else
-            {
-                <ul class="run-list">
-                    @foreach (var run in _runs)
-                    {
-                        <li class="run">
-                            <span class="run-dot @run.RecoveryCss" title="Recovery"></span>
-                            <span class="run-date">@run.Date</span>
-                            <span class="run-kind">@run.Kind</span>
-                            <span class="run-detail">@run.Detail</span>
-                        </li>
-                    }
-                </ul>
             }
         </section>
     }
@@ -394,9 +300,6 @@
     private string? _error;
     private WhoopSnapshot? _whoop;
     private IReadOnlyList<WhoopMetricCard> _cards = [];
-    private IReadOnlyList<WhoopRunRow> _runs = [];
-    private WhoopSleepNight? _night;
-    private IReadOnlyList<TimeOfDayCard> _todCards = [];
     private TimeOfDayMatrix? _todMatrix;
     private SleepInsightsView? _sleepInsights;
     private TrainingLoadView? _trainingLoad;
@@ -428,6 +331,25 @@
 
     public void Dispose() => WhoopState.Changed -= OnWhoopChanged;
 
+    /// <summary>
+    /// Führt einen Live-Aufruf gegen die WHOOP-API aus und gibt bei einem Fehler <c>null</c>
+    /// zurück, statt ihn nach oben zu werfen. Das hält die Invariante ein, dass eine fremde
+    /// API den Renderpfad nicht mitreißt: der aufrufende Abschnitt meldet sich als nicht
+    /// verfügbar, die Seite bleibt stehen.
+    /// </summary>
+    private async Task<IReadOnlyList<T>?> TryLiveAsync<T>(Func<Task<IReadOnlyList<T>>> call)
+    {
+        try
+        {
+            return await call();
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning(ex, "WHOOP-Live-Aufruf fehlgeschlagen – letzte Daten bleiben erhalten.");
+            return null;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         WhoopState.Changed += OnWhoopChanged;
@@ -451,25 +373,21 @@
             var history = await Metrics.GetRangeAsync(today.AddDays(-WindowDays), today);
             if (history.Count == 0)
             {
-                history = await Whoop.GetHistoryAsync(from, now);
+                history = await TryLiveAsync(() => Whoop.GetHistoryAsync(from, now)) ?? history;
             }
 
-            var workouts = await Whoop.GetWorkoutsAsync(from, now);
             _cards = WhoopInsightsBuilder.BuildCards(history);
-            _night = WhoopInsightsBuilder.BuildSleepNight(history);
-            _runs = WhoopInsightsBuilder.BuildRuns(workouts, history);
 
             // Tageszeit- und Schlafenszeiten-Auswertungen über die persistierte Historie
             // (FA-10.01/10.03) – bewusst kein Live-Fallback: ein Jahr je Reload wäre
             // API-Verschwendung.
             var yearWorkouts = await Workouts.GetRangeAsync(now.AddDays(-365), now);
-            _todCards = WhoopInsightsBuilder.BuildTimeOfDayCards(yearWorkouts);
             _todMatrix = yearWorkouts.Count > 0
                 ? WhoopInsightsBuilder.BuildTimeOfDayMatrix(yearWorkouts)
                 : null;
 
             var yearMetrics = await Metrics.GetRangeAsync(today.AddDays(-365), today);
-            _sleepInsights = WhoopInsightsBuilder.BuildSleepInsights(yearMetrics, yearWorkouts);
+            _sleepInsights = WhoopInsightsBuilder.BuildSleepInsights(yearMetrics);
             _trainingLoad = WhoopInsightsBuilder.BuildTrainingLoad(yearMetrics);
             _recoveryDrivers = WhoopInsightsBuilder.BuildRecoveryDrivers(yearMetrics);
 

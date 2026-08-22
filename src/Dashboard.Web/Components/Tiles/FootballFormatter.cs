@@ -64,9 +64,22 @@ public static class FootballFormatter
             .ToString("HH:mm", CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// Verweis auf das lokal geproxte Wappen (<c>/crests?u=…</c>) oder <c>null</c>, wenn keine
-    /// Upstream-URL vorliegt. Das iPad lädt so nie direkt aus dem Internet (Offline-Kiosk).
+    /// Verweis auf das lokal geproxte Wappen oder <c>null</c>, wenn keine Upstream-URL vorliegt.
     /// </summary>
-    public static string? CrestSrc(string? crestUrl) =>
-        string.IsNullOrWhiteSpace(crestUrl) ? null : $"/crests?u={Uri.EscapeDataString(crestUrl)}";
+    public static string? CrestSrc(string? crestUrl) => ImageProxy.Src(crestUrl);
+
+    /// <summary>
+    /// Kürzel für die Ersatzmarke, wenn kein Wappen auflösbar ist: das Kürzel des Anbieters, sonst
+    /// die ersten beiden Buchstaben des Vereinsnamens. Nie eine leere Marke, solange ein Name da ist.
+    /// </summary>
+    public static string CrestFallback(string? shortCode, string? name)
+    {
+        if (!string.IsNullOrWhiteSpace(shortCode))
+        {
+            return shortCode.Trim().ToUpperInvariant();
+        }
+
+        var letters = (name ?? string.Empty).Where(char.IsLetter).Take(2).ToArray();
+        return new string(letters).ToUpperInvariant();
+    }
 }

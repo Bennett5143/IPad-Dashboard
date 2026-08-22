@@ -20,5 +20,10 @@ services:
   app:
     image: ghcr.io/bennett5143/ipad-dashboard:${APP_TAG:-dev}
     container_name: dashboard-app-dev
+    # Marks this stack as the dev instance. The app uses it for nothing but the
+    # home-screen identity: dev gets its own touch icon and web app name, so the
+    # two icons on the iPad are told apart at a glance. Nothing else branches on it.
+    environment:
+      Kiosk__Instance: dev
     ports: !override
       - "5236:8080"

@@ -31,16 +31,17 @@
 
 .status-hero-num {
     font-family: var(--font-family-mono);
-    font-size: 64px;
+    font-size: 44px;
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--ink);
 }
 
-/* Regionen statt Karten: nur Kanten trennen. */
+/* Regionen statt Karten: nur Kanten trennen. Vier nebeneinander statt 2×2 — dort steckte der
+   meiste Höhenverbrauch, und die Seite soll ohne Scrollen auf 768px passen. */
 .status-cols {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     border-top: 1px solid var(--rule);
     flex: none;
 }
@@ -52,16 +53,80 @@
 .status-region {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px 18px;
+    gap: 8px;
+    padding: 12px 14px;
     min-width: 0;
 }
 
-/* Der Log bindet nach unten: er ist die letzte Region der Seite. */
+/* Der Log liegt im Popup; auf der Seite steht nur noch der Weg dorthin. */
 .status-region-log {
-    flex: 1;
-    min-height: 0;
+    flex: none;
     border-top: 1px solid var(--rule);
+}
+
+.status-log-open {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    width: 100%;
+    padding: 6px 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    color: var(--ink);
+}
+
+.status-log-count {
+    font-family: var(--font-family-mono);
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.status-log-hint {
+    margin-left: auto;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* Popup: dieselbe Hülle wie das Kurs-Diagramm, nur breiter — eine Log-Zeile ist lang. */
+.status-dialog {
+    width: min(94vw, 860px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+}
+
+.status-dialog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+}
+
+.status-dialog-close {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--muted);
+}
+
+.status-dialog-close:active {
+    background: var(--track);
+    color: var(--ink);
 }
 
 /* Datenquellen-Liste: Statuspunkt, Name, Zustand, Mono-Zeit; Zeilen per border-top getrennt. */
@@ -78,7 +143,7 @@
     grid-template-columns: auto 1fr auto auto;
     align-items: center;
     gap: 14px;
-    padding: 10px 0;
+    padding: 6px 0;
     border-top: 1px solid var(--rule);
     font-size: 14px;
 }
@@ -136,13 +201,16 @@
     margin: 0;
 }
 
+/* Vier Regionen nebeneinander lassen jeder ~195px. Eine 11rem-Beschriftungsspalte ließ davon
+   sieben Pixel für den Wert übrig — er sah aus, als stünde er schon in der Nachbarspalte. In
+   dieser Breite steht der Wert unter seiner Beschriftung, nicht neben ihr. */
 .status-facts div {
-    display: grid;
-    grid-template-columns: 11rem 1fr;
-    gap: 12px;
-    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px 0;
     border-top: 1px solid var(--rule);
-    font-size: 14px;
+    min-width: 0;
 }
 
 .status-facts div:first-child {
@@ -151,13 +219,18 @@
 
 .status-facts dt {
     color: var(--muted);
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 .status-facts dd {
     margin: 0;
     color: var(--ink);
     font-family: var(--font-family-mono);
-    font-size: 13px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
 }
 
 .status-error-text {

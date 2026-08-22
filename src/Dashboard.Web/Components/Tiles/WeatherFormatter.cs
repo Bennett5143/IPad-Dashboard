@@ -80,8 +80,4 @@ public static class WeatherFormatter
             _ => date.ToDateTime(TimeOnly.MinValue).ToString("dddd", German).ToUpperInvariant()
         };
     }
-
-    public static string UpdatedAt(DateTimeOffset retrievedAtUtc) =>
-        TimeZoneInfo.ConvertTime(retrievedAtUtc, BerlinTz)
-            .ToString("HH:mm", CultureInfo.InvariantCulture);
 }
