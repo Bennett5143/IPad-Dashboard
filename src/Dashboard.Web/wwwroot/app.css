@@ -104,9 +104,12 @@
    selected by `data-theme` on the document root — App.razor always sets
    it, so there is no unthemed state and no fallback palette. The former
    Command Center theme and the per-element opt-in it was A/B'd through
-   are both gone; the ramp is defined here and nowhere else, so an
-   element that pinned its own `data-theme` would only be opting itself
-   out of the day/night switch.
+   are both gone. Only these two root selectors carry a palette, so a
+   `data-theme` attribute on a descendant now has no effect at all: the
+   element keeps inheriting whatever the root selected. That is the
+   point — while the per-element selector still existed, a pinned
+   attribute silently held its subtree out of the day/night switch,
+   which is how the home page stayed on paper after dark.
 
    Ramp: --bg --ink --muted --faint --rule --rule-strong --track
          --accent/--good.
