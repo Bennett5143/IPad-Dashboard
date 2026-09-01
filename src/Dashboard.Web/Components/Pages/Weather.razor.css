@@ -32,13 +32,13 @@
 /* Die eine Hero-Zahl der Seite. */
 .wx-hero-temp {
     font-family: var(--font-family-mono);
-    font-size: 88px;
+    font-size: var(--font-size-6xl);
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
 
 .wx-hero-desc {
-    font-size: 17px;
+    font-size: var(--font-size-lg);
     color: var(--muted);
 }
 
@@ -62,7 +62,7 @@
 .wx-facts dd {
     margin: 0;
     font-family: var(--font-family-mono);
-    font-size: 17px;
+    font-size: var(--font-size-lg);
     font-variant-numeric: tabular-nums;
 }
 
@@ -121,14 +121,14 @@
 
 .wx-hour-temp {
     font-family: var(--font-family-mono);
-    font-size: 17px;
+    font-size: var(--font-size-lg);
     font-variant-numeric: tabular-nums;
 }
 
 .wx-hour-time {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
 }
 
@@ -137,14 +137,14 @@
    Zeile durchs Weglassen, nicht durch einen Ton unterhalb der Lesbarkeitsgrenze. */
 .wx-hour-rain {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
 }
 
 .wx-hour-rain.is-wet {
     color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 /* ===== Ausblick als letzte Zeile ===== */
@@ -169,7 +169,7 @@
 }
 
 .wx-day-text {
-    font-size: 14px;
+    font-size: var(--font-size-base);
     color: var(--muted);
 }
 

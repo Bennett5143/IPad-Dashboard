@@ -66,11 +66,11 @@
 /* Einheitliche Kachel-Überschrift: Mono-Label, Versalien, weit gesperrt */
 .tile-title {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.18em;
+    letter-spacing: var(--tracking-micro);
 }
 
 .tile-body {

@@ -37,15 +37,15 @@
 
 .wk-day-label {
     font-family: var(--font-family-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
 
 .wk-date {
     font-family: var(--font-family-mono);
-    font-size: 0.62rem;
+    font-size: var(--font-size-xs);
     font-variant-numeric: tabular-nums;
     color: var(--muted);
 }
@@ -54,7 +54,7 @@
 .wk-day.is-today .wk-day-label,
 .wk-day.is-today .wk-date {
     color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .wk-badge {
@@ -63,7 +63,7 @@
     border-radius: var(--radius-md);
     background-color: var(--track);
     font-family: var(--font-family-mono);
-    font-size: 0.6rem;
+    font-size: var(--font-size-xs);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
@@ -105,13 +105,13 @@
 
 .wk-time {
     font-family: var(--font-family-mono);
-    font-size: 0.6rem;
+    font-size: var(--font-size-xs);
     font-variant-numeric: tabular-nums;
     color: var(--muted);
 }
 
 .wk-title {
-    font-size: 0.72rem;
+    font-size: var(--font-size-xs);
     line-height: 1.25;
     color: var(--ink);
     overflow-wrap: anywhere;
@@ -133,7 +133,7 @@
 
 /* Der CL-Sammeleintrag ist die Ausnahme des Tages – er darf sich abheben. */
 .wk-entry.is-aggregate .wk-title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .wk-day.is-past .wk-title {

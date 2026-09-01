@@ -46,8 +46,8 @@
     background: var(--ink);
     color: var(--bg);
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
 }
 
@@ -61,8 +61,8 @@
     align-items: stretch;
     border-bottom: 1px solid var(--rule);
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -99,15 +99,15 @@
 
 .deck-headline {
     margin: 0;
-    font-size: clamp(20px, 2.6vw, 32px);
-    font-weight: 500;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
     line-height: 1.2;
     color: var(--ink);
 }
 
 .deck-summary {
     margin: 0;
-    font-size: 16px;
+    font-size: var(--font-size-base);
     line-height: 1.6;
     color: var(--ink);
 }
@@ -115,8 +115,8 @@
 .deck-source {
     margin-top: auto;
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -127,7 +127,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
     line-height: 1;
     color: var(--ink);
     background: var(--track);

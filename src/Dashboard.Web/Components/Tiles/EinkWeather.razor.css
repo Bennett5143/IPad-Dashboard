@@ -37,8 +37,9 @@
     display: flex;
     align-items: center;
     color: var(--ink);
-    /* icon sizes to 1em of this font-size (see WeatherIcon) */
-    font-size: clamp(2rem, 4.5vw, 2.9rem);
+    /* icon sizes to 1em of this font-size (see WeatherIcon), so this step governs the
+       glyph, not any text. Was a clamp() resolving to 46px on the 1024px kiosk. */
+    font-size: var(--font-size-4xl);
     line-height: 1;
 }
 
@@ -51,14 +52,14 @@
 
 .wx-temp {
     font-family: var(--font-family-mono);
-    font-size: clamp(2.2rem, 5vw, 3.2rem);
-    font-weight: 600;
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-semibold);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
 .wx-desc {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     color: var(--muted);
 }
 
@@ -74,8 +75,8 @@
 
 .wx-facts dt {
     font-family: var(--font-family-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -116,12 +117,12 @@
     font-variant-numeric: tabular-nums;
 }
 
-.wx-hour-time { font-size: 0.72rem; color: var(--muted); }
-.wx-hour-glyph { display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: 1.4rem; line-height: 1; }
-.wx-hour-temp { font-weight: 600; }
+.wx-hour-time { font-size: var(--font-size-xs); color: var(--muted); }
+.wx-hour-glyph { display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: var(--font-size-xl); line-height: 1; }
+.wx-hour-temp { font-weight: var(--font-weight-semibold); }
 
 /* Rain probability: secondary by default, ink-emphasised when it actually matters.
    An hour that rounds to 0 % renders no figure at all (see WeatherFormatter) — the
    quiet came from omission rather than from a tone below the legibility floor. */
-.wx-hour-rain { font-size: 0.72rem; color: var(--muted); }
-.wx-hour-rain.is-wet { color: var(--ink); font-weight: 600; }
+.wx-hour-rain { font-size: var(--font-size-xs); color: var(--muted); }
+.wx-hour-rain.is-wet { color: var(--ink); font-weight: var(--font-weight-semibold); }

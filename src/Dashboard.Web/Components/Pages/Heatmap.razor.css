@@ -58,7 +58,7 @@
     justify-content: center;
     border-radius: 999px;
     color: var(--muted);
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
     line-height: 1;
 }
 
@@ -68,8 +68,8 @@
 }
 
 .place-name {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     color: var(--ink);
     white-space: nowrap;
     overflow: hidden;
@@ -93,7 +93,7 @@
 
 .stat-value {
     font-family: var(--font-family-mono);
-    font-size: 28px;
+    font-size: var(--font-size-2xl);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     line-height: 1;
@@ -101,8 +101,8 @@
 
 .stat-label {
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.06em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -172,7 +172,7 @@
 .sync-info {
     margin: 0;
     font-family: var(--font-family-mono);
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--muted);
     flex: none;
 }

@@ -45,7 +45,7 @@
     align-items: center;
     justify-content: center;
     font-family: var(--font-family-display);
-    font-weight: 700;
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-lg);
     color: var(--ink);
 }
@@ -54,7 +54,7 @@
     font-size: var(--font-size-sm);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-label);
 }
 
 .ring.is-high .ring-fill {
