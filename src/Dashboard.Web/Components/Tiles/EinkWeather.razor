@@ -32,7 +32,10 @@
                     <span class="wx-hour-time">@($"{h.Time:HH}")</span>
                     <span class="wx-hour-glyph"><WeatherIcon Condition="h.Condition" /></span>
                     <span class="wx-hour-temp">@WeatherFormatter.Temperature(h.Temperature)</span>
-                    <span class="wx-hour-rain @(rainy ? "is-wet" : null)">@WeatherFormatter.Precipitation(h.PrecipitationProbability)</span>
+                    @if (WeatherFormatter.ShowsPrecipitation(h.PrecipitationProbability))
+                    {
+                        <span class="wx-hour-rain @(rainy ? "is-wet" : null)">@WeatherFormatter.Precipitation(h.PrecipitationProbability)</span>
+                    }
                 </div>
             }
         </div>

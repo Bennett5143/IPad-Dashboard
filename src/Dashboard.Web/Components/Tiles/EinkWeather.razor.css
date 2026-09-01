@@ -120,6 +120,8 @@
 .wx-hour-glyph { display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: 1.4rem; line-height: 1; }
 .wx-hour-temp { font-weight: 600; }
 
-/* Rain probability: quiet by default, ink-emphasised when it actually matters. */
-.wx-hour-rain { font-size: 0.72rem; color: var(--faint); }
+/* Rain probability: secondary by default, ink-emphasised when it actually matters.
+   An hour that rounds to 0 % renders no figure at all (see WeatherFormatter) — the
+   quiet came from omission rather than from a tone below the legibility floor. */
+.wx-hour-rain { font-size: 0.72rem; color: var(--muted); }
 .wx-hour-rain.is-wet { color: var(--ink); font-weight: 600; }

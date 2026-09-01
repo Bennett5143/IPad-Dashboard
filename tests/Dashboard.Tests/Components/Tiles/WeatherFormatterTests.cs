@@ -34,6 +34,17 @@ public class WeatherFormatterTests
         Assert.Equal(expected, WeatherFormatter.Precipitation(probability));
     }
 
+    [Theory]
+    [InlineData(0.0, false)]
+    [InlineData(0.004, false)]   // rundet auf 0 % — trägt keine Aussage
+    [InlineData(0.005, true)]    // rundet auf 1 % — die kleinste echte Angabe
+    [InlineData(0.29, true)]
+    [InlineData(1.0, true)]
+    public void ShowsPrecipitation_SuppressesOnlyWhatRoundsToZero(double probability, bool expected)
+    {
+        Assert.Equal(expected, WeatherFormatter.ShowsPrecipitation(probability));
+    }
+
     [Fact]
     public void Hour_FormatsLocalTimeAsHourMinute()
     {
