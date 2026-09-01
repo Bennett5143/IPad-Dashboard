@@ -7,8 +7,12 @@
    ============================================================ */
 
 :root {
-    /* Strava brand color (connect button — intentional brand, not a status tone). */
+    /* Strava brand color (connect button — intentional brand, not a status tone). Both
+       halves of the pair are fixed, because the fill is the brand's orange in either theme
+       and a theme-following text color would flip to light at night and become unreadable
+       on it. White reaches only 3.40:1 here; this ink reaches 4.77:1. */
     --color-strava:          #fc4c02;
+    --color-strava-ink:      #23201a;
 
     /* Spacing scale — factors and multiples of 16px. Every gap, padding and margin comes
        from this list. Values outside it are the exception and carry a name and a reason
@@ -109,8 +113,10 @@
          --accent/--good.
    Rule: color carries information only — the single accent (forest
    green) is for links/active selection; every other color is a
-   data-bearing token OUTSIDE the ramp (heatmap route, WHOOP recovery
-   zone, bull/bear).
+   data-bearing token OUTSIDE the ramp (WHOOP recovery zone, bull/bear).
+   The heatmap's route and its other overlay colors are drawn onto a
+   canvas in js/heatmap.js and cannot read a custom property, so they
+   live there rather than as tokens nothing consumes.
 
    Contrast roles (WCAG 2.x, computed from the hex values, both themes):
    --ink and --muted are the two TEXT tones and clear 4.5:1; --muted is
@@ -134,16 +140,20 @@
     --rule:   #cbc3b1;  /* decorative hairline — 1.57:1, deliberately quiet */
     --rule-strong: #887a5b;  /* functional border — 3.77:1 vs --bg, 3.14:1 vs --track */
     --track:  #e4dece;  /* ring / event fill */
-    --accent: #2b784f;  /* forest green — links, active selection — 4.81:1 both ways */
+    --accent: #276d48;  /* forest green — links, active selection — 4.64:1 on --track */
     --good:   var(--accent);
 
-    /* Data-bearing colors (outside the ramp), desaturated for paper. */
-    --route:    #ff9628;  /* heatmap route amber (data, fixed) */
-    --rec-high: #3f9e6a;  /* WHOOP recovery — green zone */
-    --rec-mid:  #c9a03a;  /* yellow zone */
-    --rec-low:  #c05f4f;  /* red zone */
-    --bull:     #2b784f;  /* price up — tracks --accent's hex so paper shows one green */
-    --bear:     #c05f4f;  /* price down */
+    /* Data-bearing colors (outside the ramp), desaturated for paper. Each clears the
+       threshold of the role it appears in, measured against the darker of the two surfaces
+       it sits on — which is --track, not --bg, wherever the value lands on a badge or a
+       highlighted row. The three recovery zones are told apart by hue, since darkening them
+       to the same floor leaves barely a lightness difference between them; their hues stay
+       at 148/43/8 for that reason. */
+    --rec-high: var(--accent);  /* green zone — paper carries one green */
+    --rec-mid:  #866b25;  /* yellow zone — 4.53:1 as text, 3.77:1 as a ring */
+    --rec-low:  #9e4739;  /* red zone — 4.58:1 on --track */
+    --bull:     var(--accent);  /* price up */
+    --bear:     #9e4739;  /* price down — 4.58:1 on --track */
 }
 
 :root[data-theme="night"],
@@ -160,7 +170,7 @@
     --accent: #57c98a;  /* 9.04:1 — already clears both directions */
     --good:   var(--accent);
 
-    --route:    #ff9628;
+    /* Night clears every threshold as it stands: 4.63–8.40:1 even against --track. */
     --rec-high: #57c98a;
     --rec-mid:  #d8bd63;
     --rec-low:  #db6b5b;
