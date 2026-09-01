@@ -94,7 +94,9 @@
 #components-reconnect-modal button {
     border: 0;
     background-color: var(--accent);
-    color: #fff;
+    /* --bg, not white: white cannot follow the theme, and on the night accent it fell to
+       2.07:1. This is what the primary dialog button already does. */
+    color: var(--bg);
     padding: var(--space-2) var(--space-5);
     border-radius: var(--radius-md);
     font-weight: var(--font-weight-semibold);
