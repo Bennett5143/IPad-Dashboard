@@ -12,7 +12,7 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    padding: 0 10px;
+    padding: 0 var(--space-2);
     border-left: 1px solid var(--rule);
 }
 
@@ -29,9 +29,9 @@
 .wk-head {
     display: flex;
     align-items: baseline;
-    gap: 6px;
-    padding-bottom: 6px;
-    margin-bottom: 8px;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
     border-bottom: 1px solid var(--rule);
 }
 
@@ -59,7 +59,7 @@
 
 .wk-badge {
     margin-left: auto;
-    padding: 1px 5px;
+    padding: 1px var(--space-1);
     border-radius: var(--radius-md);
     background-color: var(--track);
     font-family: var(--font-family-mono);
@@ -78,7 +78,7 @@
 .wk-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -89,7 +89,7 @@
 .wk-entry {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: var(--space-0);
     min-width: 0;
 }
 
@@ -100,7 +100,7 @@
 .wk-entry.is-pair {
     flex-direction: row;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .wk-time {
@@ -122,7 +122,7 @@
 .wk-crests {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .wk-crest {

@@ -12,7 +12,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     background: var(--track);
     color: var(--muted);
     font-family: var(--font-family-mono);

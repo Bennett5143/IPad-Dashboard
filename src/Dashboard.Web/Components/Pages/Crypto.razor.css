@@ -1,7 +1,7 @@
 .crypto-empty {
     color: var(--muted);
     font-style: italic;
-    margin-top: 12px;
+    margin-top: var(--space-3);
 }
 
 /* ===== Fear & Greed als Zeile, nicht als Karte ===== */
@@ -9,8 +9,8 @@
 .fng {
     display: flex;
     align-items: center;
-    gap: 26px;
-    padding: 14px 0 16px;
+    gap: var(--space-5);
+    padding: var(--space-3) 0 var(--space-4);
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
@@ -19,7 +19,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-1);
     flex: none;
 }
 
@@ -45,15 +45,15 @@
 
 .fng-bar {
     height: 8px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     background: var(--track);
-    margin-top: 12px;
+    margin-top: var(--space-3);
     overflow: hidden;
 }
 
 .fng-fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     /* fear -> greed spectrum: data-bearing, uses the red/amber/green zone tokens */
     background: linear-gradient(90deg, var(--rec-low), var(--rec-mid) 55%, var(--rec-high));
 }
@@ -65,7 +65,7 @@
     font-size: var(--font-size-xs);
     letter-spacing: var(--tracking-micro);
     color: var(--muted);
-    margin-top: 6px;
+    margin-top: var(--space-2);
 }
 
 /* ===== Coin-Tabelle: rahmenlos, füllt die Resthöhe ===== */
@@ -81,7 +81,7 @@
 .coin-row {
     display: grid;
     grid-template-columns: 1.7fr 1fr 0.9fr 1.4fr;
-    gap: 12px;
+    gap: var(--space-3);
     align-items: center;
 }
 
@@ -90,7 +90,7 @@
     font-size: var(--font-size-xs);
     letter-spacing: var(--tracking-micro);
     color: var(--muted);
-    padding: 10px 0;
+    padding: var(--space-2) 0;
     flex: none;
 }
 
@@ -110,15 +110,15 @@
     width: min(92vw, 720px);
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 18px;
+    gap: var(--space-3);
+    padding: var(--space-4);
 }
 
 .coin-dialog-head {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    padding-bottom: 12px;
+    gap: var(--space-2);
+    padding-bottom: var(--space-3);
     border-bottom: 1px solid var(--rule);
 }
 
@@ -204,7 +204,7 @@
 .coin-id {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: var(--space-3);
     min-width: 0;
 }
 
@@ -255,8 +255,8 @@
     font-family: var(--font-family-mono);
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-sm);
-    padding: 3px 8px;
-    border-radius: 6px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
     background: var(--track);
 }
 

@@ -24,10 +24,12 @@
     background-color: var(--bg);
     color: var(--ink);
     width: 20rem;
+    /* Positions the dialog in the upper third of the viewport — a placement, not spacing,
+       so it stays viewport-relative rather than taking a scale step. */
     margin: 20vh auto;
-    padding: 2rem;
+    padding: var(--space-6);
     border: 1px solid var(--rule);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     box-shadow: none;
     opacity: 0;
     transition: display 0.5s allow-discrete, overlay 0.5s allow-discrete;
@@ -81,7 +83,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-4);
 }
 
 #components-reconnect-modal p {

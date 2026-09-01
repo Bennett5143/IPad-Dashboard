@@ -7,7 +7,7 @@
 
     background: var(--bg);
     border: 1px solid var(--rule);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: var(--space-4);
 
     display: flex;
@@ -51,7 +51,7 @@
     content: "";
     width: 3px;
     height: 0.95em;
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     background: var(--muted);
     flex-shrink: 0;
 }

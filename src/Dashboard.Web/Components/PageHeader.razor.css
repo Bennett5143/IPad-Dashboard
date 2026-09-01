@@ -4,7 +4,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 28px 14px;
+    padding: var(--space-4) var(--gutter-page) var(--space-3);
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
@@ -16,13 +16,13 @@
     letter-spacing: var(--tracking-title);
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: var(--space-3);
 }
 
 .page-header-accent {
     width: 4px;
     height: 26px;
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     background: var(--accent);
     flex: none;
 }
