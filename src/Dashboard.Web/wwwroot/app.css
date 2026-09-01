@@ -23,11 +23,20 @@
     --space-7: 3rem;     /* 48px */
     --space-8: 4rem;     /* 64px – the icon rail's breathing room */
 
-    /* A deliberate constant, not a scale step: .detail-body and PageHeader share this
-       gutter so hairlines run the full text width on a detail page. It is 28px because
-       that is what those two components align on — pulling it to 24 or 32 would break
-       the alignment this token exists to guarantee. */
+    /* Deliberate constants, not scale steps. Each is a measurement something else in the
+       world dictates, so snapping it to a neighbouring step would break the thing it
+       exists to guarantee. */
+
+    /* .detail-body and PageHeader align on this gutter so hairlines run the full text
+       width of a detail page. */
     --gutter-page: 1.75rem;  /* 28px */
+
+    /* Floor for the top safe-area inset. The iOS status bar is 20px tall and cannot be
+       hidden in a web app, but on a device without a notch — the iPad 6 — iOS reports
+       env(safe-area-inset-top) as 0px, because "safe area" means notch and home
+       indicator, not the status bar. This is the height being protected against, not a
+       spacing choice: 16px would put the clock back on the content. */
+    --safe-area-top-min: 1.25rem;  /* 20px */
 
     /* Typografie – Space Grotesk für Text/Zahlen, JetBrains Mono für Labels/Zeiten.
        --font-family-display bleibt als Alias (jetzt Space Grotesk) für Bestandskomponenten. */
