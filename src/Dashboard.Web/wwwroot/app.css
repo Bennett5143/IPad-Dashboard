@@ -26,16 +26,40 @@
     --font-family-display: var(--font-family-base);
     --font-family-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
+    /* Type scale. Every font-size in the app comes from this list — no raw lengths, no
+       clamp(), no vw, never em. The kiosk has one viewport (1024px), so a responsive
+       expression would only hide which single value it computes.
+
+       Neighbours sit ~20–30% apart so that choosing between two steps is an obvious
+       decision rather than a guess. The one exception is sm -> base at +15%: both are
+       long-established text sizes carrying 49 declarations between them, and pulling
+       them apart would be a redesign rather than a consolidation. The same density
+       appears at the small end of the reference scale in Refactoring UI itself. */
+    --font-size-xs:   0.625rem;  /* 10px – mono micro-labels, the densest type in the UI */
     --font-size-sm:   0.8125rem; /* 13px */
     --font-size-base: 0.9375rem; /* 15px */
     --font-size-lg:   1.125rem;  /* 18px */
     --font-size-xl:   1.375rem;  /* 22px */
     --font-size-2xl:  1.75rem;   /* 28px */
     --font-size-3xl:  2.25rem;   /* 36px */
+    --font-size-4xl:  2.75rem;   /* 44px – hero numerals */
+    --font-size-5xl:  4rem;      /* 64px */
+    --font-size-6xl:  5.5rem;    /* 88px – the single largest figure on a page */
 
+    /* Two weights carry the whole UI: hierarchy comes from color and size, not from a
+       ladder of weights. To de-emphasise, reach for a lighter tone or a smaller step —
+       never a weight below regular. */
     --font-weight-regular:  400;
-    --font-weight-medium:   500;
     --font-weight-semibold: 600;
+
+    /* Letter-spacing. Uppercase forms are uniform blocks that default tracking crowds,
+       so caps get extra tracking — the wide micro step is the deliberate letterpress
+       voice of the mono labels. --tracking-tight is the opposite case: a body face used
+       at headline size wants pulling in, not pushing out. */
+    --tracking-micro: 0.16em;   /* mono uppercase micro-labels */
+    --tracking-label: 0.08em;   /* uppercase labels at text size */
+    --tracking-title: 0.04em;   /* uppercase headings in the display face */
+    --tracking-tight: -0.04em;  /* the digital clock — headline-size body face */
 
     --line-height-tight: 1.2;
     --line-height-base:  1.45;
@@ -233,7 +257,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     width: min(90vw, 480px); max-height: 85vh; overflow-y: auto;
     box-shadow: none;
 }
-.dialog-title  { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); font-family: var(--font-family-display); text-transform: uppercase; letter-spacing: 0.04em; }
+.dialog-title  { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); font-family: var(--font-family-display); text-transform: uppercase; letter-spacing: var(--tracking-title); }
 .dialog-error  { color: var(--bear); font-size: var(--font-size-sm); margin: var(--space-3) 0 0; }
 .dialog-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
 /* Secondary action: its --track fill sits at 1.2:1, so the border is the only
@@ -318,8 +342,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     padding: 0 14px;
     border-radius: 999px;
     font-family: var(--font-family-mono);
-    font-size: 0.6875rem; /* 11px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     text-decoration: none;
     color: var(--muted);
@@ -364,8 +388,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 .mono-label {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.18em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -397,7 +421,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 }
 .summary-placeholder-text {
     font-family: var(--font-family-display);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-title);
 }
 .summary-placeholder-sub {
     font-size: var(--font-size-sm);
@@ -408,7 +432,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .page-title {
     font-family: var(--font-family-display);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-label);
     margin-bottom: var(--space-4);
 }
 
@@ -435,8 +459,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 .rs-badge {
     font-family: var(--font-family-mono);
-    font-size: 11px;
-    letter-spacing: 0.06em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     padding: 1px 6px;
     border: 1px solid var(--rule);
@@ -447,7 +471,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .rs-badge-confirmed {
     color: var(--ink);
     border-color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .rs-badge-reported { color: var(--ink); }
@@ -490,6 +514,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     color: var(--ink);
     border-color: var(--ink);
     border-style: solid;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
