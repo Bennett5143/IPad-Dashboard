@@ -18,7 +18,7 @@
     font-family: var(--font-family-display);
     font-size: var(--font-size-sm);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-label);
     color: var(--muted);
 }
 
@@ -77,6 +77,6 @@
 
 .bracket-note {
     margin-top: 2px;
-    font-size: var(--font-size-xs, 0.7rem);
+    font-size: var(--font-size-xs);
     color: var(--muted);
 }

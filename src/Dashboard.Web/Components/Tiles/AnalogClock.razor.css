@@ -49,12 +49,18 @@
 /* The reference sets the time in a light 76px face; here it is the base family at weight 400 with
    the same tight tracking — but a step smaller than the reference. At 6vw the column filled its
    row on the device and pushed the rings onto the week's hairline; it is still the largest type on
-   the page, just not by as much. */
+   the page, just not by as much.
+
+   "A step smaller" is now literal: this is --font-size-3xl and the home temperature it is
+   measured against is --font-size-4xl. The former clamp() resolved to 43px on the 1024px
+   kiosk, one pixel off the temperature's 51px-turned-44px — snapping both to their nearest
+   step would have made them the same size and flattened exactly the relationship this
+   comment describes, so this one deliberately snaps down instead. */
 .analog-digital {
     font-family: var(--font-family-base);
-    font-size: clamp(2.25rem, 4.2vw, 3.25rem);
-    font-weight: 400;
-    letter-spacing: -0.04em;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-regular);
+    letter-spacing: var(--tracking-tight);
     line-height: 1;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
@@ -69,8 +75,8 @@
     padding-top: 8px;
     border-top: 1px solid var(--rule);
     font-family: var(--font-family-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
+    font-size: var(--font-size-sm);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
 }
 

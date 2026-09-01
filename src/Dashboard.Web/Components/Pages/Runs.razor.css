@@ -16,9 +16,9 @@
 /* Section-Überschriften → Mono-Label */
 .runs-page h2 {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    font-weight: 600;
-    letter-spacing: 0.18em;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -42,7 +42,7 @@
 
 .runs-hero-num {
     font-family: var(--font-family-mono);
-    font-size: 64px;
+    font-size: var(--font-size-5xl);
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--ink);
@@ -85,18 +85,18 @@
 .review-records dt {
     order: 2;
     font-family: var(--font-family-mono);
-    font-size: 10px;
+    font-size: var(--font-size-xs);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-label);
 }
 
 .review-stats dd,
 .review-records dd {
     order: 1;
     margin: 0;
-    font-size: 26px;
-    font-weight: 600;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
@@ -110,7 +110,7 @@
 }
 
 .review-records dd {
-    font-size: 18px;
+    font-size: var(--font-size-lg);
 }
 
 .review-bars {
@@ -145,7 +145,7 @@
 
 .review-bar-label {
     font-family: var(--font-family-mono);
-    font-size: 10px;
+    font-size: var(--font-size-xs);
     color: var(--muted);
 }
 
@@ -167,11 +167,11 @@
 .runs-table th {
     text-align: left;
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
     padding: 12px;
     border-bottom: 1px solid var(--rule);
 }
@@ -201,7 +201,7 @@
 
 .runs-table td.mono {
     font-family: var(--font-family-mono);
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     color: var(--muted);
 }
 

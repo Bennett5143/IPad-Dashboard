@@ -26,7 +26,7 @@
 }
 
 .hvv-next-dir {
-    font-size: 22px;
+    font-size: var(--font-size-xl);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -36,7 +36,7 @@
 /* Die eine Hero-Zahl der Seite. */
 .hvv-next-min {
     font-family: var(--font-family-mono);
-    font-size: 64px;
+    font-size: var(--font-size-5xl);
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--accent);
@@ -44,7 +44,7 @@
 
 .hvv-next-time {
     font-family: var(--font-family-mono);
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     color: var(--muted);
     white-space: nowrap;
 }
@@ -81,8 +81,8 @@
     display: flex;
     justify-content: space-between;
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
 }
 
@@ -131,8 +131,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -174,8 +174,8 @@
 
 .hvv-badge {
     font-family: var(--font-family-mono);
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
     background: var(--track);
     color: var(--ink);
     padding: 3px 9px;
@@ -186,14 +186,14 @@
 }
 
 .hvv-badge-lg {
-    font-size: 20px;
+    font-size: var(--font-size-xl);
     border-radius: 8px;
     padding: 4px 12px;
 }
 
 .hvv-dir {
     flex: 1;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     color: var(--muted);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -203,8 +203,8 @@
 .hvv-min {
     font-family: var(--font-family-mono);
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    font-size: 17px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
     color: var(--ink);
 }
 

@@ -95,7 +95,7 @@
     color: #fff;
     padding: var(--space-2) var(--space-5);
     border-radius: var(--radius-md);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-semibold);
 }
 
     #components-reconnect-modal button:hover {

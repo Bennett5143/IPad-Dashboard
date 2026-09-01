@@ -26,7 +26,7 @@
 /* Die eine Hero-Zahl der Seite. */
 .fng-num {
     font-family: var(--font-family-mono);
-    font-size: 54px;
+    font-size: var(--font-size-4xl);
     line-height: 1;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
@@ -38,8 +38,8 @@
 }
 
 .fng-class {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     color: var(--ink);
 }
 
@@ -62,8 +62,8 @@
     display: flex;
     justify-content: space-between;
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
     margin-top: 6px;
 }
@@ -87,8 +87,8 @@
 
 .coin-head {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
     padding: 10px 0;
     flex: none;
@@ -130,13 +130,13 @@
 
 .coin-dialog-sym {
     font-family: var(--font-family-mono);
-    font-size: 14px;
-    letter-spacing: 0.08em;
+    font-size: var(--font-size-base);
+    letter-spacing: var(--tracking-label);
     color: var(--ink);
 }
 
 .coin-dialog-name {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     color: var(--muted);
     min-width: 0;
     overflow: hidden;
@@ -148,14 +148,14 @@
 .coin-dialog-price {
     margin-left: auto;
     font-family: var(--font-family-mono);
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
     font-variant-numeric: tabular-nums;
     color: var(--ink);
 }
 
 .coin-dialog-chg {
     font-family: var(--font-family-mono);
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     font-variant-numeric: tabular-nums;
 }
 
@@ -171,7 +171,7 @@
     background: none;
     border: 0;
     cursor: pointer;
-    font-size: 22px;
+    font-size: var(--font-size-xl);
     line-height: 1;
     color: var(--muted);
 }
@@ -223,8 +223,8 @@
     background: var(--track);
     color: var(--ink);
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
 }
 
 .coin-names {
@@ -234,12 +234,12 @@
 }
 
 .coin-sym {
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
 }
 
 .coin-name {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--muted);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -253,8 +253,8 @@
 
 .coin-chg {
     font-family: var(--font-family-mono);
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
     padding: 3px 8px;
     border-radius: 6px;
     background: var(--track);

@@ -4,9 +4,9 @@
 /* Sektions-Überschriften: Mono, Versalien, ruhiges Papier-Sekundär. */
 .insights h2 {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem;
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    letter-spacing: 0.18em;
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
     margin: 0 0 var(--space-2);
@@ -14,7 +14,7 @@
 
 .insights h2 .wi-window {
     color: var(--muted);
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
     margin-left: var(--space-2);
 }
 
@@ -56,7 +56,7 @@
 .wi-load-ratio {
     display: block;
     font-family: var(--font-family-mono);
-    font-size: 40px;
+    font-size: var(--font-size-3xl);
     font-variant-numeric: tabular-nums;
     line-height: 1.1;
 }
@@ -64,8 +64,8 @@
 .wi-load-zone {
     display: block;
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
 }
 
@@ -124,14 +124,14 @@
 
 .metric-current {
     font-family: var(--font-family-mono);
-    font-size: 19px;
+    font-size: var(--font-size-lg);
     font-variant-numeric: tabular-nums;
     color: var(--ink);
 }
 
 .metric-unit {
     margin-left: 3px;
-    font-size: 12px;
+    font-size: var(--font-size-sm);
     color: var(--muted);
 }
 
@@ -139,8 +139,8 @@
     display: flex;
     gap: var(--space-3);
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.08em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
@@ -227,11 +227,11 @@
     font-size: var(--font-size-sm);
     color: var(--ink);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-label);
 }
 
 .tod-hint {
-    font-size: var(--font-size-xs, 0.75rem);
+    font-size: var(--font-size-sm);
     color: var(--muted);
 }
 
@@ -292,7 +292,7 @@
 
 .tod-n {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
+    font-size: var(--font-size-xs);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
     text-align: right;
@@ -346,7 +346,7 @@
 
 .fitness-current {
     font-family: var(--font-family-mono);
-    font-size: 19px;
+    font-size: var(--font-size-lg);
     font-variant-numeric: tabular-nums;
     color: var(--ink);
 }
@@ -389,7 +389,7 @@
 .tod-matrix th {
     font-family: var(--font-family-mono);
     color: var(--muted);
-    font-weight: var(--font-weight-normal, 400);
+    font-weight: var(--font-weight-regular);
     padding: 2px var(--space-2);
     text-align: left;
 }
