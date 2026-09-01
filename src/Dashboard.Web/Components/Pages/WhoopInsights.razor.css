@@ -32,22 +32,22 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 28px;
-    padding: 16px 0;
+    gap: var(--gutter-page);
+    padding: var(--space-4) 0;
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
 
 .wi-rings {
     display: flex;
-    gap: 22px;
+    gap: var(--space-5);
 }
 
 .wi-load {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding-left: 28px;
+    gap: var(--space-1);
+    padding-left: var(--gutter-page);
     border-left: 1px solid var(--rule);
     min-width: 0;
 }
@@ -70,7 +70,7 @@
 }
 
 .wi-load-hint {
-    margin: 4px 0 0;
+    margin: var(--space-1) 0 0;
     font-size: var(--font-size-sm);
     color: var(--rec-mid);
 }
@@ -117,8 +117,8 @@
 .metric-cell {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px 18px;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
     min-width: 0;
 }
 
@@ -130,7 +130,7 @@
 }
 
 .metric-unit {
-    margin-left: 3px;
+    margin-left: var(--space-1);
     font-size: var(--font-size-sm);
     color: var(--muted);
 }
@@ -151,8 +151,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    padding-top: 14px;
-    margin-top: 14px;
+    padding-top: var(--space-3);
+    margin-top: var(--space-3);
     border-top: 1px solid var(--rule);
     flex: none;
 }
@@ -220,7 +220,7 @@
 .tod-head {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-0);
 }
 
 .tod-title {
@@ -263,7 +263,7 @@
 
 .tod-bar {
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--track);
     overflow: hidden;
 }
@@ -390,7 +390,7 @@
     font-family: var(--font-family-mono);
     color: var(--muted);
     font-weight: var(--font-weight-regular);
-    padding: 2px var(--space-2);
+    padding: var(--space-0) var(--space-2);
     text-align: left;
 }
 

@@ -2,7 +2,7 @@
 .explainable {
     display: grid;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     transition: box-shadow 120ms ease;
 }
 

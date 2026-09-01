@@ -2,7 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: clamp(24px, 6vw, 64px);
+    gap: var(--space-8);
 }
 
 .eink-rail-item {
@@ -12,7 +12,7 @@
     width: 40px;
     height: 40px;
     color: var(--ink);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 /* ::deep, weil das <svg> aus der AreaIcon-Kindkomponente kommt. */
