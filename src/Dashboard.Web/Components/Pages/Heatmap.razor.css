@@ -173,7 +173,7 @@
     margin: 0;
     font-family: var(--font-family-mono);
     font-size: 11px;
-    color: var(--faint);
+    color: var(--muted);
     flex: none;
 }
 

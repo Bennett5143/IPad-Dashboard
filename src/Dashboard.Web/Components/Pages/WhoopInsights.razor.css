@@ -141,7 +141,7 @@
     font-family: var(--font-family-mono);
     font-size: 0.625rem; /* 10px */
     letter-spacing: 0.08em;
-    color: var(--faint);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
@@ -293,7 +293,7 @@
 .tod-n {
     font-family: var(--font-family-mono);
     font-size: 0.625rem; /* 10px */
-    color: var(--faint);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
     text-align: right;
 }

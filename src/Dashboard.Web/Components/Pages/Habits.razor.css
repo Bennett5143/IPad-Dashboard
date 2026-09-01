@@ -67,7 +67,7 @@
     margin-bottom: 4px;
     font-family: var(--font-family-mono);
     font-size: 0.625rem;
-    color: var(--faint);
+    color: var(--muted);
     min-width: max-content;
 }
 
@@ -147,5 +147,5 @@
 .week-bar-label {
     font-family: var(--font-family-mono);
     font-size: 9px;
-    color: var(--faint);
+    color: var(--muted);
 }

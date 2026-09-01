@@ -132,12 +132,14 @@
     color: var(--muted);
 }
 
-/* Nasse Stunden treten in Tinte hervor, trockene bleiben im Hintergrund. */
+/* Nasse Stunden treten in Tinte hervor, trockene bleiben sekundär. Stunden, die auf
+   0 % runden, zeigen gar keine Angabe (siehe WeatherFormatter) — zurückhaltend wird die
+   Zeile durchs Weglassen, nicht durch einen Ton unterhalb der Lesbarkeitsgrenze. */
 .wx-hour-rain {
     font-family: var(--font-family-mono);
     font-size: 0.625rem; /* 10px */
     letter-spacing: 0.16em;
-    color: var(--faint);
+    color: var(--muted);
 }
 
 .wx-hour-rain.is-wet {
