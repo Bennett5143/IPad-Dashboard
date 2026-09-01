@@ -16,9 +16,9 @@
 /* Section-Überschriften → Mono-Label */
 .runs-page h2 {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    font-weight: 600;
-    letter-spacing: 0.18em;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -28,8 +28,8 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 28px;
-    padding: 16px 0;
+    gap: var(--gutter-page);
+    padding: var(--space-4) 0;
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
@@ -37,19 +37,19 @@
 .runs-hero-main {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-0);
 }
 
 .runs-hero-num {
     font-family: var(--font-family-mono);
-    font-size: 64px;
+    font-size: var(--font-size-5xl);
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--ink);
 }
 
 .runs-hero .review-stats {
-    padding-left: 28px;
+    padding-left: var(--gutter-page);
     border-left: 1px solid var(--rule);
 }
 
@@ -58,7 +58,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    padding: 14px 0;
+    padding: var(--space-3) 0;
     flex: none;
 }
 
@@ -70,7 +70,7 @@
 .review-records {
     display: flex;
     flex-wrap: wrap;
-    gap: 30px;
+    gap: var(--space-6);
     margin: 0;
 }
 
@@ -78,25 +78,25 @@
 .review-records div {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
 }
 
 .review-stats dt,
 .review-records dt {
     order: 2;
     font-family: var(--font-family-mono);
-    font-size: 10px;
+    font-size: var(--font-size-xs);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-label);
 }
 
 .review-stats dd,
 .review-records dd {
     order: 1;
     margin: 0;
-    font-size: 26px;
-    font-weight: 600;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
@@ -110,13 +110,13 @@
 }
 
 .review-records dd {
-    font-size: 18px;
+    font-size: var(--font-size-lg);
 }
 
 .review-bars {
     display: flex;
     align-items: flex-end;
-    gap: 8px;
+    gap: var(--space-2);
     height: 90px;
 }
 
@@ -125,7 +125,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
     height: 100%;
 }
 
@@ -139,14 +139,14 @@
 .review-bar-fill {
     width: 100%;
     min-height: 2px;
-    border-radius: 4px 4px 0 0;
+    border-radius: var(--radius-xs) var(--radius-xs) 0 0;
     background: var(--muted);
 }
 
 .review-bar-label {
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    color: var(--faint);
+    font-size: var(--font-size-xs);
+    color: var(--muted);
 }
 
 .routes-hint {
@@ -167,12 +167,12 @@
 .runs-table th {
     text-align: left;
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
-    color: var(--faint);
-    font-weight: 400;
-    padding: 12px;
+    color: var(--muted);
+    font-weight: var(--font-weight-regular);
+    padding: var(--space-3);
     border-bottom: 1px solid var(--rule);
 }
 
@@ -186,7 +186,7 @@
 }
 
 .runs-row td {
-    padding: 12px;
+    padding: var(--space-3);
     border-top: 1px solid var(--rule);
     color: var(--muted);
 }
@@ -201,7 +201,7 @@
 
 .runs-table td.mono {
     font-family: var(--font-family-mono);
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     color: var(--muted);
 }
 

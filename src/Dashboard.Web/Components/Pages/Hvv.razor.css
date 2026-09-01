@@ -4,8 +4,8 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: end;
-    gap: 40px;
-    padding: 14px 0 12px;
+    gap: var(--space-6);
+    padding: var(--space-3) 0 var(--space-3);
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
@@ -13,7 +13,7 @@
 .hvv-next {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2);
     min-width: 0;
 }
 
@@ -21,12 +21,12 @@
 .hvv-next-row {
     display: flex;
     align-items: baseline;
-    gap: 14px;
+    gap: var(--space-3);
     min-width: 0;
 }
 
 .hvv-next-dir {
-    font-size: 22px;
+    font-size: var(--font-size-xl);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -36,7 +36,7 @@
 /* Die eine Hero-Zahl der Seite. */
 .hvv-next-min {
     font-family: var(--font-family-mono);
-    font-size: 64px;
+    font-size: var(--font-size-5xl);
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--accent);
@@ -44,7 +44,7 @@
 
 .hvv-next-time {
     font-family: var(--font-family-mono);
-    font-size: 13px;
+    font-size: var(--font-size-sm);
     color: var(--muted);
     white-space: nowrap;
 }
@@ -52,7 +52,7 @@
 .hvv-axis {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
     min-width: 0;
 }
 
@@ -68,6 +68,8 @@
     bottom: 0;
     width: 2px;
     height: 13px;
+    /* Halbe Strichbreite zurück, damit der Tick auf seiner Position sitzt statt daneben —
+       eine Überlappung, kein Abstand, deshalb kein Skalenwert. */
     margin-left: -1px;
     background: var(--faint);
 }
@@ -81,8 +83,8 @@
     display: flex;
     justify-content: space-between;
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
 }
 
@@ -107,7 +109,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    padding: 12px 18px;
+    padding: var(--space-3) var(--space-4);
 }
 
 .hvv-columns.is-scroll .hvv-col {
@@ -122,17 +124,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    padding-bottom: 8px;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
     flex: none;
 }
 
 .hvv-station {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 16px;
-    font-weight: 600;
+    gap: var(--space-2);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -159,41 +161,41 @@
     min-height: 0;
     display: grid;
     grid-template-rows: repeat(6, minmax(0, 1fr));
-    gap: 10px;
+    gap: var(--space-2);
 }
 
 .hvv-dep {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
     /* Mindesthöhe, damit die Zeilen bei dünner Datenlage nicht auseinanderfallen. */
     min-height: 34px;
-    padding: 4px 0;
+    padding: var(--space-1) 0;
     border-top: 1px solid var(--rule);
 }
 
 .hvv-badge {
     font-family: var(--font-family-mono);
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
     background: var(--track);
     color: var(--ink);
-    padding: 3px 9px;
-    border-radius: 6px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
     min-width: 46px;
     text-align: center;
     flex: none;
 }
 
 .hvv-badge-lg {
-    font-size: 20px;
-    border-radius: 8px;
-    padding: 4px 12px;
+    font-size: var(--font-size-xl);
+    border-radius: var(--radius-md);
+    padding: var(--space-1) var(--space-3);
 }
 
 .hvv-dir {
     flex: 1;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     color: var(--muted);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -203,8 +205,8 @@
 .hvv-min {
     font-family: var(--font-family-mono);
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    font-size: 17px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
     color: var(--ink);
 }
 

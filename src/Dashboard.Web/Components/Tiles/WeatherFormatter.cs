@@ -34,6 +34,14 @@ public static class WeatherFormatter
         return $"{pct.ToString("0", German)} %";
     }
 
+    /// <summary>
+    /// Ob eine Regenwahrscheinlichkeit überhaupt gedruckt wird. Ein Wert, der auf 0 % rundet,
+    /// sagt nichts aus; in der Stundenleiste würde er nur eine Zeile belegen, ohne eine Lesung
+    /// zu liefern — und leise genug, um lesbar zu bleiben, ist er nicht mehr zu bekommen.
+    /// </summary>
+    public static bool ShowsPrecipitation(double probability) =>
+        Math.Round(Math.Clamp(probability, 0d, 1d) * 100d, MidpointRounding.AwayFromZero) > 0d;
+
     public static string Hour(DateTimeOffset localTime) =>
         localTime.ToString("HH:mm", CultureInfo.InvariantCulture);
 

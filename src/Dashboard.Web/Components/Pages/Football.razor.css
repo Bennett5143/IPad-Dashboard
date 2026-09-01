@@ -25,11 +25,11 @@
 .fb-bracket {
     flex: none;
     overflow: hidden;
-    padding-top: 12px;
+    padding-top: var(--space-3);
 }
 
 .fb-bracket h2 {
-    margin: 0 0 10px;
+    margin: 0 0 var(--space-2);
 }
 
 .fb-empty {

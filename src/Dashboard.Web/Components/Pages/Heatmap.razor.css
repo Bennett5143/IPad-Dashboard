@@ -18,8 +18,8 @@
     display: inline-block;
     padding: var(--space-3) var(--space-5);
     background: var(--color-strava);
-    color: #fff;
-    border-radius: 999px;
+    color: var(--color-strava-ink);
+    border-radius: var(--radius-pill);
     text-decoration: none;
     font-weight: var(--font-weight-semibold);
 }
@@ -31,7 +31,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
-    padding: 10px 0 14px;
+    padding: var(--space-2) 0 var(--space-3);
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
@@ -56,9 +56,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     color: var(--muted);
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
     line-height: 1;
 }
 
@@ -68,8 +68,8 @@
 }
 
 .place-name {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     color: var(--ink);
     white-space: nowrap;
     overflow: hidden;
@@ -88,12 +88,12 @@
 .heatmap-stats .stat {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-0);
 }
 
 .stat-value {
     font-family: var(--font-family-mono);
-    font-size: 28px;
+    font-size: var(--font-size-2xl);
     color: var(--ink);
     font-variant-numeric: tabular-nums;
     line-height: 1;
@@ -101,8 +101,8 @@
 
 .stat-label {
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.06em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -132,7 +132,7 @@
     background: var(--bg);
     color: var(--ink);
     border: 1px solid var(--rule);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     box-shadow: none;
 }
 
@@ -148,7 +148,7 @@
 ::deep .run-popup {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-0);
     font-variant-numeric: tabular-nums;
 }
 
@@ -161,7 +161,7 @@
 }
 
 ::deep .run-popup-more {
-    margin-top: 2px;
+    margin-top: var(--space-0);
     color: var(--accent);
     font-size: var(--font-size-sm);
 }
@@ -172,14 +172,14 @@
 .sync-info {
     margin: 0;
     font-family: var(--font-family-mono);
-    font-size: 11px;
-    color: var(--faint);
+    font-size: var(--font-size-xs);
+    color: var(--muted);
     flex: none;
 }
 
 .heatmap-legend {
     border-top: 1px solid var(--rule);
-    padding-top: 8px;
+    padding-top: var(--space-2);
 }
 
 .heatmap-legend {

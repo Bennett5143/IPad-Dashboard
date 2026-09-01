@@ -4,33 +4,33 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 28px 14px;
+    padding: var(--space-4) var(--gutter-page) var(--space-3);
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
 
 .page-header-title {
     margin: 0;
-    font-size: 26px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-title);
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: var(--space-3);
 }
 
 .page-header-accent {
     width: 4px;
     height: 26px;
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     background: var(--accent);
     flex: none;
 }
 
 .page-header-meta {
     font-family: var(--font-family-mono);
-    font-size: 11px;
-    letter-spacing: 0.12em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     color: var(--muted);
     text-align: right;
 }

@@ -4,7 +4,7 @@
 .chart-frame {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-0);
     min-width: 0;
 }
 
@@ -40,11 +40,11 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-end;
-    padding: 1px 8px 1px 0;
+    padding: 1px var(--space-2) 1px 0;
     pointer-events: none;
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.08em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
@@ -58,10 +58,10 @@
 .chart-x-ticks {
     display: flex;
     justify-content: space-between;
-    margin-top: 2px;
+    margin-top: var(--space-0);
     font-family: var(--font-family-mono);
-    font-size: 10px;
-    letter-spacing: 0.08em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
     color: var(--muted);
     font-variant-numeric: tabular-nums;
 }

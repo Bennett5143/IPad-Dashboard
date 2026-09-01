@@ -4,9 +4,9 @@
 /* Sektions-Überschriften: Mono, Versalien, ruhiges Papier-Sekundär. */
 .insights h2 {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem;
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    letter-spacing: 0.18em;
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
     margin: 0 0 var(--space-2);
@@ -14,7 +14,7 @@
 
 .insights h2 .wi-window {
     color: var(--muted);
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
     margin-left: var(--space-2);
 }
 
@@ -32,22 +32,22 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 28px;
-    padding: 16px 0;
+    gap: var(--gutter-page);
+    padding: var(--space-4) 0;
     border-bottom: 1px solid var(--rule);
     flex: none;
 }
 
 .wi-rings {
     display: flex;
-    gap: 22px;
+    gap: var(--space-5);
 }
 
 .wi-load {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding-left: 28px;
+    gap: var(--space-1);
+    padding-left: var(--gutter-page);
     border-left: 1px solid var(--rule);
     min-width: 0;
 }
@@ -56,7 +56,7 @@
 .wi-load-ratio {
     display: block;
     font-family: var(--font-family-mono);
-    font-size: 40px;
+    font-size: var(--font-size-3xl);
     font-variant-numeric: tabular-nums;
     line-height: 1.1;
 }
@@ -64,13 +64,13 @@
 .wi-load-zone {
     display: block;
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
 }
 
 .wi-load-hint {
-    margin: 4px 0 0;
+    margin: var(--space-1) 0 0;
     font-size: var(--font-size-sm);
     color: var(--rec-mid);
 }
@@ -117,21 +117,21 @@
 .metric-cell {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px 18px;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
     min-width: 0;
 }
 
 .metric-current {
     font-family: var(--font-family-mono);
-    font-size: 19px;
+    font-size: var(--font-size-lg);
     font-variant-numeric: tabular-nums;
     color: var(--ink);
 }
 
 .metric-unit {
-    margin-left: 3px;
-    font-size: 12px;
+    margin-left: var(--space-1);
+    font-size: var(--font-size-sm);
     color: var(--muted);
 }
 
@@ -139,9 +139,9 @@
     display: flex;
     gap: var(--space-3);
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    letter-spacing: 0.08em;
-    color: var(--faint);
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-label);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
 }
 
@@ -151,8 +151,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    padding-top: 14px;
-    margin-top: 14px;
+    padding-top: var(--space-3);
+    margin-top: var(--space-3);
     border-top: 1px solid var(--rule);
     flex: none;
 }
@@ -220,18 +220,18 @@
 .tod-head {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-0);
 }
 
 .tod-title {
     font-size: var(--font-size-sm);
     color: var(--ink);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-label);
 }
 
 .tod-hint {
-    font-size: var(--font-size-xs, 0.75rem);
+    font-size: var(--font-size-sm);
     color: var(--muted);
 }
 
@@ -263,7 +263,7 @@
 
 .tod-bar {
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--track);
     overflow: hidden;
 }
@@ -292,8 +292,8 @@
 
 .tod-n {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
-    color: var(--faint);
+    font-size: var(--font-size-xs);
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
@@ -346,7 +346,7 @@
 
 .fitness-current {
     font-family: var(--font-family-mono);
-    font-size: 19px;
+    font-size: var(--font-size-lg);
     font-variant-numeric: tabular-nums;
     color: var(--ink);
 }
@@ -389,8 +389,8 @@
 .tod-matrix th {
     font-family: var(--font-family-mono);
     color: var(--muted);
-    font-weight: var(--font-weight-normal, 400);
-    padding: 2px var(--space-2);
+    font-weight: var(--font-weight-regular);
+    padding: var(--space-0) var(--space-2);
     text-align: left;
 }
 

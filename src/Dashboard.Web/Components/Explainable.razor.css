@@ -2,7 +2,7 @@
 .explainable {
     display: grid;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     transition: box-shadow 120ms ease;
 }
 
@@ -88,7 +88,7 @@
 .metric-dialog-label {
     font-family: var(--font-family-display);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-label);
     font-size: var(--font-size-sm);
     color: var(--muted);
 }

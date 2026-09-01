@@ -7,7 +7,7 @@
 
     background: var(--bg);
     border: 1px solid var(--rule);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: var(--space-4);
 
     display: flex;
@@ -51,7 +51,7 @@
     content: "";
     width: 3px;
     height: 0.95em;
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     background: var(--muted);
     flex-shrink: 0;
 }
@@ -66,11 +66,11 @@
 /* Einheitliche Kachel-Überschrift: Mono-Label, Versalien, weit gesperrt */
 .tile-title {
     font-family: var(--font-family-mono);
-    font-size: 0.625rem; /* 10px */
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.18em;
+    letter-spacing: var(--tracking-micro);
 }
 
 .tile-body {

@@ -1,7 +1,7 @@
 .eink-weather {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3);
     height: 100%;
     min-height: 0;
     text-decoration: none;
@@ -27,8 +27,8 @@
     grid-template-rows: auto auto;
     align-items: center;
     justify-content: center;
-    column-gap: 14px;
-    row-gap: 6px;
+    column-gap: var(--space-3);
+    row-gap: var(--space-2);
     margin-top: auto;
 }
 
@@ -37,35 +37,36 @@
     display: flex;
     align-items: center;
     color: var(--ink);
-    /* icon sizes to 1em of this font-size (see WeatherIcon) */
-    font-size: clamp(2rem, 4.5vw, 2.9rem);
+    /* icon sizes to 1em of this font-size (see WeatherIcon), so this step governs the
+       glyph, not any text. Was a clamp() resolving to 46px on the 1024px kiosk. */
+    font-size: var(--font-size-4xl);
     line-height: 1;
 }
 
 .wx-headline {
     display: flex;
     align-items: baseline;
-    gap: 12px;
+    gap: var(--space-3);
     flex-wrap: wrap;
 }
 
 .wx-temp {
     font-family: var(--font-family-mono);
-    font-size: clamp(2.2rem, 5vw, 3.2rem);
-    font-weight: 600;
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-semibold);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
 .wx-desc {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
     color: var(--muted);
 }
 
 .wx-facts {
     grid-column: 2;
     display: flex;
-    gap: 18px;
+    gap: var(--space-4);
     flex-wrap: wrap;
     margin: 0;
 }
@@ -74,8 +75,8 @@
 
 .wx-facts dt {
     font-family: var(--font-family-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
@@ -86,13 +87,18 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Hourly cards ---------------------------------------------------------- */
-/* Die Karten behalten ihre eigene Höhe. Sie einmal über die frei gewordene Höhe zu strecken war
-   der Fehler: vier kurze Zeilen mittig in einer hohen Box sind leerer als dieselbe Karte in ihrer
+/* Stundenleiste ---------------------------------------------------------- */
+/* Spalten an Haarlinien, nicht umrandete Karten — dieselbe Behandlung wie die Stundenleiste
+   auf /weather. Eine Datenreihe liest sich als eine Sache; jeder Stunde ihr eigenes Kästchen
+   zu geben, kompartimentiert, was eine Zeile ist. Die Haarlinie trennt genauso zuverlässig
+   und ist die Sprache, die das übrige Papier spricht.
+
+   Die Spalten behalten ihre eigene Höhe. Sie einmal über die frei gewordene Höhe zu strecken war
+   der Fehler: vier kurze Zeilen mittig in einer hohen Box sind leerer als dieselbe Spalte in ihrer
    natürlichen Höhe. Der Überschuss bleibt Überschuss — margin-top:auto hält den Streifen unten. */
 .wx-hours {
     display: flex;
-    gap: 8px;
+    border-top: 1px solid var(--rule);
     margin-top: auto;
     flex: none;
 }
@@ -103,10 +109,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 4px;
-    border: 1px solid var(--rule);
-    border-radius: 6px;
+    gap: var(--space-0);
+    padding: var(--space-2) var(--space-1);
+}
+
+.wx-hour + .wx-hour {
+    border-left: 1px solid var(--rule);
 }
 
 .wx-hour-time,
@@ -116,10 +124,12 @@
     font-variant-numeric: tabular-nums;
 }
 
-.wx-hour-time { font-size: 0.72rem; color: var(--muted); }
-.wx-hour-glyph { display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: 1.4rem; line-height: 1; }
-.wx-hour-temp { font-weight: 600; }
+.wx-hour-time { font-size: var(--font-size-xs); color: var(--muted); }
+.wx-hour-glyph { display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: var(--font-size-xl); line-height: 1; }
+.wx-hour-temp { font-weight: var(--font-weight-semibold); }
 
-/* Rain probability: quiet by default, ink-emphasised when it actually matters. */
-.wx-hour-rain { font-size: 0.72rem; color: var(--faint); }
-.wx-hour-rain.is-wet { color: var(--ink); font-weight: 600; }
+/* Rain probability: secondary by default, ink-emphasised when it actually matters.
+   An hour that rounds to 0 % renders no figure at all (see WeatherFormatter) — the
+   quiet came from omission rather than from a tone below the legibility floor. */
+.wx-hour-rain { font-size: var(--font-size-xs); color: var(--muted); }
+.wx-hour-rain.is-wet { color: var(--ink); font-weight: var(--font-weight-semibold); }

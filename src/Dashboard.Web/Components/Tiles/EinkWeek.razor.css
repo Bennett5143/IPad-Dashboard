@@ -12,7 +12,7 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    padding: 0 10px;
+    padding: 0 var(--space-2);
     border-left: 1px solid var(--rule);
 }
 
@@ -29,54 +29,56 @@
 .wk-head {
     display: flex;
     align-items: baseline;
-    gap: 6px;
-    padding-bottom: 6px;
-    margin-bottom: 8px;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
     border-bottom: 1px solid var(--rule);
 }
 
 .wk-day-label {
     font-family: var(--font-family-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
     color: var(--muted);
 }
 
 .wk-date {
     font-family: var(--font-family-mono);
-    font-size: 0.62rem;
+    font-size: var(--font-size-xs);
     font-variant-numeric: tabular-nums;
-    color: var(--faint);
+    color: var(--muted);
 }
 
 /* Heute trägt die Tinte, die übrigen Tage bleiben zurückhaltend. */
 .wk-day.is-today .wk-day-label,
 .wk-day.is-today .wk-date {
     color: var(--ink);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .wk-badge {
     margin-left: auto;
-    padding: 1px 5px;
+    padding: 1px var(--space-1);
     border-radius: var(--radius-md);
     background-color: var(--track);
     font-family: var(--font-family-mono);
-    font-size: 0.6rem;
+    font-size: var(--font-size-xs);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
 .wk-badge.is-up { color: var(--bull); }
 .wk-badge.is-down { color: var(--bear); }
+/* Placeholder glyph holding the column's width when a day has no quote — it
+   carries no reading, so --faint is right here and the text floor does not apply. */
 .wk-badge.is-empty { color: var(--faint); }
 
 /* Spiele des Tages -------------------------------------------------------- */
 .wk-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -87,7 +89,7 @@
 .wk-entry {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: var(--space-0);
     min-width: 0;
 }
 
@@ -98,18 +100,18 @@
 .wk-entry.is-pair {
     flex-direction: row;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .wk-time {
     font-family: var(--font-family-mono);
-    font-size: 0.6rem;
+    font-size: var(--font-size-xs);
     font-variant-numeric: tabular-nums;
     color: var(--muted);
 }
 
 .wk-title {
-    font-size: 0.72rem;
+    font-size: var(--font-size-xs);
     line-height: 1.25;
     color: var(--ink);
     overflow-wrap: anywhere;
@@ -120,7 +122,7 @@
 .wk-crests {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
 }
 
 .wk-crest {
@@ -131,7 +133,7 @@
 
 /* Der CL-Sammeleintrag ist die Ausnahme des Tages – er darf sich abheben. */
 .wk-entry.is-aggregate .wk-title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .wk-day.is-past .wk-title {
