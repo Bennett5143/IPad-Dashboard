@@ -7,6 +7,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="color-scheme" content="@(_night ? "dark" : "light")" />
+    @* The only colors in the app written as literals rather than tokens, and they have to be:
+       the browser chrome reads this meta before and outside CSS, so var(--bg) cannot resolve
+       here. They mirror --bg of each theme in app.css — retune one, retune the other. *@
     <meta name="theme-color" content="@(_night ? "#121210" : "#f5f2eb")" />
     <base href="/" />
     <ResourcePreloader />

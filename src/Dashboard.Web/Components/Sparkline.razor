@@ -1,16 +1,5 @@
 <svg class="sparkline @(Fill ? "sparkline--fill" : null) @CssClass" viewBox="0 0 120 32"
      preserveAspectRatio="none" role="img" aria-hidden="true">
-    @if (_area.Length > 0 && GradientId is not null)
-    {
-        @if (Smooth)
-        {
-            <path class="sparkline-area" d="@_area" fill="url(#@GradientId)" />
-        }
-        else
-        {
-            <polygon class="sparkline-area" points="@_area" fill="url(#@GradientId)" />
-        }
-    }
     @if (_path.Length > 0)
     {
         <path d="@_path" fill="none" vector-effect="non-scaling-stroke" />
@@ -30,28 +19,16 @@
     /// <c>vector-effect</c> halten die Strichstärke dabei gleichmäßig.</summary>
     [Parameter] public bool Fill { get; set; }
 
-    /// <summary>Gradient-Id (ohne <c>#</c>) aus <see cref="ChartGradients"/>, z. B. <c>gGreen</c>.
-    /// Ist er gesetzt, wird zusätzlich die Fläche unter der Kurve mit dem Verlauf gefüllt.</summary>
-    [Parameter] public string? GradientId { get; set; }
-
     /// <summary>Zeichnet die Linie als weiche Kurve statt als Streckenzug. Bewusst opt-in: so
     /// ändert kein bestehendes Diagramm seine Form, nur weil die Geometrie sie jetzt kann.</summary>
     [Parameter] public bool Smooth { get; set; }
 
     private string _points = string.Empty;
     private string _path = string.Empty;
-    private string _area = string.Empty;
 
     protected override void OnParametersSet()
     {
         _points = Smooth ? string.Empty : SparklineGeometry.ToPolylinePoints(Values, 120, 32);
         _path = Smooth ? SparklineGeometry.ToSmoothPath(Values, 120, 32) : string.Empty;
-        // Die Fläche folgt der Linie – auch in ihren Lücken. Ein Polygon unter einer weichen
-        // Kurve liefe sonst über jede Lücke hinweg, die die Linie darüber offen lässt.
-        _area = GradientId is null
-            ? string.Empty
-            : Smooth
-                ? SparklineGeometry.ToSmoothAreaPath(Values, 120, 32)
-                : SparklineGeometry.ToAreaPolygonPoints(Values, 120, 32);
     }
 }

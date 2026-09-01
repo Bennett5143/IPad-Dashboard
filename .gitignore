@@ -456,5 +456,10 @@ openspec
 .claude/skills/openspec-*/
 .claude/commands/opsx/
 
+# Machine-specific symlink to the vendored refactoring-ui skill in the agents
+# repo (absolute path into this machine's home; see agents:
+# vendor/refactoring-ui-skill/VENDORED.md)
+.claude/skills/refactoring-ui
+
 # deploy.sh rollback anchors (per-host state, one per target: main/dev)
 .last-deploy*
