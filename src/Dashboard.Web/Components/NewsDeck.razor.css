@@ -118,7 +118,7 @@
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--faint);
+    color: var(--muted);
 }
 
 /* Pfeile: groß genug für den Daumen, still genug fürs Papier. */
@@ -133,6 +133,8 @@
     background: var(--track);
 }
 
+/* Disabled control — exempt from the text contrast floor (WCAG 1.4.3), and the
+   whole point is that it reads as unavailable. */
 .deck-arrow.is-disabled {
     color: var(--faint);
     background: transparent;

@@ -47,7 +47,7 @@
     font-family: var(--font-family-mono);
     font-size: 0.62rem;
     font-variant-numeric: tabular-nums;
-    color: var(--faint);
+    color: var(--muted);
 }
 
 /* Heute trägt die Tinte, die übrigen Tage bleiben zurückhaltend. */
@@ -70,6 +70,8 @@
 
 .wk-badge.is-up { color: var(--bull); }
 .wk-badge.is-down { color: var(--bear); }
+/* Placeholder glyph holding the column's width when a day has no quote — it
+   carries no reading, so --faint is right here and the text floor does not apply. */
 .wk-badge.is-empty { color: var(--faint); }
 
 /* Spiele des Tages -------------------------------------------------------- */

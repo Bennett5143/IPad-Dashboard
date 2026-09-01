@@ -59,11 +59,22 @@
    spike/A-B without theming the rest of the app — the tokens then
    cascade only into that element's subtree).
 
-   Ramp: --bg --ink --muted --faint --rule --track --accent/--good.
+   Ramp: --bg --ink --muted --faint --rule --rule-strong --track
+         --accent/--good.
    Rule: color carries information only — the single accent (forest
    green) is for links/active selection; every other color is a
    data-bearing token OUTSIDE the ramp (heatmap route, WHOOP recovery
    zone, bull/bear).
+
+   Contrast roles (WCAG 2.x, computed from the hex values, both themes):
+   --ink and --muted are the two TEXT tones and clear 4.5:1; --muted is
+   the floor. --faint is DECORATIVE — dither grain, disabled affordances,
+   placeholder glyphs — and must never carry information-bearing text.
+   --rule is a decorative hairline and is deliberately below 3:1;
+   --rule-strong is the FUNCTIONAL border that identifies a form control
+   and clears 3:1 against both the page and the control's own fill
+   (WCAG 1.4.11). The two border tones answer to different criteria, so
+   they stay two tokens.
    ============================================================ */
 
 :root[data-theme="eink"],
@@ -71,12 +82,13 @@
     color-scheme: light;
 
     --bg:     #f5f2eb;  /* paper ground */
-    --ink:    #23201a;  /* text */
-    --muted:  #6f6a5d;  /* secondary text */
-    --faint:  #a9a291;  /* dither / grain */
-    --rule:   #cbc3b1;  /* hairline */
+    --ink:    #23201a;  /* text — 14.53:1 */
+    --muted:  #6f6a5d;  /* secondary text — 4.82:1, the floor for text */
+    --faint:  #a9a291;  /* dither / grain — 2.27:1, decorative only, never text */
+    --rule:   #cbc3b1;  /* decorative hairline — 1.57:1, deliberately quiet */
+    --rule-strong: #887a5b;  /* functional border — 3.77:1 vs --bg, 3.14:1 vs --track */
     --track:  #e4dece;  /* ring / event fill */
-    --accent: #2f8256;  /* forest green — links, active selection */
+    --accent: #2b784f;  /* forest green — links, active selection — 4.81:1 both ways */
     --good:   var(--accent);
 
     /* Data-bearing colors (outside the ramp), desaturated for paper. */
@@ -84,7 +96,7 @@
     --rec-high: #3f9e6a;  /* WHOOP recovery — green zone */
     --rec-mid:  #c9a03a;  /* yellow zone */
     --rec-low:  #c05f4f;  /* red zone */
-    --bull:     #2f8256;  /* price up */
+    --bull:     #2b784f;  /* price up — tracks --accent's hex so paper shows one green */
     --bear:     #c05f4f;  /* price down */
 }
 
@@ -93,12 +105,13 @@
     color-scheme: dark;
 
     --bg:     #121210;
-    --ink:    #ece6d8;
-    --muted:  #928b7c;
-    --faint:  #4c483f;
-    --rule:   #33302a;
+    --ink:    #ece6d8;  /* 15.07:1 */
+    --muted:  #928b7c;  /* 5.54:1, the floor for text */
+    --faint:  #4c483f;  /* 2.06:1, decorative only, never text */
+    --rule:   #33302a;  /* decorative hairline — 1.43:1, deliberately quiet */
+    --rule-strong: #766f61;  /* functional border — 3.77:1 vs --bg, 3.11:1 vs --track */
     --track:  #26241f;
-    --accent: #57c98a;
+    --accent: #57c98a;  /* 9.04:1 — already clears both directions */
     --good:   var(--accent);
 
     --route:    #ff9628;
@@ -166,11 +179,13 @@ a {
     color: var(--accent);
 }
 
+/* The border is what identifies these as controls, so it takes the functional
+   tone (WCAG 1.4.11, 3:1) rather than the decorative hairline. */
 input, select, textarea {
     font: inherit;
     color: var(--ink);
     background-color: var(--track);
-    border: 1px solid var(--rule);
+    border: 1px solid var(--rule-strong);
     border-radius: 6px;
     accent-color: var(--accent);
 }
@@ -221,9 +236,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .dialog-title  { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); font-family: var(--font-family-display); text-transform: uppercase; letter-spacing: 0.04em; }
 .dialog-error  { color: var(--bear); font-size: var(--font-size-sm); margin: var(--space-3) 0 0; }
 .dialog-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+/* Secondary action: its --track fill sits at 1.2:1, so the border is the only
+   thing marking the button's edge and takes the functional tone too. */
 .dialog-actions button {
     flex: 1; min-width: 120px; padding: 0.6rem 1rem;
-    border: 1px solid var(--rule); border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--rule-strong); border-radius: 6px; cursor: pointer;
     font: inherit; font-weight: var(--font-weight-semibold);
     background: var(--track); color: var(--ink);
 }
@@ -435,11 +452,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 .rs-badge-reported { color: var(--ink); }
 
-/* Dashed rule: the weakest grade reads as provisional at a glance. */
+/* Dashed rule: the weakest grade reads as provisional at a glance. The dashed
+   border and the hollow dot already carry that distinction, so the label only
+   needs to step back to the secondary text tone — --faint would put it below
+   the legibility floor for a third, redundant cue. */
 .rs-badge-rumour,
 .rs-badge-unknown {
     border-style: dashed;
-    color: var(--faint);
+    color: var(--muted);
 }
 
 /* The grade's dot follows the same logic as its rule — filled for the strongest,
