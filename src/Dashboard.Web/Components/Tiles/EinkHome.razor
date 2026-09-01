@@ -4,7 +4,10 @@
 @* e-ink paper home: no-scroll bento for 1024x768. Top-left = analog clock over the 3 WHOOP rings
    (Recovery colored by zone, Strain/Sleep in ink); top-right = weather; bottom (full width) =
    the week over football and price development. *@
-<div class="eink-home" data-theme="eink">
+@* No data-theme here: the attribute is set once on the document root and cascades. Pinning it
+   was a leftover from the migration, when a single page could opt into the paper look without
+   theming the rest — and it quietly opted the kiosk's main screen out of the night switch. *@
+<div class="eink-home">
     <section class="eink-tl">
         <AnalogClock />
         <div class="eink-rings">
