@@ -9,6 +9,38 @@ How the app is layered and the patterns every feature follows. What each module
 does: [feature-modules.md](feature-modules.md) · why things are the way they
 are: [history.md](history.md).
 
+## Diagram
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="archify/architecture-dark.png">
+  <img alt="Architecture diagram: an iPad browser reaches Dashboard.Web over a SignalR circuit; Dashboard.Web is wired to Dashboard.Infrastructure in Program.cs only and otherwise sees domain types; Dashboard.Infrastructure implements the ports Dashboard.Domain owns, persists to PostgreSQL with PostGIS, and pulls from Strava, Whoop, public data APIs and CARTO basemaps." src="archify/architecture.png">
+</picture>
+
+The layering below, as an explorable
+diagram. [`archify/architecture.archify.json`](archify/architecture.archify.json) is the source;
+the two PNGs above and the interactive HTML are generated from it. Everything
+generated lands in `docs/archify/` beside the source; only the specification and
+the two PNGs are tracked, the HTML and any visual-check sidecars stay local. The
+output path is in `meta.output`, so run it from the repository root:
+
+```sh
+git clone --depth 1 --branch v2.16.0 https://github.com/tt-a1i/archify.git /tmp/archify
+node /tmp/archify/archify/bin/archify.mjs deliver architecture \
+  docs/archify/architecture.archify.json \
+  --quality showcase --repo-root .
+```
+
+The specification cites 8 files and lines in this repository and records the
+commit they were read at, and archify refuses to render when a cited path is
+missing. The `Architecture diagram` workflow re-runs that check against the
+current commit whenever anything under `src/` changes, so a moved or deleted
+file fails CI instead of leaving the diagram quietly wrong.
+
+It cannot notice the architecture changing while the cited files stay where they
+are. That stays a review question, which is also why the diagram is scoped to
+the vertical slice: the asset proxies, the read-only `research` schema and the
+analytics split are described below in prose rather than drawn.
+
 ## Layers
 
 `Web → Infrastructure → Domain`, enforced by project references:
