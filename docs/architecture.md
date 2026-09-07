@@ -12,19 +12,21 @@ are: [history.md](history.md).
 ## Diagram
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="architecture-dark.png">
-  <img alt="Architecture diagram: an iPad browser reaches Dashboard.Web over a SignalR circuit; Dashboard.Web is wired to Dashboard.Infrastructure in Program.cs only and otherwise sees domain types; Dashboard.Infrastructure implements the ports Dashboard.Domain owns, persists to PostgreSQL with PostGIS, and pulls from Strava, Whoop, public data APIs and CARTO basemaps." src="architecture.png">
+  <source media="(prefers-color-scheme: dark)" srcset="archify/architecture-dark.png">
+  <img alt="Architecture diagram: an iPad browser reaches Dashboard.Web over a SignalR circuit; Dashboard.Web is wired to Dashboard.Infrastructure in Program.cs only and otherwise sees domain types; Dashboard.Infrastructure implements the ports Dashboard.Domain owns, persists to PostgreSQL with PostGIS, and pulls from Strava, Whoop, public data APIs and CARTO basemaps." src="archify/architecture.png">
 </picture>
 
 The layering below, as an explorable
-diagram. [`architecture.archify.json`](architecture.archify.json) is the source;
-the two PNGs above and the interactive HTML are generated from it, and only the
-PNGs are committed:
+diagram. [`archify/architecture.archify.json`](archify/architecture.archify.json) is the source;
+the two PNGs above and the interactive HTML are generated from it. Everything
+generated lands in `docs/archify/` beside the source; only the specification and
+the two PNGs are tracked, the HTML and any visual-check sidecars stay local. The
+output path is in `meta.output`, so run it from the repository root:
 
 ```sh
 git clone --depth 1 --branch v2.16.0 https://github.com/tt-a1i/archify.git /tmp/archify
 node /tmp/archify/archify/bin/archify.mjs deliver architecture \
-  docs/architecture.archify.json docs/architecture.html \
+  docs/archify/architecture.archify.json \
   --quality showcase --repo-root .
 ```
 
