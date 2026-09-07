@@ -9,6 +9,30 @@ How the app is layered and the patterns every feature follows. What each module
 does: [feature-modules.md](feature-modules.md) · why things are the way they
 are: [history.md](history.md).
 
+## Diagram
+
+The vertical slice below, from an external API to the display, as an explorable
+diagram. [`architecture.archify.json`](architecture.archify.json) is the source;
+the HTML is generated from it and is not committed:
+
+```sh
+git clone --depth 1 --branch v2.16.0 https://github.com/tt-a1i/archify.git /tmp/archify
+node /tmp/archify/archify/bin/archify.mjs deliver architecture \
+  docs/architecture.archify.json docs/architecture.html \
+  --quality showcase --repo-root .
+```
+
+The specification cites 14 files and lines in this repository and records the
+commit they were read at, and archify refuses to render when a cited path is
+missing. The `Architecture diagram` workflow re-runs that check against the
+current commit whenever anything under `src/` changes, so a moved or deleted
+file fails CI instead of leaving the diagram quietly wrong.
+
+It cannot notice the architecture changing while the cited files stay where they
+are. That stays a review question, which is also why the diagram is scoped to
+the vertical slice: the asset proxies, the read-only `research` schema and the
+analytics split are described below in prose rather than drawn.
+
 ## Layers
 
 `Web → Infrastructure → Domain`, enforced by project references:

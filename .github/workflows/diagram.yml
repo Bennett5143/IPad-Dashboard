@@ -1,0 +1,68 @@
+# Keeps docs/architecture.archify.json honest about the code it cites.
+#
+# The specification pins a commit and points at concrete files and lines
+# (meta.repository + component sources). Archify verifies those references
+# against a checkout before it renders, so re-validating with the pinned
+# revision swapped for the current HEAD turns a moved or deleted file into a
+# failing check instead of a diagram that quietly claims evidence it no longer
+# has.
+#
+# What this does NOT catch: the architecture changing while the cited files
+# stay where they are. No check can; that stays a review question.
+name: Architecture diagram
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'src/**'
+      - 'docs/architecture.archify.json'
+      - '.github/workflows/diagram.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'src/**'
+      - 'docs/architecture.archify.json'
+      - '.github/workflows/diagram.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    name: Diagram evidence
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Archify resolves cited paths as git objects at the given revision,
+          # so the commit under test has to be in the local history.
+          fetch-depth: 0
+
+      # No setup-node step: the runner ships a Node newer than archify's
+      # `engines: >=18`, and archify has no runtime dependencies to install.
+      - name: Show Node version
+        run: node --version
+
+      - name: Fetch archify (pinned release)
+        run: git clone --depth 1 --branch v2.16.0 https://github.com/tt-a1i/archify.git "$RUNNER_TEMP/archify"
+
+      # One line on purpose: a heredoc inside a YAML block scalar is a quiet
+      # breakage waiting to happen, and this only rewrites a single field.
+      - name: Re-pin the specification to this commit
+        run: >-
+          python3 -c "import json, os;
+          s = json.load(open('docs/architecture.archify.json'));
+          s['meta']['repository']['revision'] = os.environ['GITHUB_SHA'];
+          json.dump(s, open(os.environ['RUNNER_TEMP'] + '/spec.json', 'w'), indent=2)"
+
+      - name: Verify the diagram still cites files that exist
+        run: |
+          node "$RUNNER_TEMP/archify/archify/bin/archify.mjs" validate architecture \
+            "$RUNNER_TEMP/spec.json" --quality showcase --repo-root . --json
