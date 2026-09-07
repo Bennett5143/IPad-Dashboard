@@ -2,9 +2,9 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "IPad-Dashboard — the vertical slice, external API to UI",
+    "title": "IPad-Dashboard — Blazor Server on a Raspberry Pi",
     "locale": "en",
-    "output": "architecture.html",
+    "output": "dashboard-architecture.html",
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Bennett5143/IPad-Dashboard",
@@ -12,79 +12,144 @@
     },
     "views": [
       {
-        "id": "push-path",
-        "label": "Push path",
+        "id": "request-path",
+        "label": "Request path",
         "focus": [
-          "apis",
-          "poller",
-          "state",
-          "razor",
-          "ipad"
+          "ipad",
+          "web",
+          "infra",
+          "db"
         ],
-        "note": "How fresh data reaches the display without the page asking for it: poll, map, publish, re-render."
+        "note": "How a page render reaches durable state: browser circuit, application layer, EF Core, PostGIS."
       },
       {
-        "id": "inversion",
-        "label": "Dependency inversion",
+        "id": "layering",
+        "label": "Project layering",
         "focus": [
-          "ports",
-          "stores",
-          "poller",
-          "razor"
+          "web",
+          "domain",
+          "infra"
         ],
-        "note": "Domain owns the interfaces; Infrastructure implements them. The Web project never names a concrete implementation."
+        "note": "Three projects, one direction: Web references Domain and Infrastructure, Infrastructure references Domain, Domain references nothing."
       },
       {
-        "id": "persistence",
-        "label": "Persistence",
+        "id": "integrations",
+        "label": "External feeds",
         "focus": [
-          "poller",
-          "stores",
-          "db",
-          "ports"
+          "infra",
+          "strava",
+          "whoop",
+          "feeds",
+          "tiles"
         ],
-        "note": "Background services fill the database, so a page reload never spends API budget."
+        "note": "Four upstream groups; only Strava and Whoop need user-delegated OAuth tokens."
       }
     ]
   },
   "components": [
     {
-      "id": "apis",
+      "id": "ipad",
       "type": "external",
-      "label": "External APIs",
-      "sublabel": "six upstream feeds",
-      "tag": "OAuth: Strava, WHOOP",
+      "label": "iPad",
+      "sublabel": "Browser",
       "pos": [
         40,
-        150
+        300
       ],
       "size": [
-        190,
-        64
+        130,
+        62
+      ]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Dashboard.Web",
+      "sublabel": "Blazor Server · .NET 10",
+      "pos": [
+        290,
+        300
+      ],
+      "size": [
+        200,
+        62
       ],
       "sources": [
         {
-          "path": "src/Dashboard.Infrastructure/Weather/WeatherOptions.cs",
-          "label": "base address example"
+          "path": "src/Dashboard.Web/Program.cs",
+          "line": 1,
+          "label": "host and DI wiring"
         },
         {
-          "path": "src/Dashboard.Infrastructure/Whoop/WhoopOptions.cs",
-          "label": "OAuth endpoints"
+          "path": "src/Dashboard.Web/Components/Pages/Habits.razor",
+          "label": "Razor page example"
         }
       ]
     },
     {
-      "id": "db",
-      "type": "database",
-      "label": "PostgreSQL 16 + PostGIS",
-      "sublabel": "geometry(LineString, 4326)",
-      "tag": "multi-arch image",
+      "id": "domain",
+      "type": "backend",
+      "label": "Dashboard.Domain",
+      "sublabel": "entities, calculators, ports",
+      "tag": "no EF, no HTTP",
       "pos": [
-        40,
-        350
+        510,
+        130
       ],
       "size": [
-        190,
+        210,
+        62
+      ],
+      "sources": [
+        {
+          "path": "src/Dashboard.Domain/Running/AerobicEfficiencyCalculator.cs",
+          "label": "pure domain logic"
+        },
+        {
+          "path": "src/Dashboard.Domain/Entities/HabitEntry.cs",
+          "label": "entity example"
+        }
+      ]
+    },
+    {
+      "id": "infra",
+      "type": "backend",
+      "label": "Dashboard.Infrastructure",
+      "sublabel": "EF Core, HTTP clients",
+      "pos": [
+        680,
+        300
+      ],
+      "size": [
+        215,
+        62
+      ],
+      "sources": [
+        {
+          "path": "src/Dashboard.Infrastructure/DependencyInjection.cs",
+          "line": 20,
+          "label": "AddInfrastructure()"
+        },
+        {
+          "path": "src/Dashboard.Infrastructure/Persistence/DashboardDbContext.cs",
+          "line": 7,
+          "label": "DashboardDbContext"
+        }
+      ],
+      "tag": "implements the ports"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL + PostGIS",
+      "sublabel": "postgis:16-3.5 · Npgsql",
+      "tag": "NetTopologySuite",
+      "pos": [
+        680,
+        470
+      ],
+      "size": [
+        215,
         66
       ],
       "sources": [
@@ -101,265 +166,175 @@
       ]
     },
     {
-      "id": "poller",
-      "type": "backend",
-      "label": "BackgroundService",
-      "sublabel": "typed HttpClient, PeriodicTimer",
-      "pos": [
-        310,
-        150
-      ],
-      "size": [
-        200,
-        64
-      ],
-      "sources": [
-        {
-          "path": "src/Dashboard.Infrastructure/Weather/WeatherRefreshService.cs",
-          "label": "refresh loop"
-        },
-        {
-          "path": "src/Dashboard.Infrastructure/Football/FootballRefreshService.cs",
-          "label": "second example"
-        }
-      ]
-    },
-    {
-      "id": "stores",
-      "type": "backend",
-      "label": "Repositories and stores",
-      "sublabel": "EF Core over Npgsql",
-      "pos": [
-        310,
-        350
-      ],
-      "size": [
-        200,
-        64
-      ],
-      "sources": [
-        {
-          "path": "src/Dashboard.Infrastructure/Strava/RunRepository.cs",
-          "label": "port implementation"
-        },
-        {
-          "path": "src/Dashboard.Infrastructure/Persistence/DashboardDbContext.cs",
-          "line": 7,
-          "label": "DashboardDbContext"
-        }
-      ]
-    },
-    {
-      "id": "state",
-      "type": "backend",
-      "label": "ObservableState<T>",
-      "sublabel": "snapshot in memory, MarkStale()",
-      "tag": "singleton per feature",
-      "pos": [
-        580,
-        150
-      ],
-      "size": [
-        200,
-        64
-      ],
-      "sources": [
-        {
-          "path": "src/Dashboard.Domain/Weather/IWeatherProvider.cs",
-          "label": "port beside the state"
-        },
-        {
-          "path": "src/Dashboard.Domain/Football/FootballState.cs",
-          "label": "state example"
-        }
-      ]
-    },
-    {
-      "id": "ports",
-      "type": "backend",
-      "label": "Domain ports",
-      "sublabel": "IWeatherProvider, IRunRepository",
-      "tag": "no EF, no HTTP",
-      "pos": [
-        580,
-        350
-      ],
-      "size": [
-        200,
-        64
-      ],
-      "sources": [
-        {
-          "path": "src/Dashboard.Domain/Running/IRunRepository.cs",
-          "label": "repository port"
-        },
-        {
-          "path": "src/Dashboard.Domain/Weather/IWeatherProvider.cs",
-          "label": "provider port"
-        }
-      ]
-    },
-    {
-      "id": "razor",
-      "type": "frontend",
-      "label": "Razor components",
-      "sublabel": "subscribe to Changed",
-      "pos": [
-        850,
-        150
-      ],
-      "size": [
-        190,
-        64
-      ],
-      "sources": [
-        {
-          "path": "src/Dashboard.Web/Components/Pages/Home.razor",
-          "label": "kiosk bento page"
-        },
-        {
-          "path": "src/Dashboard.Web/Program.cs",
-          "line": 1,
-          "label": "the only place naming implementations"
-        }
-      ]
-    },
-    {
-      "id": "ipad",
+      "id": "strava",
       "type": "external",
-      "label": "iPad",
-      "sublabel": "kiosk, no internet",
+      "label": "Strava API",
+      "sublabel": "runs and activities",
+      "tag": "OAuth 2.0",
       "pos": [
-        1110,
-        150
+        1100,
+        40
       ],
       "size": [
-        130,
-        64
+        230,
+        62
+      ]
+    },
+    {
+      "id": "whoop",
+      "type": "external",
+      "label": "Whoop API",
+      "sublabel": "recovery and sleep",
+      "tag": "OAuth 2.0",
+      "pos": [
+        1100,
+        170
+      ],
+      "size": [
+        230,
+        62
+      ]
+    },
+    {
+      "id": "feeds",
+      "type": "external",
+      "label": "Public data APIs",
+      "sublabel": "fixtures, prices, weather, transit",
+      "tag": "no credentials shared",
+      "pos": [
+        1100,
+        300
+      ],
+      "size": [
+        230,
+        62
+      ]
+    },
+    {
+      "id": "tiles",
+      "type": "external",
+      "label": "CARTO basemaps",
+      "sublabel": "map tiles",
+      "tag": "cached on disk",
+      "pos": [
+        1100,
+        430
+      ],
+      "size": [
+        230,
+        62
       ]
     }
   ],
   "boundaries": [
     {
       "kind": "region",
-      "label": "Dashboard.Infrastructure",
+      "label": "Raspberry Pi · Docker Compose (dashboard-app, dashboard-db)",
       "wraps": [
-        "poller",
-        "stores"
-      ]
-    },
-    {
-      "kind": "region",
-      "label": "Dashboard.Domain",
-      "wraps": [
-        "state",
-        "ports"
-      ]
-    },
-    {
-      "kind": "region",
-      "label": "Dashboard.Web",
-      "wraps": [
-        "razor"
+        "web",
+        "domain",
+        "infra",
+        "db"
       ]
     }
   ],
   "connections": [
     {
-      "id": "poll",
-      "from": "apis",
-      "to": "poller",
-      "label": "poll on PeriodicTimer",
-      "variant": "emphasis",
-      "labelDy": 50
-    },
-    {
-      "id": "publish",
-      "from": "poller",
-      "to": "state",
-      "label": "map DTO to domain, publish",
-      "variant": "emphasis",
-      "labelDy": 50
-    },
-    {
-      "id": "rerender",
-      "from": "state",
-      "to": "razor",
-      "label": "Changed, re-render",
-      "variant": "emphasis",
-      "labelAt": [
-        815,
-        226
-      ]
-    },
-    {
-      "id": "circuit",
-      "from": "razor",
-      "to": "ipad",
+      "id": "browser-circuit",
+      "from": "ipad",
+      "to": "web",
       "label": "SignalR circuit",
       "variant": "emphasis",
-      "labelDy": 50
+      "labelDy": -30
     },
     {
-      "id": "persist",
-      "from": "poller",
-      "to": "stores",
-      "label": "persist snapshot",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "labelDy": 90
+      "id": "web-uses-infra",
+      "from": "web",
+      "to": "infra",
+      "label": "wired in Program.cs only",
+      "variant": "emphasis"
     },
     {
-      "id": "ef",
-      "from": "stores",
+      "id": "web-uses-domain",
+      "from": "web",
+      "to": "domain",
+      "label": "domain types only",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "infra-uses-domain",
+      "from": "infra",
+      "to": "domain",
+      "label": "implements ports",
+      "fromSide": "top",
+      "toSide": "right"
+    },
+    {
+      "id": "ef-core",
+      "from": "infra",
       "to": "db",
       "label": "EF Core over Npgsql",
-      "labelDy": 80
-    },
-    {
-      "id": "implements",
-      "from": "stores",
-      "to": "ports",
-      "label": "implements",
-      "variant": "dashed"
-    },
-    {
-      "id": "reads",
-      "from": "razor",
-      "to": "ports",
-      "label": "reads through ports",
+      "variant": "emphasis",
       "fromSide": "bottom",
-      "toSide": "right"
+      "toSide": "top",
+      "labelDy": 110
+    },
+    {
+      "id": "pull-strava",
+      "from": "infra",
+      "to": "strava",
+      "label": "pull runs",
+      "labelSegment": 2
+    },
+    {
+      "id": "pull-whoop",
+      "from": "infra",
+      "to": "whoop",
+      "label": "pull recovery",
+      "labelSegment": 2
+    },
+    {
+      "id": "pull-feeds",
+      "from": "infra",
+      "to": "feeds",
+      "label": "poll on a timer",
+      "labelDx": 60
+    },
+    {
+      "id": "pull-tiles",
+      "from": "infra",
+      "to": "tiles",
+      "label": "fetch tiles",
+      "labelSegment": 2
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Why the arrow points left",
+      "title": "Layering",
       "items": [
-        "Domain owns the interfaces; Infrastructure implements them",
-        "The Web project's GlobalUsings expose only Dashboard.Domain.*",
-        "Concrete infrastructure is named in Program.cs and nowhere else",
-        "Domain carries no EF, no HTTP and no NetTopologySuite"
+        "Domain owns the ports (IWeatherProvider, IRunRepository) and carries no EF and no HTTP",
+        "Infrastructure implements them; Web references both but names implementations only in Program.cs",
+        "The Web project's GlobalUsings expose Dashboard.Domain.* and nothing else"
       ]
     },
     {
       "dot": "emerald",
-      "title": "Every data feature is built this way",
+      "title": "Persistence",
       "items": [
-        "Domain: records, a port, and a singleton state",
-        "Infrastructure: typed client plus a background service on a timer",
-        "Web: components subscribe and format through pure builders",
-        "On failure MarkStale() keeps the last snapshot visible — a dead API never blanks a tile"
+        "Two contexts: DashboardDbContext and ResearchDbContext",
+        "Spatial types via NetTopologySuite on PostGIS",
+        "Twelve repositories and stores sit between the app and EF Core"
       ]
     },
     {
       "dot": "rose",
-      "title": "Deliberately not in this diagram",
+      "title": "External feeds",
       "items": [
-        "Asset proxies /tiles and /crests, on-disk cached with a host allowlist, keep the display off the internet",
-        "The read-only research schema has its own ResearchDbContext and is excluded from migrations",
-        "Analytics split into pure domain calculators and thin web builders"
+        "Strava and Whoop hold user-delegated OAuth tokens in the database",
+        "Public feeds: football-data.org, CoinGecko, alternative.me, OpenWeatherMap, HVV Geofox",
+        "Map tiles and club crests are cached in named volumes"
       ]
     }
   ]
