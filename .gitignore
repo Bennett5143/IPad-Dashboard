@@ -450,6 +450,18 @@ openspec
 # Claude Code local settings
 .claude/settings.local.json
 
+# graphify: AST graph of this repo, regenerated from the source on every run.
+# graphify-out/ holds the report, graph.json and graph.html; the dotfiles next
+# to it are its incremental-extraction state. All derived, none reviewable.
+graphify-out/
+.graphify_detect.json
+.graphify_analysis.json
+.graphify_labels.json
+
+# Machine-specific symlink to the graphify skill inside the uv tool venv
+# (absolute path into this machine's home; graphify is installed per-user)
+.claude/skills/graphify
+
 # rtk PreToolUse hook: rewrites bash calls to their token-optimized rtk
 # equivalent. Kept out of the repo while the effect is still being measured —
 # whether to run rtk is a per-machine decision, not a project rule.
