@@ -38,6 +38,14 @@ detail: [architecture.md](architecture.md).
   accent, state colors only on data points, structure from hairlines and
   typography.
 
+- **L11 — Documentation cites the code it describes.** The architecture
+  diagram's specification names the files and lines it is built on and records
+  the commit they were read at; CI re-validates those citations against the
+  current commit, so a moved or deleted file fails a check instead of leaving a
+  diagram that claims evidence it no longer has. What no check can catch — the
+  architecture changing while the cited files stay put — is stated in the docs
+  rather than implied to be covered.
+
 **Deliberately not built**: weather×run correlation (no historical weather
 data), Apple Health (no cloud API; WHOOP doesn't pass HealthKit through),
 news ticker, speculative HVV cancellation flag (unverifiable on the
@@ -119,3 +127,24 @@ One squash PR per slice.
   ten seconds does. And dropping a habit took a WHOOP training category with it,
   because the analysis derived its category from the habit mapper — sport
   classification is now its own concern.
+
+- **The architecture gets a picture (Sep 2026)** — no application code changed.
+  `docs/archify/architecture.archify.json` describes the layering this repo
+  already explained in prose, and the README shows it as a light/dark still
+  (#222, #223, #224). The specification cites eight files and lines; the
+  `Architecture diagram` workflow re-checks them on every change under `src/`
+  (see L11). Exporting the stills is a browser action and is not automated —
+  the workflow fails instead when the specification is newer than the images,
+  which makes forgetting the re-export impossible without granting CI write
+  access to the repository.
+
+  One correction the diagram forced: a first draft labelled the edge from
+  `Dashboard.Web` to `Dashboard.Infrastructure` "injected services", which
+  contradicts this repo's own architecture notes — the Web project sees domain
+  types and names implementations only in `Program.cs`. A second draft modelled
+  `ObservableState<T>` and the domain ports as their own nodes; more accurate,
+  harder to read, and dropped in favour of fixing three edge labels.
+
+  Alongside it, the local agent tooling stays out of the repo (#220, #221): the
+  rtk `PreToolUse` hook, graphify's output and its skill symlink are all
+  per-machine decisions.
