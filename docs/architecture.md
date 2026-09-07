@@ -11,9 +11,15 @@ are: [history.md](history.md).
 
 ## Diagram
 
-The vertical slice below, from an external API to the display, as an explorable
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="architecture-dark.png">
+  <img alt="Architecture diagram: an iPad browser reaches Dashboard.Web over a SignalR circuit; Dashboard.Web is wired to Dashboard.Infrastructure in Program.cs only and otherwise sees domain types; Dashboard.Infrastructure implements the ports Dashboard.Domain owns, persists to PostgreSQL with PostGIS, and pulls from Strava, Whoop, public data APIs and CARTO basemaps." src="architecture.png">
+</picture>
+
+The layering below, as an explorable
 diagram. [`architecture.archify.json`](architecture.archify.json) is the source;
-the HTML is generated from it and is not committed:
+the two PNGs above and the interactive HTML are generated from it, and only the
+PNGs are committed:
 
 ```sh
 git clone --depth 1 --branch v2.16.0 https://github.com/tt-a1i/archify.git /tmp/archify
@@ -22,7 +28,7 @@ node /tmp/archify/archify/bin/archify.mjs deliver architecture \
   --quality showcase --repo-root .
 ```
 
-The specification cites 14 files and lines in this repository and records the
+The specification cites 8 files and lines in this repository and records the
 commit they were read at, and archify refuses to render when a cited path is
 missing. The `Architecture diagram` workflow re-runs that check against the
 current commit whenever anything under `src/` changes, so a moved or deleted
