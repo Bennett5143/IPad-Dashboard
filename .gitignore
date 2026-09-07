@@ -450,6 +450,15 @@ openspec
 # Claude Code local settings
 .claude/settings.local.json
 
+# archify: docs/archify/ holds the architecture diagram. Tracked are the
+# specification and the two rendered stills the README embeds. Everything else
+# in there is generated from the specification — the interactive HTML,
+# visual-check sidecars, screenshots — and stays on the machine that made it.
+docs/archify/*
+!docs/archify/architecture.archify.json
+!docs/archify/architecture.png
+!docs/archify/architecture-dark.png
+
 # graphify: AST graph of this repo, regenerated from the source on every run.
 # graphify-out/ holds the report, graph.json and graph.html; the dotfiles next
 # to it are its incremental-extraction state. All derived, none reviewable.

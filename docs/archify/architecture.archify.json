@@ -4,7 +4,7 @@
   "meta": {
     "title": "IPad-Dashboard — Blazor Server on a Raspberry Pi",
     "locale": "en",
-    "output": "dashboard-architecture.html",
+    "output": "docs/archify/architecture.html",
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Bennett5143/IPad-Dashboard",

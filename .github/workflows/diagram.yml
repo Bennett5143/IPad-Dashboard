@@ -1,4 +1,4 @@
-# Keeps docs/architecture.archify.json honest about the code it cites.
+# Keeps docs/archify/architecture.archify.json honest about the code it cites.
 #
 # The specification pins a commit and points at concrete files and lines
 # (meta.repository + component sources). Archify verifies those references
@@ -21,15 +21,15 @@ on:
     branches: [main, dev]
     paths:
       - 'src/**'
-      - 'docs/architecture.archify.json'
-      - 'docs/architecture*.png'
+      - 'docs/archify/architecture.archify.json'
+      - 'docs/archify/*.png'
       - '.github/workflows/diagram.yml'
   pull_request:
     branches: [main, dev]
     paths:
       - 'src/**'
-      - 'docs/architecture.archify.json'
-      - 'docs/architecture*.png'
+      - 'docs/archify/architecture.archify.json'
+      - 'docs/archify/*.png'
       - '.github/workflows/diagram.yml'
 
 concurrency:
@@ -65,7 +65,7 @@ jobs:
       - name: Re-pin the specification to this commit
         run: >-
           python3 -c "import json, os;
-          s = json.load(open('docs/architecture.archify.json'));
+          s = json.load(open('docs/archify/architecture.archify.json'));
           s['meta']['repository']['revision'] = os.environ['GITHUB_SHA'];
           json.dump(s, open(os.environ['RUNNER_TEMP'] + '/spec.json', 'w'), indent=2)"
 
@@ -76,15 +76,15 @@ jobs:
 
       - name: Fail if the rendered stills are older than the specification
         run: |
-          spec=$(git log -1 --format=%ct -- docs/architecture.archify.json)
-          for img in docs/architecture.png docs/architecture-dark.png; do
+          spec=$(git log -1 --format=%ct -- docs/archify/architecture.archify.json)
+          for img in docs/archify/architecture.png docs/archify/architecture-dark.png; do
             stamp=$(git log -1 --format=%ct -- "$img")
             if [ -z "$stamp" ]; then
-              echo "::error file=$img::missing; render it from docs/architecture.archify.json (see docs/architecture.md)"
+              echo "::error file=$img::missing; render it from docs/archify/architecture.archify.json (see docs/architecture.md)"
               exit 1
             fi
             if [ "$spec" -gt "$stamp" ]; then
-              echo "::error file=$img::older than docs/architecture.archify.json; re-export it in the archify viewer (see docs/architecture.md)"
+              echo "::error file=$img::older than docs/archify/architecture.archify.json; re-export it in the archify viewer (see docs/architecture.md)"
               exit 1
             fi
           done

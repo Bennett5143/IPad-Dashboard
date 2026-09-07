@@ -16,11 +16,11 @@ hardware.
 ## How it fits together
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.png">
-  <img alt="Architecture diagram: an iPad browser reaches Dashboard.Web over a SignalR circuit; Dashboard.Web is wired to Dashboard.Infrastructure in Program.cs only and otherwise sees domain types; Dashboard.Infrastructure implements the ports Dashboard.Domain owns, persists to PostgreSQL with PostGIS, and pulls from Strava, Whoop, public data APIs and CARTO basemaps." src="docs/architecture.png">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/archify/architecture-dark.png">
+  <img alt="Architecture diagram: an iPad browser reaches Dashboard.Web over a SignalR circuit; Dashboard.Web is wired to Dashboard.Infrastructure in Program.cs only and otherwise sees domain types; Dashboard.Infrastructure implements the ports Dashboard.Domain owns, persists to PostgreSQL with PostGIS, and pulls from Strava, Whoop, public data APIs and CARTO basemaps." src="docs/archify/architecture.png">
 </picture>
 
-Rendered from [`docs/architecture.archify.json`](docs/architecture.archify.json),
+Rendered from [`docs/archify/architecture.archify.json`](docs/archify/architecture.archify.json),
 which cites the source files it is based on; CI re-checks those citations on
 every change. The layering, the vertical-slice pattern and what the diagram
 leaves out: [docs/architecture.md](docs/architecture.md).
