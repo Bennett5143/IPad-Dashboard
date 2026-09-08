@@ -1,0 +1,3 @@
+**/wwwroot/lib/
+packages.lock.json
+Migrations/
