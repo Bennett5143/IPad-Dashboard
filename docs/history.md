@@ -46,6 +46,19 @@ detail: [architecture.md](architecture.md).
   architecture changing while the cited files stay put — is stated in the docs
   rather than implied to be covered.
 
+- **L12 — The SDK version is pinned in three places or in none.** Restores run
+  with `--locked-mode`, but one entry in the lock files is not declared by this
+  repository at all: the Web SDK injects
+  `Microsoft.AspNetCore.App.Internal.Assets`, whose version comes from whichever
+  SDK performs the restore. That couples three things that look independent —
+  `ci.yml`'s `setup-dotnet` version, the Dockerfile's SDK base-image digest, and
+  the four `packages.lock.json` files. Moving one alone breaks the restore with
+  `NU1004`, which happened twice in one day: first when the runner picked up a
+  newer SDK under a floating `10.0.x`, then when dependabot bumped the base-image
+  digest on its own. Both pins now name what they are coupled to. A version bump
+  means regenerating the lock files with the new SDK and moving both pins in the
+  same change.
+
 **Deliberately not built**: weather×run correlation (no historical weather
 data), Apple Health (no cloud API; WHOOP doesn't pass HealthKit through),
 news ticker, speculative HVV cancellation flag (unverifiable on the
@@ -172,3 +185,29 @@ One squash PR per slice.
   it had been kept ignorant of on purpose, and the numbers show why that mattered:
   the schema held **sixteen** tables and this application had ever mapped **four**.
   A migration would have dropped those four and orphaned twelve.
+
+- **The build pipeline learns what it is pinned to (Sep 2026)** — two `NU1004`
+  failures in one day, same error code, three different doors, all of them the
+  coupling now recorded as L12.
+
+  `setup-dotnet` asked for `10.0.x` while every job restored with
+  `--locked-mode`; when the runner picked up SDK 10.0.401 the implicit
+  `Microsoft.AspNetCore.App.Internal.Assets` moved to 10.0.12 against lock files
+  recording 10.0.11 and four jobs went down (#229). Re-running the last green run
+  on the unchanged `dev` reproduced it exactly, which is what separated a runner
+  change from a code regression. Then dependabot bumped the Dockerfile's SDK
+  base-image digest on its own and broke the containerized publish the same way
+  (#243).
+
+  A third variant came from the lock files themselves: dependabot regenerates the
+  lock file of the project that *declares* a package, and this solution has four.
+  `tests/Dashboard.Tests` references `Dashboard.Infrastructure`, so its lock file
+  kept the old transitive set and locked restore refused it (#233, #234).
+  `dotnet restore --force-evaluate` over the solution is the step a single-project
+  regeneration misses.
+
+  The reason none of this was caught before a deploy: `docker.yml` only ran on
+  `push`, so the image build was never a check on the pull request that broke it —
+  one promotion PR stood green on eleven checks with an image that did not build.
+  Pull requests now build the image too, without logging in, pushing, or
+  attesting, and on the runner's architecture only.
