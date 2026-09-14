@@ -173,22 +173,35 @@ mapped, leaving the rest orphaned.
 Run once, **after** the release that removes the research pages is deployed, so
 nothing queries the schema while it disappears. The commands carry `sudo` because
 the Pi host keeps Docker root-only; drop it where the caller is in the `docker`
-group, the same distinction `deploy.sh` makes for itself:
+group, the same distinction `deploy.sh` makes for itself. As everywhere else in
+this file, `dashboard` is the role and database name this host uses — substitute
+your `POSTGRES_USER` / `POSTGRES_DB` from `.env` if yours differ:
 
 ```bash
-# 1. Back up first — this is the only copy of those rows afterwards.
-sudo docker compose exec db pg_dump -U dashboard -Fc dashboard > dashboard-pre-research-drop.dump
+# 1. Back up, and verify the dump is readable. The && chain is the point: every
+#    later step runs only if this one produced a restorable archive, because
+#    afterwards it is the only copy of those rows.
+sudo docker compose exec -T db pg_dump -U dashboard -Fc dashboard > dashboard-pre-research-drop.dump \
+  && pg_restore -l dashboard-pre-research-drop.dump | grep -q 'SCHEMA - research' \
+  && ls -lh dashboard-pre-research-drop.dump \
+  && echo "backup ok"
 
-# 2. Record what is about to go.
-sudo docker compose exec db psql -U dashboard -d dashboard -c '\dt research.*'
+# 2. Record what is about to go — the app only ever mapped four of these tables.
+sudo docker compose exec -T db psql -U dashboard -d dashboard -c '\dt research.*'
 
-# 3. Drop it.
-sudo docker compose exec db psql -U dashboard -d dashboard -c 'DROP SCHEMA research CASCADE;'
+# 3. Drop it. Only after step 1 printed "backup ok".
+sudo docker compose exec -T db psql -U dashboard -d dashboard -c 'DROP SCHEMA research CASCADE;'
 
 # 4. Verify.
-sudo docker compose exec db psql -U dashboard -d dashboard \
+sudo docker compose exec -T db psql -U dashboard -d dashboard \
   -c "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'research';"
 ```
 
-Step 4 returning no row is the check. The application needs no restart — it
-holds no connection to those tables any more.
+Step 1's `grep` is what makes the backup *evidenced* rather than merely attempted:
+a truncated or failed dump has no `SCHEMA - research` entry in its table of
+contents, the chain stops, and nothing is dropped. Step 4 returning no row is the
+check that it worked. The application needs no restart — it holds no connection
+to those tables any more.
+
+If `pg_restore` is not installed on the host, run the same listing through the
+container instead: `sudo docker compose exec -T db pg_restore -l < dashboard-pre-research-drop.dump`.
