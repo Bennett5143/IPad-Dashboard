@@ -347,14 +347,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     gap: var(--space-1);
 }
 
-/* Eine Untergruppe innerhalb der Zeile — etwa der Tablist der Wettbewerbs-Umschalter neben
-   einem Link, der auf eine andere Seite führt. Optisch bleibt es eine Zeile. */
-.tab-group {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-}
-
 /* Bereichs-Subnav zwischen Seitenkopf und Body: sie steht außerhalb des Bodys, damit sie
    beim Scrollen stehen bleibt, und bringt dessen Innenabstand selbst mit — sonst stünden
    die Tabs nicht auf der Linie des Titels darüber. */
@@ -467,85 +459,3 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
     letter-spacing: var(--tracking-label);
     margin-bottom: var(--space-4);
 }
-
-/* ============================================================
-   Research pages (Fußball-Nachrichten, Marktbericht)
-
-   Shared by both pages, so they live here next to .detail-body and
-   .tab-row rather than being duplicated in two scoped stylesheets.
-
-   The grade badges carry meaning, not decoration: a rumour must be
-   distinguishable from a confirmed report without reading the text.
-   On paper that means weight and rule, not hue — the ramp stays the
-   ramp, and only up/down price movement uses the data-bearing
-   --bull/--bear tokens.
-   ============================================================ */
-
-.rs-empty {
-    color: var(--muted);
-    font-style: italic;
-    margin-top: var(--space-3);
-}
-
-/* ===== grade badges ===== */
-
-.rs-badge {
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-xs);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    padding: 1px var(--space-2);
-    border: 1px solid var(--rule);
-    color: var(--muted);
-    flex: none;
-}
-
-.rs-badge-confirmed {
-    color: var(--ink);
-    border-color: var(--ink);
-    font-weight: var(--font-weight-semibold);
-}
-
-.rs-badge-reported { color: var(--ink); }
-
-/* Dashed rule: the weakest grade reads as provisional at a glance. The dashed
-   border and the hollow dot already carry that distinction, so the label only
-   needs to step back to the secondary text tone — --faint would put it below
-   the legibility floor for a third, redundant cue. */
-.rs-badge-rumour,
-.rs-badge-unknown {
-    border-style: dashed;
-    color: var(--muted);
-}
-
-/* The grade's dot follows the same logic as its rule — filled for the strongest,
-   hollow for the middle, hollow and dashed for the weakest. Never hue. */
-.rs-badge-dot {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: var(--space-2);
-    border: 1px solid currentcolor;
-    border-radius: 50%;
-    vertical-align: baseline;
-}
-
-.rs-badge-confirmed .rs-badge-dot,
-.rs-badge-flagged .rs-badge-dot {
-    background: currentcolor;
-}
-
-.rs-badge-rumour .rs-badge-dot,
-.rs-badge-unknown .rs-badge-dot {
-    border-style: dashed;
-}
-
-/* Not a grade but a warning: this text restates a figure the tooling fetches
-   itself. Solid and inked so it reads as "look at this", not as "unsure". */
-.rs-badge-flagged {
-    color: var(--ink);
-    border-color: var(--ink);
-    border-style: solid;
-    font-weight: var(--font-weight-semibold);
-}
-

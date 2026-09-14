@@ -105,9 +105,11 @@ One squash PR per slice.
   YAGNI cleanup of dead UI components and the speculative Fabrizio-alert port
   (#129), deployment guide (see [deployment.md](deployment.md)).
 - **Reading a foreign schema (Aug 2026)** — football news and a market report
-  produced by a separate tool are displayed from a `research` schema this app
-  reads but never writes or migrates. Second read-only `DbContext`, migration
-  exclusion enforced by tests, empty state when the schema is absent.
+  produced by a separate tool were displayed from a `research` schema this app
+  read but never wrote or migrated. Second read-only `DbContext`, migration
+  exclusion enforced by tests, empty state when the schema is absent. Retired a
+  month later, when the writing tool moved off this host — see *The research
+  pages are retired* below.
 - **Content over layout (Aug 2026)** — OpenSpec change `dashboard-refinements`:
   the pages kept their look and changed what stands on them. The home calendar
   became a week over football and price development, and the ICS/Apple calendar
@@ -148,3 +150,24 @@ One squash PR per slice.
   Alongside it, the local agent tooling stays out of the repo (#220, #221): the
   rtk `PreToolUse` hook, graphify's output and its skill symlink are all
   per-machine decisions.
+
+- **The research pages are retired (Sep 2026)** — OpenSpec change
+  `retire-research-features`. The tool that wrote the `research` schema moved off
+  this host, so `/football/news` and `/crypto/market` lost their only source. Both
+  pages are gone, and nothing replaces them: research results are read in a notes
+  vault outside this application — no second connection, no file import, no
+  read-only archive of the old rows in the dashboard.
+
+  Removed with them: the read-only `ResearchDbContext` and its repository, the
+  `NewsDeck` paging view (a reference search found no consumer outside those two
+  pages), the grade-badge styles, and the boundary tests that kept the migrating
+  context out of the foreign schema — a guard whose subject no longer exists
+  protects nothing and only makes the next reader look for a schema that is not
+  there. `/crypto` lost its tab row entirely: one entry pointing at the page
+  already open is a control that cannot do anything.
+
+  The schema itself is dropped by hand (`DROP SCHEMA research CASCADE`) against the
+  host database after a `pg_dump`, as a one-off step after this change is deployed
+  — deliberately not as an EF migration. Writing it as one would have required
+  teaching `DashboardDbContext` about tables it had been kept ignorant of on
+  purpose, and it would have missed the tables this app never mapped.
