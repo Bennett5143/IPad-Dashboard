@@ -162,28 +162,36 @@ Only one instance should use the Strava/WHOOP tokens afterwards — both
 providers rotate refresh tokens, so two instances refreshing the same token
 lock each other out.
 
-## Retiring the research schema (one-off, Sep 2026)
+## Retiring the research schema (one-off, Sep 2026) — done
 
-The tool that wrote the `research` schema has moved off this host, and the pages
-that read it are gone. The schema is therefore dropped by hand rather than by a
+The tool that wrote the `research` schema moved off this host, and the pages that
+read it are gone. The schema was therefore dropped by hand rather than by a
 migration: this application never owned those tables, and after the removal it
-does not know them — a generated migration could only reach the four it once
-mapped, leaving the rest orphaned.
+does not know them — a generated migration could only have reached the four it
+once mapped, leaving the other twelve orphaned.
 
-Run once, **after** the release that removes the research pages is deployed, so
-nothing queries the schema while it disappears. The commands carry `sudo` because
-the Pi host keeps Docker root-only; drop it where the caller is in the `docker`
-group, the same distinction `deploy.sh` makes for itself. As everywhere else in
-this file, `dashboard` is the role and database name this host uses — substitute
-your `POSTGRES_USER` / `POSTGRES_DB` from `.env` if yours differ:
+Executed on 2026-09-14 against both databases. Kept here because it is the
+template for any future foreign-schema retirement, and because the record of what
+was dropped belongs with the instructions.
+
+The commands carry `sudo` because this host keeps Docker root-only; drop it where
+the caller is in the `docker` group, the same distinction `deploy.sh` makes for
+itself. As everywhere else in this file, `dashboard` is the role and database name
+this host uses — substitute your `POSTGRES_USER` / `POSTGRES_DB` from `.env` if
+yours differ. Note that every Postgres client binary runs **inside the container**:
+the host has none installed, `pg_restore` included.
+
+Run only **after** the release that removes the research pages is deployed, so
+nothing queries the schema while it disappears.
 
 ```bash
-# 1. Back up, and verify the dump is readable. The && chain is the point: every
-#    later step runs only if this one produced a restorable archive, because
-#    afterwards it is the only copy of those rows.
-sudo docker compose exec -T db pg_dump -U dashboard -Fc dashboard > dashboard-pre-research-drop.dump \
-  && pg_restore -l dashboard-pre-research-drop.dump | grep -q 'SCHEMA - research' \
-  && ls -lh dashboard-pre-research-drop.dump \
+# 1. Back up, and prove the dump carries the rows — not just the schema. The &&
+#    chain is the point: every later step runs only if this one produced a
+#    restorable archive, because afterwards it is the only copy.
+sudo docker compose exec -T db pg_dump -U dashboard -Fc dashboard > research-drop.dump \
+  && sudo docker compose exec -T db pg_restore -l < research-drop.dump \
+       | grep -c 'TABLE DATA research' \
+  && sha256sum research-drop.dump \
   && echo "backup ok"
 
 # 2. Record what is about to go — the app only ever mapped four of these tables.
@@ -197,11 +205,18 @@ sudo docker compose exec -T db psql -U dashboard -d dashboard \
   -c "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'research';"
 ```
 
-Step 1's `grep` is what makes the backup *evidenced* rather than merely attempted:
-a truncated or failed dump has no `SCHEMA - research` entry in its table of
-contents, the chain stops, and nothing is dropped. Step 4 returning no row is the
-check that it worked. The application needs no restart — it holds no connection
-to those tables any more.
+Step 1 counts `TABLE DATA` entries rather than grepping for the schema line, and
+the difference matters: a dump can carry the schema definition and none of the
+rows. The count must equal the number of tables from step 2 — sixteen, when this
+ran. Step 4 returning no row is the check that the drop worked. The application
+needs no restart; it holds no connection to those tables any more.
 
-If `pg_restore` is not installed on the host, run the same listing through the
-container instead: `sudo docker compose exec -T db pg_restore -l < dashboard-pre-research-drop.dump`.
+The dev instance has its own database and carried the same sixteen tables with
+zero rows — a structure-only copy. It was dropped the same way, without a backup,
+by prefixing the compose call with `-p dashboard-dev -f docker-compose.yml -f
+docker-compose.dev.yml`.
+
+The production dump is kept at
+`/mnt/ssd/apps/backups/dashboard-pre-research-drop-20260914.dump` (7.7 MB, sha256
+`3f42b3fa743eae4b4bcca2dbbc72ded5490b6179fdc091037827acd72147b785`). It is a full
+database dump, so it also restores the dashboard's own tables.
