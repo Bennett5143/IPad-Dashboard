@@ -7,7 +7,15 @@
 
 # Base images are digest-pinned (supply-chain integrity; Dependabot bumps the
 # digests). The digest is the manifest-list digest, valid for amd64 and arm64.
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0@sha256:2fa828c68761b1b8c23d7662dc134421b9d3b59fe1425fdbc80804e390cdb24d AS build
+# Pinned together with ci.yml's setup-dotnet version and the four
+# packages.lock.json files — the three are one consistent set, not three
+# independent knobs. This digest carries SDK 10.0.400, which resolves the
+# implicit Microsoft.AspNetCore.App.Internal.Assets to 10.0.11, which is what
+# the lock files record. A digest carrying 10.0.401 resolves it to 10.0.12 and
+# the locked publish restore below fails with NU1004.
+# Moving this forward means: regenerate all four lock files with the new SDK,
+# raise ci.yml's pin to match, and only then bump the digest.
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0@sha256:4beef5b8919dcaa2dc924233bd069257e883cc7a061e09088a97d152d6a48510 AS build
 ARG TARGETARCH
 WORKDIR /src
 
