@@ -38,6 +38,14 @@ detail: [architecture.md](architecture.md).
   accent, state colors only on data points, structure from hairlines and
   typography.
 
+- **L11 — Documentation cites the code it describes.** The architecture
+  diagram's specification names the files and lines it is built on and records
+  the commit they were read at; CI re-validates those citations against the
+  current commit, so a moved or deleted file fails a check instead of leaving a
+  diagram that claims evidence it no longer has. What no check can catch — the
+  architecture changing while the cited files stay put — is stated in the docs
+  rather than implied to be covered.
+
 **Deliberately not built**: weather×run correlation (no historical weather
 data), Apple Health (no cloud API; WHOOP doesn't pass HealthKit through),
 news ticker, speculative HVV cancellation flag (unverifiable on the
@@ -97,9 +105,11 @@ One squash PR per slice.
   YAGNI cleanup of dead UI components and the speculative Fabrizio-alert port
   (#129), deployment guide (see [deployment.md](deployment.md)).
 - **Reading a foreign schema (Aug 2026)** — football news and a market report
-  produced by a separate tool are displayed from a `research` schema this app
-  reads but never writes or migrates. Second read-only `DbContext`, migration
-  exclusion enforced by tests, empty state when the schema is absent.
+  produced by a separate tool were displayed from a `research` schema this app
+  read but never wrote or migrated. Second read-only `DbContext`, migration
+  exclusion enforced by tests, empty state when the schema is absent. Retired a
+  month later, when the writing tool moved off this host — see *The research
+  pages are retired* below.
 - **Content over layout (Aug 2026)** — OpenSpec change `dashboard-refinements`:
   the pages kept their look and changed what stands on them. The home calendar
   became a week over football and price development, and the ICS/Apple calendar
@@ -119,3 +129,45 @@ One squash PR per slice.
   ten seconds does. And dropping a habit took a WHOOP training category with it,
   because the analysis derived its category from the habit mapper — sport
   classification is now its own concern.
+
+- **The architecture gets a picture (Sep 2026)** — no application code changed.
+  `docs/archify/architecture.archify.json` describes the layering this repo
+  already explained in prose, and the README shows it as a light/dark still
+  (#222, #223, #224). The specification cites eight files and lines; the
+  `Architecture diagram` workflow re-checks them on every change under `src/`
+  (see L11). Exporting the stills is a browser action and is not automated —
+  the workflow fails instead when the specification is newer than the images,
+  which makes forgetting the re-export impossible without granting CI write
+  access to the repository.
+
+  One correction the diagram forced: a first draft labelled the edge from
+  `Dashboard.Web` to `Dashboard.Infrastructure` "injected services", which
+  contradicts this repo's own architecture notes — the Web project sees domain
+  types and names implementations only in `Program.cs`. A second draft modelled
+  `ObservableState<T>` and the domain ports as their own nodes; more accurate,
+  harder to read, and dropped in favour of fixing three edge labels.
+
+  Alongside it, the local agent tooling stays out of the repo (#220, #221): the
+  rtk `PreToolUse` hook, graphify's output and its skill symlink are all
+  per-machine decisions.
+
+- **The research pages are retired (Sep 2026)** — OpenSpec change
+  `retire-research-features`. The tool that wrote the `research` schema moved off
+  this host, so `/football/news` and `/crypto/market` lost their only source. Both
+  pages are gone, and nothing replaces them: research results are read in a notes
+  vault outside this application — no second connection, no file import, no
+  read-only archive of the old rows in the dashboard.
+
+  Removed with them: the read-only `ResearchDbContext` and its repository, the
+  `NewsDeck` paging view (a reference search found no consumer outside those two
+  pages), the grade-badge styles, and the boundary tests that kept the migrating
+  context out of the foreign schema — a guard whose subject no longer exists
+  protects nothing and only makes the next reader look for a schema that is not
+  there. `/crypto` lost its tab row entirely: one entry pointing at the page
+  already open is a control that cannot do anything.
+
+  The schema itself is dropped by hand (`DROP SCHEMA research CASCADE`) against the
+  host database after a `pg_dump`, as a one-off step after this change is deployed
+  — deliberately not as an EF migration. Writing it as one would have required
+  teaching `DashboardDbContext` about tables it had been kept ignorant of on
+  purpose, and it would have missed the tables this app never mapped.

@@ -23,10 +23,6 @@ decisions and what was deliberately *not* built: [docs/history.md](docs/history.
 - External APIs never block or crash the render path: on failure call
   `MarkStale()`, the last snapshot stays visible, the tile degrades to
   "unavailable" while the rest keeps working.
-- The `research` schema has one writer, and it is not this app: mapped only
-  in the read-only `ResearchDbContext`, never in `DashboardDbContext` or its
-  migrations; absent schema renders as an empty page, not an error. Guarded
-  by `tests/Dashboard.Tests/Research`.
 - Colors and sizes come only from the theme tokens in
   `src/Dashboard.Web/wwwroot/app.css`; color carries information, never
   decoration.

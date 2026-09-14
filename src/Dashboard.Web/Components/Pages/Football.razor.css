@@ -1,9 +1,3 @@
-/* Wappen-Toggle rechts in der Tab-Zeile — trägt das Tab-Vokabular, aber nie den
-   Aktiv-Zustand: er schaltet etwas, er navigiert nicht. */
-.fb-toggle {
-    white-space: nowrap;
-}
-
 /* ===== Body: die Tabelle über die volle Breite =====
    Die Vereinsspalte ist entfallen; Form und nächstes Spiel aller verfolgten Vereine stehen
    im Wochenkalender auf der Hauptseite. */
