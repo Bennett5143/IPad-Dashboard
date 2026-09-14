@@ -166,8 +166,9 @@ One squash PR per slice.
   there. `/crypto` lost its tab row entirely: one entry pointing at the page
   already open is a control that cannot do anything.
 
-  The schema itself is dropped by hand (`DROP SCHEMA research CASCADE`) against the
-  host database after a `pg_dump`, as a one-off step after this change is deployed
-  — deliberately not as an EF migration. Writing it as one would have required
-  teaching `DashboardDbContext` about tables it had been kept ignorant of on
-  purpose, and it would have missed the tables this app never mapped.
+  The schema itself was dropped by hand (`DROP SCHEMA research CASCADE`) on
+  2026-09-14, after a verified `pg_dump` — deliberately not an EF migration.
+  Writing it as one would have required teaching `DashboardDbContext` about tables
+  it had been kept ignorant of on purpose, and the numbers show why that mattered:
+  the schema held **sixteen** tables and this application had ever mapped **four**.
+  A migration would have dropped those four and orphaned twelve.
