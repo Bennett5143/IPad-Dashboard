@@ -11,3 +11,15 @@ reviews:
   path_filters:
     # openspec/ is a symlink into the gitignored private docs repo — nothing to review.
     - "!openspec/**"
+  path_instructions:
+    # The host runbooks spell out `-U dashboard -d dashboard` on purpose. Those are
+    # the real role and database names of the single LAN-kiosk host this project
+    # runs on; `.env.Example` says `changeme` precisely because the real values are
+    # not in the repo. Flagged once as a portability issue on #228 and answered
+    # there — written down here so the answer survives the next reviewer.
+    - path: "docs/deployment.md"
+      instructions: >-
+        Do not flag the hardcoded `dashboard` role and database names in the psql,
+        pg_dump and pg_restore examples as a portability or data-integrity issue.
+        They are the actual values on this project's single host and are used
+        consistently throughout the file.
