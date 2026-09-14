@@ -7,7 +7,7 @@
 
 # Base images are digest-pinned (supply-chain integrity; Dependabot bumps the
 # digests). The digest is the manifest-list digest, valid for amd64 and arm64.
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0@sha256:4beef5b8919dcaa2dc924233bd069257e883cc7a061e09088a97d152d6a48510 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0@sha256:2fa828c68761b1b8c23d7662dc134421b9d3b59fe1425fdbc80804e390cdb24d AS build
 ARG TARGETARCH
 WORKDIR /src
 
