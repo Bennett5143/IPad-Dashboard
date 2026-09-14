@@ -38,8 +38,8 @@ file fails CI instead of leaving the diagram quietly wrong.
 
 It cannot notice the architecture changing while the cited files stay where they
 are. That stays a review question, which is also why the diagram is scoped to
-the vertical slice: the asset proxies, the read-only `research` schema and the
-analytics split are described below in prose rather than drawn.
+the vertical slice: the asset proxies and the analytics split are described
+below in prose rather than drawn.
 
 ## Layers
 
@@ -111,28 +111,6 @@ minimum (honesty over impressiveness).
   (`Explainable` + `MetricCatalog`).
 - Each tile sits in an `ErrorBoundary` (`TileBoundary`); a `ReconnectModal`
   covers SignalR drops for unattended displays.
-
-## Reading a schema this app does not own
-
-One area breaks the "one app, one database schema" assumption on purpose: the
-`research` schema is written by a separate tool and only read here. The rule is
-**one schema, one writer** — the same principle as one directory, one writer,
-applied to tables.
-
-- The tables are mapped in their own `ResearchDbContext`, never in
-  `DashboardDbContext`. The context that owns the migration history does not
-  know they exist, so nothing can slip into its migrations.
-- Every research entity is additionally mapped with `ExcludeFromMigrations()`.
-- Read-only is structural, not a convention: `NoTracking`, a `SaveChanges` that
-  throws, and a repository interface with no write method.
-- Absent schema, absent table and zero rows all mean the same thing: an empty
-  page. Only the two Postgres states for "that does not exist" are caught — a
-  connection failure stays loud.
-
-Tests in `tests/Dashboard.Tests/Research` fail if a generated migration would
-touch the schema. They earned that place on their first run, by catching the
-assembly-wide configuration scan pulling the foreign tables into the wrong
-model.
 
 ## Operations
 

@@ -161,3 +161,34 @@ docker compose start app
 Only one instance should use the Strava/WHOOP tokens afterwards — both
 providers rotate refresh tokens, so two instances refreshing the same token
 lock each other out.
+
+## Retiring the research schema (one-off, Sep 2026)
+
+The tool that wrote the `research` schema has moved off this host, and the pages
+that read it are gone. The schema is therefore dropped by hand rather than by a
+migration: this application never owned those tables, and after the removal it
+does not know them — a generated migration could only reach the four it once
+mapped, leaving the rest orphaned.
+
+Run once, **after** the release that removes the research pages is deployed, so
+nothing queries the schema while it disappears. The commands carry `sudo` because
+the Pi host keeps Docker root-only; drop it where the caller is in the `docker`
+group, the same distinction `deploy.sh` makes for itself:
+
+```bash
+# 1. Back up first — this is the only copy of those rows afterwards.
+sudo docker compose exec db pg_dump -U dashboard -Fc dashboard > dashboard-pre-research-drop.dump
+
+# 2. Record what is about to go.
+sudo docker compose exec db psql -U dashboard -d dashboard -c '\dt research.*'
+
+# 3. Drop it.
+sudo docker compose exec db psql -U dashboard -d dashboard -c 'DROP SCHEMA research CASCADE;'
+
+# 4. Verify.
+sudo docker compose exec db psql -U dashboard -d dashboard \
+  -c "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'research';"
+```
+
+Step 4 returning no row is the check. The application needs no restart — it
+holds no connection to those tables any more.

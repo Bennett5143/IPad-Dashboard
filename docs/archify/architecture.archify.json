@@ -323,9 +323,9 @@
       "dot": "emerald",
       "title": "Persistence",
       "items": [
-        "Two contexts: DashboardDbContext and ResearchDbContext",
+        "One context: DashboardDbContext owns the migration history",
         "Spatial types via NetTopologySuite on PostGIS",
-        "Twelve repositories and stores sit between the app and EF Core"
+        "Ten repositories and stores sit between the app and EF Core"
       ]
     },
     {
