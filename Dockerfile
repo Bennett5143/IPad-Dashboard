@@ -7,6 +7,14 @@
 
 # Base images are digest-pinned (supply-chain integrity; Dependabot bumps the
 # digests). The digest is the manifest-list digest, valid for amd64 and arm64.
+# Pinned together with ci.yml's setup-dotnet version and the four
+# packages.lock.json files — the three are one consistent set, not three
+# independent knobs. This digest carries SDK 10.0.400, which resolves the
+# implicit Microsoft.AspNetCore.App.Internal.Assets to 10.0.11, which is what
+# the lock files record. A digest carrying 10.0.401 resolves it to 10.0.12 and
+# the locked publish restore below fails with NU1004.
+# Moving this forward means: regenerate all four lock files with the new SDK,
+# raise ci.yml's pin to match, and only then bump the digest.
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0@sha256:4beef5b8919dcaa2dc924233bd069257e883cc7a061e09088a97d152d6a48510 AS build
 ARG TARGETARCH
 WORKDIR /src
@@ -36,7 +44,7 @@ RUN dotnet publish src/Dashboard.Web/Dashboard.Web.csproj \
     --configuration Release --output /app/publish -a $TARGETARCH \
     -p:RestoreLockedMode=true
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:011bb5f30180717b1c8b65822ff2c99bcb96bc65af0164589751b83c7b4949f7 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:6a94333d37514e385650a3c81a55e5350b67253dbe136e9cf17e499c35606a8c AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
