@@ -37,7 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: ${{ github.event_name == 'pull_request' && 'read' || 'write' }}
+      # Not conditional: the `permissions` key does not accept expressions.
+      # On a pull request the login and push steps are skipped, so the scope is
+      # granted but never exercised.
+      packages: write
 
     steps:
       - name: Checkout
